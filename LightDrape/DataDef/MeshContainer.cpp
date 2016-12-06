@@ -1,6 +1,6 @@
-#include "MeshContainer.h"
 #include <vector>
 #include <OpenMesh/Core/IO/MeshIO.hh>
+#include "MeshContainer.h"
 
 bool MeshContainer::importHumanMesh( std::istream& is )
 {

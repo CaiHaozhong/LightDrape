@@ -40,9 +40,9 @@ public:
 
 	void setType(int val) { mType = val; }
 
-	Skeleton* Skeleton() const { return mSkeleton; }
+	Skeleton* getSkeleton() const { return mSkeleton; }
 
-	void Skeleton(Skeleton* val) { mSkeleton = val; }
+	void setSkeleton(Skeleton* val) { mSkeleton = val; }
 private:
 	bool mHasRequestAABB;
 

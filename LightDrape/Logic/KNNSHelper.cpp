@@ -1,61 +1,36 @@
 #include "KNNSHelper.h"
 
-KNNSHelper::KNNSHelper( std::vector<Point_3>& points )
+KNNSHelper::KNNSHelper( std::vector<OpenMesh::Vec3f>& points )
 {
-	My_point_property_map ppmap(points);
-	// Insert number_of_data_points in the tree
-	this->mKdTree = new Tree(
-		boost::counting_iterator<std::size_t>(0),
-		boost::counting_iterator<std::size_t>(points.size()),
-		Splitter(),
-		Traits(ppmap)
-		);
-	this->tr_dist = new Distance(ppmap);
-	this->mSearch = nullptr;
+	mKDTree = new KDTree(3, PointCloud(points));
+	mKDTree->buildIndex();
 }
 
-KNNSHelper::~KNNSHelper()
-{
-	if(mKdTree != nullptr)
-		delete mKdTree;
-	if(tr_dist != nullptr)
-		delete tr_dist;
-	if(mSearch != nullptr)
-		delete mSearch;
+KNNSHelper::~KNNSHelper(){
+	delete mKDTree;	
 }
 
-std::pair<int, double> KNNSHelper::singleNeighborSearch( Point_3& q )
-{
-	kNeighborSearch(q,1);
-	return std::make_pair(getIndex(mIteratorBegin), getDistance(mIteratorBegin));
+bool KNNSHelper::singleNeighborSearch(OpenMesh::Vec3f q, Result& ret)
+{	
+	std::vector<Result> rets;
+	bool r = kNeighborSearch(q, 1, rets);
+	if(r)
+		ret = rets.at(0);
+	return r;
 }
 
-void KNNSHelper::kNeighborSearch( Point_3& q, int K )
+bool KNNSHelper::kNeighborSearch(OpenMesh::Vec3f& q, int K, std::vector<Result>& ret)
 {
-	if(mSearch != nullptr)
-		delete mSearch;
-	mSearch = new K_neighbor_search(*mKdTree, q, K,0,true,*tr_dist);	
-	mIteratorBegin = mSearch->begin();
-	mIteratorEnd = mSearch->end();	
+	nanoflann::KNNResultSet<float> resultSet(K);
+	size_t* indices = new size_t[K];
+	float* dists = new float[K];
+	resultSet.init(indices, dists);
+	bool r = mKDTree->findNeighbors(resultSet, q.values_, nanoflann::SearchParams());
+	size_t retSize = resultSet.size();
+	for(size_t i = 0; i < retSize; i++){
+		ret.push_back(Result(indices[i], dists[i]));
+	}
+	delete [] indices;
+	delete [] dists;
+	return r;
 }
-
-int KNNSHelper::getIndex( KNNSHelperIterator it )
-{
-	return it->first;
-}
-
-double KNNSHelper::getDistance( KNNSHelperIterator it )
-{
-	return tr_dist->inverse_of_transformed_distance(it->second);
-}
-
-KNNSHelper::KNNSHelperIterator KNNSHelper::begin()
-{
-	return mIteratorBegin;
-}
-
-KNNSHelper::KNNSHelperIterator KNNSHelper::end()
-{
-	return mIteratorEnd;
-}
-
