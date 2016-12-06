@@ -60,11 +60,14 @@ struct PointCloud
 	PointCloud(std::vector<OpenMesh::Vec3f>& ps){
 		pts = ps;
 	}
-
+	PointCloud(){}
 	std::vector<OpenMesh::Vec3f>  pts;
 
 	// Must return the number of data points
-	inline size_t kdtree_get_point_count() const { return pts.size(); }
+	inline size_t kdtree_get_point_count() const { 
+		size_t ret = pts.size();
+		return ret; 
+	}
 
 	// Returns the distance between the vector "p1[0:size-1]" and the data point with index "idx_p2" stored in the class:
 	inline float kdtree_distance(const float *p1, const size_t idx_p2, size_t /*size*/) const
@@ -97,10 +100,11 @@ class KNNSHelper
 public:	
 	struct Result{
 		Result(size_t i, float d):index(i),distance(d){}
+		Result(){}
 		size_t index;
 		float distance;
 	};
-	typedef nanoflann::KDTreeSingleIndexAdaptor< nanoflann::L2_Simple_Adaptor<float, PointCloud >,PointCloud, 3 /* dim */> KDTree;
+	typedef nanoflann::KDTreeSingleIndexAdaptor< nanoflann::L2_Simple_Adaptor<float, PointCloud >, PointCloud, 3 /* dim */> KDTree;
 
 	KNNSHelper(std::vector<OpenMesh::Vec3f>& pointList);
 
@@ -118,4 +122,5 @@ public:
 
 private:	
 	KDTree* mKDTree;
+	PointCloud mPointCloud;
 };
