@@ -42,8 +42,7 @@ void SkeletonExtractor::extract(Mesh& mesh){
 	Skeletonization::Skeleton cgalSkeleton;
 	mcs.convert_to_skeleton(cgalSkeleton);
 
-	Skeleton* skeleton  = makeSkeleton(cgalSkeleton);
-	
+	Skeleton* skeleton  = makeSkeleton(cgalSkeleton);	
 	mesh.setSkeleton(skeleton);
 
 // 	std::cout << "Number of vertices of the skeleton: " << boost::num_vertices(skeleton) << "\n";

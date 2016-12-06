@@ -1,5 +1,5 @@
 #pragma once
-#include "SkeletonDef.h"
+#include "Skeleton.h"
 class SkeletonCoincidentPointHunter
 {
 public:
