@@ -55,7 +55,6 @@ void SkeletonExtractor::extract(Mesh& mesh){
 // 		BOOST_FOREACH(vertex_descriptor vd, skeleton[v].vertices)
 // 		output << "2 " << skeleton[v].point << "  " << boost::get(CGAL::vertex_point, triangle_mesh, vd)  << "\n";
 // 	output.close();
-
 }
 
 Skeleton* SkeletonExtractor::makeSkeleton( Skeletonization::Skeleton& cgalSkeleton )
@@ -63,15 +62,15 @@ Skeleton* SkeletonExtractor::makeSkeleton( Skeletonization::Skeleton& cgalSkelet
 	typedef Skeletonization::Skeleton::edge_descriptor edge_descriptor;
 	typedef Skeletonization::Skeleton::vertex_descriptor vertex_descriptor;
 	Skeleton* ret = new Skeleton();
-	BOOST_FOREACH(vertex_descriptor v, boost::vertices(skeleton)){
+	BOOST_FOREACH(vertex_descriptor v, boost::vertices(cgalSkeleton)){
 		SkeletonNode* node = new SkeletonNode;
-		auto skeletonizationPoint = skeleton[v].point;
+		auto skeletonizationPoint = cgalSkeleton[v].point;
 		node->point = SkeletonNode::Point(skeletonizationPoint.x(), skeletonizationPoint.y(), skeletonizationPoint.z());
-		node->correspondanceIndices = skeleton[v].correspondanceIndices;
+		//node->correspondanceIndices = cgalSkeleton[v].correspondanceIndices;
 		ret->addNode(node);
 	}
-	BOOST_FOREACH(edge_descriptor e, boost::edges(skeleton)){
-		SkeletonEdge* edge = new SkeletonEdge(boost::source(e,skeleton), boost::target(e,skeleton));
+	BOOST_FOREACH(edge_descriptor e, boost::edges(cgalSkeleton)){
+		SkeletonEdge* edge = new SkeletonEdge(boost::source(e,cgalSkeleton), boost::target(e,cgalSkeleton));
 		ret->addEdge(edge);			
 	}
 	return ret;

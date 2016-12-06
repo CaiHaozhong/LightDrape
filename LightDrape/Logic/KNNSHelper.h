@@ -121,6 +121,6 @@ public:
 	bool kNeighborSearch(OpenMesh::Vec3f& q, int K, std::vector<Result>& ret);
 
 private:	
-	KDTree* mKDTree;
+	KDTree* mKDTree;	
 	PointCloud mPointCloud;
 };

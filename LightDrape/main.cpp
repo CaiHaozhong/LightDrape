@@ -24,5 +24,6 @@ int main(){
 		cout << points[ret.index].values_[0] << " " << points[ret.index].values_[1] << " " << points[ret.index].values_[2] << "\n";
 		cout << ret.distance << "\n";
 	}
+
 	getchar();
 }
