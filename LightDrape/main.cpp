@@ -3,27 +3,41 @@
 #include <ctime>
 #include <vector>
 #include <iostream>
+#include <OpenMesh/Core/IO/MeshIO.hh>
+#include "Mesh.h"
+#include <fstream>
+#include "HoleInfo.h"
 using namespace std;
 int main(){
-	const int N = 10000;
-	vector<OpenMesh::Vec3f> points;
-	points.resize(N);
-	srand(time(NULL));
-	for (size_t i = 0; i < N; i++)
-	{
-		points[i] = OpenMesh::Vec3f(10 * (rand() % 1000) / float(1000),
-									10 * (rand() % 1000) / float(1000),
-									10 * (rand() % 1000) / float(1000));
+	Mesh mesh;
+	mesh.request_vertex_normals();
+	OpenMesh::IO::Options opt;
+	ifstream is = ifstream("E:\\Project\\LightDrape\\data\\cloth1.obj");
+	bool suc = OpenMesh::IO::read_mesh(mesh, is, "obj", opt);
+	if(!suc){
+		cout << "import err!" << "\n";
+		getchar();
+		return 0;
 	}
-	KNNSHelper knnsHelper(points);	
-	OpenMesh::Vec3f q(0.5f, 0.5f, 0.5f);	
-	KNNSHelper::Result ret;
-	bool r = knnsHelper.singleNeighborSearch(q, ret);	
-	if(r){
-		cout << ret.index << "\n";
-		cout << points[ret.index].values_[0] << " " << points[ret.index].values_[1] << " " << points[ret.index].values_[2] << "\n";
-		cout << ret.distance << "\n";
+	if ( !opt.check( OpenMesh::IO::Options::VertexNormal ) ){
+		// we need face normals to update the vertex normals
+		mesh.request_face_normals();
+		// let the mesh update the normals
+		mesh.update_normals();
+		// dispose the face normals, as we don't need them anymore
+		mesh.release_face_normals();
 	}
-
+	cout << "import suc!" << "\n";
+	HoleInfo holeInfo(&mesh);
+	holeInfo.getHoles();
+	vector<HoleInfo::Hole>* holes = holeInfo.holes();
+	cout << "holes cout: " << holes->size() << "\n";
+	holeInfo.fillAllHoles();
+	suc = OpenMesh::IO::write_mesh(mesh, ofstream("E:\\Project\\LightDrape\\data\\cloth1closed.obj"), "obj");
+	if(!suc){
+		cout << "save fail!" << "\n";
+	}
+	else
+		cout << "save suc!" << "\n";
 	getchar();
 }
