@@ -6,6 +6,7 @@
 #include <CGAL/boost/graph/graph_traits_Surface_mesh.h>
 #include <CGAL/boost/graph/properties_Surface_mesh.h>
 #include <CGAL/Mean_curvature_flow_skeletonization.h>
+#include <string>
 
 typedef CGAL::Simple_cartesian<double>                        Kernel;
 typedef CGAL::Surface_mesh<Kernel::Point_3>                   Triangle_mesh;
@@ -17,9 +18,10 @@ class SkeletonExtractor{
 public:
 
 	static void extract(Mesh& mesh);
+	static void dumpSkeleton(Skeleton& skeleton, std::string file);
 
 private:
-
+	
 	static Skeleton* makeSkeleton(Skeletonization::Skeleton& cgalSkeleton);
 };
 

@@ -1,5 +1,5 @@
 #include "SkeletonExtractor.h"
-
+#include <fstream>
 void SkeletonExtractor::extract(Mesh& mesh){
 	Triangle_mesh triangle_mesh;
 	
@@ -20,22 +20,31 @@ void SkeletonExtractor::extract(Mesh& mesh){
 	});
 
 	Skeletonization mcs(triangle_mesh);
-
-	// 1. Contract the mesh by mean curvature flow.
-	mcs.contract_geometry();
-
-	// 2. Collapse short edges and split bad triangles.
-	mcs.collapse_edges();
-	mcs.split_faces();
-
-	// 3. Fix degenerate vertices.
-	mcs.detect_degeneracies();
-
-	// Perform the above three steps in one iteration.
-	mcs.contract();
+	//mcs.contract_until_convergence();
+ 	Skeletonization::Meso_skeleton meso_skeleton = mcs.meso_skeleton();
+	std::string inPath = std::string("E:\\CG\\DrapeRepository\\Resource\\SCAPE\\scapewatertightobj\\");
+	std::string file = "mesh006.cg";
+	std::ofstream out = std::ofstream(inPath + file);
+	//Skeletonization::Meso_skeleton::Vertex_iterator fit = meso_skeleton.vertices_begin();
+	for(auto pit = meso_skeleton.points_begin(); pit != meso_skeleton.points_end(); pit++){
+		Skeletonization::Meso_skeleton::Point_3 p = *pit;
+		out << "v " << p << "\n";
+	}
+// 	// 1. Contract the mesh by mean curvature flow.
+// 	mcs.contract_geometry();
+// 
+// 	// 2. Collapse short edges and split bad triangles.
+// 	mcs.collapse_edges();
+// 	mcs.split_faces();
+// 
+// 	// 3. Fix degenerate vertices.
+// 	mcs.detect_degeneracies();
+// 
+// 	// Perform the above three steps in one iteration.
+//	mcs.contract();
 
 	// Iteratively apply step 1 to 3 until convergence.
-	mcs.contract_until_convergence();
+	//mcs.contract_until_convergence();
 
 	// Convert the contracted mesh into a curve skeleton and
 	// get the correspondent surface points
@@ -45,16 +54,8 @@ void SkeletonExtractor::extract(Mesh& mesh){
 	Skeleton* skeleton  = makeSkeleton(cgalSkeleton);	
 	mesh.setSkeleton(skeleton);
 
-// 	std::cout << "Number of vertices of the skeleton: " << boost::num_vertices(skeleton) << "\n";
-// 	std::cout << "Number of edges of the skeleton: " << boost::num_edges(skeleton) << "\n";
-
-	// Output skeleton points and the corresponding surface points
-// 	std::ofstream output;
-// 	output.open("correspondance.cgal");
-// 	BOOST_FOREACH(Skeleton_vertex v, vertices(skeleton))
-// 		BOOST_FOREACH(vertex_descriptor vd, skeleton[v].vertices)
-// 		output << "2 " << skeleton[v].point << "  " << boost::get(CGAL::vertex_point, triangle_mesh, vd)  << "\n";
-// 	output.close();
+ 	std::cout << "Number of vertices of the skeleton: " << boost::num_vertices(cgalSkeleton) << "\n";
+ 	std::cout << "Number of edges of the skeleton: " << boost::num_edges(cgalSkeleton) << "\n";
 }
 
 Skeleton* SkeletonExtractor::makeSkeleton( Skeletonization::Skeleton& cgalSkeleton )
@@ -74,4 +75,21 @@ Skeleton* SkeletonExtractor::makeSkeleton( Skeletonization::Skeleton& cgalSkelet
 		ret->addEdge(edge);			
 	}
 	return ret;
+}
+
+void SkeletonExtractor::dumpSkeleton(Skeleton& skeleton,  std::string file)
+{
+	std::ofstream out = std::ofstream(file);
+	out << "# D:3 NV:" << skeleton.nodeCount() << " NE:" << skeleton.edgeCount() << "\n";
+	Skeleton::NodeList nodes = skeleton.getNodeList();
+	for(int i = 0; i < nodes.size(); i++){
+		SkeletonNode* n = nodes.at(i);
+		out << "v " << n->point.values_[0] << " " << n->point.values_[1] << " " << n->point.values_[2] << "\n";
+	}
+	Skeleton::EdgeList edges = skeleton.getEdgeList();
+	for(int i = 0; i < edges.size(); i++){
+		SkeletonEdge* e = edges.at(i);
+		out << "e " << e->sourceVertex+1 << " " << e->targetVertex+1 << "\n";
+	}
+	out.close();
 }

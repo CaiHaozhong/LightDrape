@@ -10,6 +10,7 @@
 #include <string>
 #include <sstream>
 #include <tuple>
+#include "SkeletonExtractor.h"
 using namespace std;
 typedef std::pair<std::string,std::string> PPair;
 struct PLYHeader {
@@ -451,7 +452,7 @@ void transformMesh(Mesh& mesh){
 		v.values_[2] = tmp.values_[2];
 	}
 }
-int main(){
+int mainforPLY2OBJAndHoleFill(){
 	Mesh mesh;	
 	string inPath = string("E:\\CG\\DrapeRepository\\Resource\\SCAPE\\scapecomp\\");
 	string outPath = string("E:\\CG\\DrapeRepository\\Resource\\SCAPE\\scapewatertightobj\\");
@@ -483,4 +484,23 @@ int main(){
 		cout << "end processing " << string(filename) << endl;
 	}	
 	getchar();
+	return 0;
+}
+int main(){
+	Mesh mesh;	
+	string inPath = string("E:\\CG\\DrapeRepository\\Resource\\SCAPE\\scapewatertightobj\\");
+	string file = "mesh006.obj";
+	bool suc = OpenMesh::IO::read_mesh(mesh,(inPath+file).c_str());
+	if(!suc){
+		cout << "import err!" << endl;
+		return 0;
+	}
+	cout << "import suc" << endl;
+	mesh.request_vertex_normals();
+	mesh.request_face_normals();
+	mesh.update_face_normals();
+	mesh.update_vertex_normals();
+	SkeletonExtractor::extract(mesh);
+//	SkeletonExtractor::dumpSkeleton(*mesh.getSkeleton(), inPath+"mesh006.cg");
+	return 0;
 }
