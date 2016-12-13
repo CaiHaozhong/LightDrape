@@ -1,4 +1,5 @@
-#pragma once
+#ifndef SKELETON_EXTRACTOR
+#define SKELETON_EXTRACTOR
 #include "Mesh.h"
 #include "Skeleton.h"
 #include <CGAL/Simple_cartesian.h>
@@ -16,12 +17,17 @@ typedef CGAL::Mean_curvature_flow_skeletonization<Triangle_mesh> Skeletonization
  */
 class SkeletonExtractor{
 public:
-
-	static void extract(Mesh& mesh);
-	static void dumpSkeleton(Skeleton& skeleton, std::string file);
+	SkeletonExtractor();
+	~SkeletonExtractor();
+	void extract(Mesh& mesh);
+	void dumpSkeleton(Skeleton& skeleton, std::string file);
+	void dumpMesoSkeleton(std::string file);
 
 private:
 	
-	static Skeleton* makeSkeleton(Skeletonization::Skeleton& cgalSkeleton);
+	Skeleton* makeSkeleton(Skeletonization::Skeleton& cgalSkeleton);
+
+	Skeletonization* mcs;
 };
 
+#endif

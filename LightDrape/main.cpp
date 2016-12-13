@@ -11,6 +11,7 @@
 #include <sstream>
 #include <tuple>
 #include "SkeletonExtractor.h"
+#include <io.h>
 using namespace std;
 typedef std::pair<std::string,std::string> PPair;
 struct PLYHeader {
@@ -452,6 +453,43 @@ void transformMesh(Mesh& mesh){
 		v.values_[2] = tmp.values_[2];
 	}
 }
+void getFiles( string path, string exd, vector<string>& files )
+{
+	//文件句柄
+	long   hFile   =   0;
+	//文件信息
+	struct _finddatai64_t fileinfo;
+	string pathName, exdName;
+
+	if (0 != strcmp(exd.c_str(), ""))
+	{
+		exdName = "\\*." + exd;
+	}
+	else
+	{
+		exdName = "\\*";
+	}
+
+	if((hFile = _findfirsti64(pathName.assign(path).append(exdName).c_str(),&fileinfo)) !=  -1)
+	{
+		do
+		{
+			//如果是文件夹中仍有文件夹,迭代之
+			//如果不是,加入列表
+			if((fileinfo.attrib &  _A_SUBDIR))
+			{
+				if(strcmp(fileinfo.name,".") != 0  &&  strcmp(fileinfo.name,"..") != 0)
+					getFiles( pathName.assign(path).append("\\").append(fileinfo.name), exd, files );
+			}
+			else
+			{
+				if(strcmp(fileinfo.name,".") != 0  &&  strcmp(fileinfo.name,"..") != 0)
+					files.push_back(fileinfo.name);
+			}
+		}while(_findnexti64(hFile, &fileinfo)  == 0);
+		_findclose(hFile);
+	}
+}
 int mainforPLY2OBJAndHoleFill(){
 	Mesh mesh;	
 	string inPath = string("E:\\CG\\DrapeRepository\\Resource\\SCAPE\\scapecomp\\");
@@ -486,21 +524,40 @@ int mainforPLY2OBJAndHoleFill(){
 	getchar();
 	return 0;
 }
-int main(){
+int main(){	
 	Mesh mesh;	
-	string inPath = string("E:\\CG\\DrapeRepository\\Resource\\SCAPE\\scapewatertightobj\\");
-	string file = "mesh006.obj";
-	bool suc = OpenMesh::IO::read_mesh(mesh,(inPath+file).c_str());
-	if(!suc){
-		cout << "import err!" << endl;
-		return 0;
+	string inPath = string("E:\\Project\\LightDrape\\data\\upclothwithsleeves\\");
+	string skeOutPath = string("E:\\Project\\LightDrape\\data\\upclothwithsleeves_skeleton\\");
+	string objOutPath = string("E:\\Project\\LightDrape\\data\\upclothwithsleeves_watertight\\");
+	vector<string> files;
+	getFiles(inPath,"",files);
+	for (int i = 0; i < files.size(); i++){										
+		bool suc = OpenMesh::IO::read_mesh(mesh, (inPath+files[i]).c_str());
+		if(!suc){
+			cout << "import err!" << endl;
+			getchar();
+			return 0;
+		}
+		cout << string(files[i]) + " import suc" << endl;
+		mesh.request_vertex_normals();
+		mesh.request_face_normals();
+		mesh.update_face_normals();
+		mesh.update_vertex_normals();
+		HoleInfo holeInfo(&mesh);
+		holeInfo.getHoles();
+		vector<HoleInfo::Hole>* holes = holeInfo.holes();
+		cout << "holes cout: " << holes->size() << "\n";
+		holeInfo.fillAllHoles();
+		suc = OpenMesh::IO::write_mesh(mesh, (objOutPath+files[i]).c_str());
+		if(!suc){
+			cout << "watertight save fail!" << "\n";
+		}
+		else
+			cout << "watertight save suc!" << "\n";
+ 		SkeletonExtractor skeletonExtractor;
+ 		skeletonExtractor.extract(mesh);
+ 		skeletonExtractor.dumpMesoSkeleton(skeOutPath+files[i].substr(0,files[i].size()-4)+".cg");
 	}
-	cout << "import suc" << endl;
-	mesh.request_vertex_normals();
-	mesh.request_face_normals();
-	mesh.update_face_normals();
-	mesh.update_vertex_normals();
-	SkeletonExtractor::extract(mesh);
-//	SkeletonExtractor::dumpSkeleton(*mesh.getSkeleton(), inPath+"mesh006.cg");
+	getchar();
 	return 0;
 }

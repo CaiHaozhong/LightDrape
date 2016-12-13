@@ -1,4 +1,6 @@
-#pragma once
+#ifndef __SKELETON__
+#define __SKELETON__
+
 #include <climits>
 #include <OpenMesh/Core/Geometry/VectorT.hh>
 #include <vector>
@@ -122,3 +124,4 @@ public:
 	}
 
 };
+#endif // !__SKELETON__

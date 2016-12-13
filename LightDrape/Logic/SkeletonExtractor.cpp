@@ -19,17 +19,9 @@ void SkeletonExtractor::extract(Mesh& mesh){
 		triangle_mesh.add_face(face);
 	});
 
-	Skeletonization mcs(triangle_mesh);
-	//mcs.contract_until_convergence();
- 	Skeletonization::Meso_skeleton meso_skeleton = mcs.meso_skeleton();
-	std::string inPath = std::string("E:\\CG\\DrapeRepository\\Resource\\SCAPE\\scapewatertightobj\\");
-	std::string file = "mesh006.cg";
-	std::ofstream out = std::ofstream(inPath + file);
-	//Skeletonization::Meso_skeleton::Vertex_iterator fit = meso_skeleton.vertices_begin();
-	for(auto pit = meso_skeleton.points_begin(); pit != meso_skeleton.points_end(); pit++){
-		Skeletonization::Meso_skeleton::Point_3 p = *pit;
-		out << "v " << p << "\n";
-	}
+	mcs = new Skeletonization(triangle_mesh);
+	mcs->set_area_variation_factor(0.07);
+	mcs->contract_until_convergence();
 // 	// 1. Contract the mesh by mean curvature flow.
 // 	mcs.contract_geometry();
 // 
@@ -49,7 +41,7 @@ void SkeletonExtractor::extract(Mesh& mesh){
 	// Convert the contracted mesh into a curve skeleton and
 	// get the correspondent surface points
 	Skeletonization::Skeleton cgalSkeleton;
-	mcs.convert_to_skeleton(cgalSkeleton);
+	mcs->convert_to_skeleton(cgalSkeleton);
 
 	Skeleton* skeleton  = makeSkeleton(cgalSkeleton);	
 	mesh.setSkeleton(skeleton);
@@ -92,4 +84,27 @@ void SkeletonExtractor::dumpSkeleton(Skeleton& skeleton,  std::string file)
 		out << "e " << e->sourceVertex+1 << " " << e->targetVertex+1 << "\n";
 	}
 	out.close();
+}
+
+void SkeletonExtractor::dumpMesoSkeleton( std::string file )
+{
+	Skeletonization::Meso_skeleton& meso_skeleton = mcs->meso_skeleton();
+	std::ofstream out = std::ofstream(file);
+	out << "# D:3 NV:" << meso_skeleton.size_of_vertices() << " NE:" << 0 << "\n";
+	for(auto pit = meso_skeleton.points_begin(); pit != meso_skeleton.points_end(); pit++){
+		Skeletonization::Meso_skeleton::Point_3 p = *pit;
+		out << "v " << p << "\n";
+	}
+	out.close();
+}
+
+SkeletonExtractor::SkeletonExtractor()
+{
+	mcs = nullptr;
+}
+
+SkeletonExtractor::~SkeletonExtractor()
+{
+	if(mcs != nullptr)
+		delete mcs;
 }
