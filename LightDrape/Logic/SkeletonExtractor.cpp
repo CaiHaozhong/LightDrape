@@ -1,3 +1,4 @@
+#include "MyPrecompileHeader.h"
 #include "SkeletonExtractor.h"
 #include <fstream>
 void SkeletonExtractor::extract(Mesh& mesh){
