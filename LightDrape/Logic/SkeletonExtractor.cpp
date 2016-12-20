@@ -1,16 +1,15 @@
-#include "MyPrecompileHeader.h"
 #include "SkeletonExtractor.h"
 #include <fstream>
 void SkeletonExtractor::extract(Mesh& mesh){
-	Triangle_mesh triangle_mesh;
+	CGAL_Surface_mesh triangle_mesh;
 	
 	std::for_each(mesh.vertices_begin(), mesh.vertices_end(), [&](const Mesh::VertexHandle vIndex){
 		Mesh::Point meshPoint = mesh.point(vIndex);
-		Kernel::Point_3 p(meshPoint.values_[0], meshPoint.values_[1], meshPoint.values_[2]);
+		Simple_cartesian_Kernel::Point_3 p(meshPoint.values_[0], meshPoint.values_[1], meshPoint.values_[2]);
 		triangle_mesh.add_vertex(p);
 	});
 
-	typedef Triangle_mesh::size_type size_type;
+	typedef CGAL_Surface_mesh::size_type size_type;
 	std::for_each(mesh.faces_begin(), mesh.faces_end(), [&](const Mesh::FaceHandle fIndex){
 		std::vector<size_type> face;
 		for(Mesh::ConstFaceVertexIter faceVertexIter = mesh.cfv_begin(fIndex); faceVertexIter.is_valid(); faceVertexIter++){

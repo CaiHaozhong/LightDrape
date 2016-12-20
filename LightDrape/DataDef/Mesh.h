@@ -43,6 +43,8 @@ public:
 	Skeleton* getSkeleton() const { return mSkeleton; }
 
 	void setSkeleton(Skeleton* val) { mSkeleton = val; }
+
+	double getGeodesicDisFromSource(Mesh::VertexHandle vertex);
 private:
 	bool mHasRequestAABB;
 
@@ -52,4 +54,5 @@ private:
 
 	Skeleton* mSkeleton;
 
+	std::vector<double> mGeodesicDisFromSourceProperty;
 };

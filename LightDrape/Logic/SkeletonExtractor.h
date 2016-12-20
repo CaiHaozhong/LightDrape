@@ -2,16 +2,13 @@
 #define SKELETON_EXTRACTOR
 #include "Mesh.h"
 #include "Skeleton.h"
+#include "MyPrecompileHeader.h"
 // #include <CGAL/Simple_cartesian.h>
 // #include <CGAL/Surface_mesh.h>
 // #include <CGAL/boost/graph/graph_traits_Surface_mesh.h>
 // #include <CGAL/boost/graph/properties_Surface_mesh.h>
 // #include <CGAL/Mean_curvature_flow_skeletonization.h>
 #include <string>
-
-typedef CGAL::Simple_cartesian<double>                        Kernel;
-typedef CGAL::Surface_mesh<Kernel::Point_3>                   Triangle_mesh;
-typedef CGAL::Mean_curvature_flow_skeletonization<Triangle_mesh> Skeletonization;
 /*
  * 提取骨骼，将骨骼存储在Mesh类的对象中
  */

@@ -10,3 +10,6 @@
 #include <CGAL/Simple_cartesian.h>
 #include <CGAL/extract_mean_curvature_flow_skeleton.h>
 #include <CGAL/mesh_segmentation.h>
+typedef CGAL::Simple_cartesian<double>                        Simple_cartesian_Kernel;
+typedef CGAL::Surface_mesh<Simple_cartesian_Kernel::Point_3>                   CGAL_Surface_mesh;
+typedef CGAL::Mean_curvature_flow_skeletonization<CGAL_Surface_mesh> Skeletonization;
