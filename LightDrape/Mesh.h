@@ -4,24 +4,30 @@
 #include <vector>
 #include "Vec3d.h"
 #include "Common.h"
+#include <OpenMesh/Core/Mesh/Traits.hh>
+struct MyTrait : public OpenMesh::DefaultTraits{
+  /// The default coordinate type is OpenMesh::Vec3f.
+  typedef Vec3d  Point;
 
-typedef OpenMesh::TriMesh_ArrayKernelT<> _Mesh;
+  /// The default normal type is OpenMesh::Vec3f.
+  typedef Vec3d  Normal;
 
-/*
- * 具有包围盒的三角网格
- * 每个顶点可以动态增添属性
- */
+};
+typedef OpenMesh::TriMesh_ArrayKernelT<MyTrait> _Mesh;
+
 
 class PropertyManager{
 	struct CustomProperties{
 		std::vector<Vec3d> vecP;
 		std::vector<bool> boolP;
 		std::vector<double> doubleP;
+		std::vector<int> intP; 
 	};
 	std::vector<CustomProperties> mPropertyList;
 	std::vector<size_t> mAvailableVecIndex;
 	std::vector<size_t> mAvailableBoolIndex;
 	std::vector<size_t> mAvailableDoubleIndex;
+	std::vector<size_t> mAvailableIntIndex;
 	size_t mVertexCount;
 public:
 	PropertyManager(){
@@ -96,8 +102,47 @@ public:
 	void setVec(size_t vertex, size_t internalIndex, const Vec3d& vec){
 		mPropertyList[vertex].vecP[internalIndex] = vec;
 	}
+
+	double getDouble(size_t vertex, size_t internalIndex){
+		return mPropertyList[vertex].doubleP[internalIndex];
+	}
+
+	void setDouble(size_t vertex, size_t internalIndex, const double d){
+		mPropertyList[vertex].doubleP[internalIndex] = d;
+	}
+
+	size_t requestIntIndex(){
+		if(mVertexCount == 0){
+			return -1;
+		}
+		if(mAvailableIntIndex.empty()){
+			for(size_t i = 0; i < mVertexCount; i++){
+				mPropertyList[i].intP.push_back(double());
+			}
+			return mPropertyList[0].intP.size()-1;
+		}
+		else{
+			size_t ret = mAvailableIntIndex.back();
+			mAvailableIntIndex.pop_back();
+			return ret;
+		}
+	}
+
+	void releaseIntIndex(size_t i){
+		mAvailableIntIndex.push_back(i);
+	}
+
+	double getInt(size_t vertex, size_t internalIndex){
+		return mPropertyList[vertex].intP[internalIndex];
+	}
+
+	void setInt(size_t vertex, size_t internalIndex, const double d){
+		mPropertyList[vertex].intP[internalIndex] = d;
+	}
 };
 S_PTR(PropertyManager);
+
+/* 通过为Mesh的顶点新增属性 */
 class Registerable{
 protected:
 	size_t mInternalIndex;
@@ -105,15 +150,21 @@ protected:
 
 public:
 	/* 不要手动调用这个函数 */
-	void registerSelf(PropertyManager_ pm, size_t internalIndex){
+	void registerSelf(PropertyManager_ pm){
 		mPropertyManager = pm;
-		mInternalIndex = internalIndex;
+		requestInternalIndex();
 	}
-	virtual ~Registerable(){
-		mPropertyManager->releaseVecIndex(mInternalIndex);
-	}
+	virtual void requestInternalIndex() = 0;
+	virtual ~Registerable(){}
 };
+S_PTR(Registerable);
+
+/* 三维向量的属性 */
 class Vec3dProperty : public Registerable{
+protected:
+	void requestInternalIndex(){
+		mInternalIndex = mPropertyManager->requestVecIndex();
+	}
 public:
 	Vec3d get(size_t index) const {
 		return mPropertyManager->getVec(index, mInternalIndex);
@@ -122,14 +173,54 @@ public:
 	void set(size_t index, const Vec3d& vec){
 		mPropertyManager->setVec(index, mInternalIndex, vec);
 	}
+	~Vec3dProperty(){
+		mPropertyManager->releaseVecIndex(mInternalIndex);
+	}
 };
-class Mesh : public _Mesh, public std::enable_shared_from_this<Mesh> {
-public:
-    S_PTR(Mesh);
-private:
+S_PTR(Vec3dProperty);
 
+/* 浮点数的属性 */
+class DoubleProperty : public Registerable{
+protected:
+	void requestInternalIndex(){
+		mInternalIndex = mPropertyManager->requestDoubleIndex();
+	}
 public:
+	double get(size_t index) const{
+		return mPropertyManager->getDouble(index, mInternalIndex);
+	}
+	void set(size_t index, const double& d){
+		mPropertyManager->setDouble(index, mInternalIndex, d);
+	}
+	~DoubleProperty(){
+		mPropertyManager->releaseDoubleIndex(mInternalIndex);
+	}
+};
+S_PTR(DoubleProperty);
 
+/* 整数的属性 */
+class IntProperty : public Registerable{
+protected:
+	void requestInternalIndex(){
+		mInternalIndex = mPropertyManager->requestIntIndex();
+	}
+public:
+	int get(size_t index) const{
+		return mPropertyManager->getInt(index, mInternalIndex);
+	}
+	void set(size_t index, const int& i){
+		mPropertyManager->setInt(index, mInternalIndex, i);
+	}
+	~IntProperty(){
+		mPropertyManager->releaseIntIndex(mInternalIndex);
+	}
+};
+S_PTR(IntProperty);
+/*
+ * 具有包围盒的三角网格
+ * 每个顶点可以动态增添属性
+ */
+class Mesh : public _Mesh {
 public:
 // 	/* Mesh Type */
 // 	static const int TYPE_HUMAN = 0;
@@ -164,11 +255,16 @@ public:
 	/* z 轴 */
 	float getLength();
 	
-	/* 新增一个属性 */
-	void registerVec3dProperty(Vec3dProperty& vp){
-		vp.registerSelf(mPropertyManager, mPropertyManager->requestVecIndex());
+	/* 在Mesh中新增一个属性，为该属性分配空间，且将下标指向正确的位置 */
+	void registerProperty(Registerable_ vp){
+		vp->registerSelf(mPropertyManager);
 	}
 
+	/* 读取了mesh之后，再调用这个函数，用顶点数初始化PropertyManager */
+	void initProperty(){
+		mPropertyManager = smartNew(PropertyManager);
+		mPropertyManager->init(n_vertices());
+	}
 private:
 	bool mHasRequestAABB;
 

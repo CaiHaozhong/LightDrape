@@ -12,14 +12,21 @@ private:
 	Segment_ mSegment;
 	Mesh_ mOriginalMesh;
 	VertexAlter_ mVertexAlter;
+	
+	/* 每一个网格顶点有一个存储该顶点对应的骨骼节点下标的属性 */
+	IntProperty_ mVertexPropertySKN;
+
 public:
 	WatertightMesh(Mesh_ mesh):Mesh(*mesh){		
 		mOriginalMesh = mesh;
 		HoleInfo holeInfo(this);
 		holeInfo.getHoles();
+		PRINT("holes Count: ");
+		PRINTLN(holeInfo.holes()->size());
 		holeInfo.fillAllHoles();
 		mVertexAlter = smartNew(VertexAlter);
 		mVertexAlter->resize(this->n_vertices());
+		initProperty();
 	}
 	~WatertightMesh(void);
 
@@ -50,5 +57,9 @@ public:
 	}
 
 	void alterOriginalMesh();
+
+	IntProperty_ getVertexPropertySKN() const { return mVertexPropertySKN; }
+	void setVertexPropertySKN(IntProperty_ val) { mVertexPropertySKN = val; }
 };
+S_PTR(WatertightMesh);
 

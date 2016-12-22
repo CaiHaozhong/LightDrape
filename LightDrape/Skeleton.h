@@ -63,9 +63,9 @@ public:
 		return mEdgeList.size()-1;
 	}
 
-	Skeleton::NodeList getNodeList() const { return mNodeList; }
+	const Skeleton::NodeList& getNodeList() { return mNodeList; }
 	void setNodeList(Skeleton::NodeList val) { mNodeList = val; }
-	EdgeList getEdgeList() const { return mEdgeList; }
+	const EdgeList& getEdgeList() { return mEdgeList; }
 	void setEdgeList(EdgeList val) { mEdgeList = val; }
 
 	/* 返回对应下标的节点 */

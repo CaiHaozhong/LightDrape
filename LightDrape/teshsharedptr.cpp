@@ -6,7 +6,9 @@ public:
 	virtual char get(){
 		return 'A';
 	}
-
+	operator int () {
+		return 1;
+	}
 };
 class B : public A{
 public:
@@ -18,13 +20,8 @@ typedef std::shared_ptr<A> A_;
 typedef std::shared_ptr<B> B_;
 #define smartNew(Class) (std::make_shared<Class>())
 int main(){
-    std::vector<int> list;
-    list.push_back(1);
-    int n = 2;
-    int& m = n;
-    list[0] = m;
-    m = 3;
-    std::cout << list[0];
-	
+
+	int i = A();
+	std::cout << i;
 	getchar();
 }
