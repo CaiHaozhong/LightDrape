@@ -18,14 +18,13 @@ typedef std::shared_ptr<A> A_;
 typedef std::shared_ptr<B> B_;
 #define smartNew(Class) (std::make_shared<Class>())
 int main(){
-	std::vector<A_> list;	
-	list.push_back(smartNew(A));
-	list.push_back(smartNew(B));
-	A_ a = smartNew(B);
-	A_ b = a;
-	std::cout << a->get() << ' ' << b->get();
-	for (int i = 0; i < list.size(); i++){
-		std::cout << list.at(i)->get() << std::endl;
-	}
+    std::vector<int> list;
+    list.push_back(1);
+    int n = 2;
+    int& m = n;
+    list[0] = m;
+    m = 3;
+    std::cout << list[0];
+	
 	getchar();
 }

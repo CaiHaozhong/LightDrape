@@ -6,6 +6,8 @@ Mesh::Mesh() :_Mesh(){
 	float minFloat = std::numeric_limits<float>::min();
 	mMinPoint = OpenMesh::Vec3f(maxFloat,maxFloat,maxFloat);
 	mMaxPoint = OpenMesh::Vec3f(minFloat,minFloat,minFloat);
+	mPropertyManager = smartNew(PropertyManager);
+	mPropertyManager->init(n_vertices());	
 }
 
 Mesh::~Mesh() {

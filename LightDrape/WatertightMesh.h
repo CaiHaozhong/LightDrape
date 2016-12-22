@@ -10,7 +10,6 @@ class WatertightMesh :
 private:
 	Skeleton_ mSkeleton;
 	Segment_ mSegment;
-
 	Mesh_ mOriginalMesh;
 	VertexAlter_ mVertexAlter;
 public:
