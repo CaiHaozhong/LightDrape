@@ -5,5 +5,9 @@ class Cloth :
 {
 public:
 	~Cloth(void);
+	size_t getGeodesicSource(){
+		/* TO DO */
+		return WatertightMesh::getGeodesicSource();
+	}
 };
 
