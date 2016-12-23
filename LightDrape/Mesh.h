@@ -4,12 +4,11 @@
 #include <vector>
 #include "Vec3d.h"
 #include "Common.h"
-#include <OpenMesh/Core/Mesh/Traits.hh>
 struct MyTrait : public OpenMesh::DefaultTraits{
-  /// The default coordinate type is OpenMesh::Vec3f.
+  /* 将原本的Vec3f改为Vec3d */
   typedef Vec3d  Point;
 
-  /// The default normal type is OpenMesh::Vec3f.
+  /* 将原本的Vec3f改为Vec3d */
   typedef Vec3d  Normal;
 
 };
