@@ -16,6 +16,9 @@ private:
 	/* 每一个网格顶点有一个存储该顶点对应的骨骼节点下标的属性 */
 	IntProperty_ mVertexPropertySKN;
 
+	/* 每个网格顶点有一个存储该顶点与测地源点测地距离的属性 */
+	DoubleProperty_ mVertexPropertyGeoDis;
+
 public:
 	WatertightMesh(Mesh_ mesh):Mesh(*mesh){		
 		mOriginalMesh = mesh;
@@ -60,6 +63,9 @@ public:
 
 	IntProperty_ getVertexPropertySKN() const { return mVertexPropertySKN; }
 	void setVertexPropertySKN(IntProperty_ val) { mVertexPropertySKN = val; }
+
+	DoubleProperty_ getVertexPropertyGeoDis() const { return mVertexPropertyGeoDis; }
+	void setVertexPropertyGeoDis(DoubleProperty_ val) { mVertexPropertyGeoDis = val; }
 };
 S_PTR(WatertightMesh);
 

@@ -1,27 +1,20 @@
-#include <memory>
 #include <iostream>
 #include <vector>
-class A{
-public:
-	virtual char get(){
-		return 'A';
-	}
-	operator int () {
-		return 1;
-	}
-};
-class B : public A{
-public:
-	char get(){
-		return 'B';
-	}
-};
-typedef std::shared_ptr<A> A_;
-typedef std::shared_ptr<B> B_;
-#define smartNew(Class) (std::make_shared<Class>())
-int main(){
+#include <OpenMesh/Core/IO/MeshIO.hh>
+#include "WatertightMesh.h"
+#include "MeshSkeletonization.h"
 
-	int i = A();
-	std::cout << i;
+int main(){
+	Mesh_ m = smartNew(Mesh);
+	char* file = "D:\\Develop\\project\\LightDrape\\C++\\data\\upclothwithsleeves\\cloth.obj";
+	bool ret = OpenMesh::IO::read_mesh(*m, file);
+	WatertightMesh_ wm = nullptr;
+	if(ret){
+		m->request_face_normals();
+		m->request_vertex_normals();
+		wm = std::make_shared<WatertightMesh>(m);
+		MeshSkeletonization msk;
+		msk.skeletonize(wm);
+	}
 	getchar();
 }
