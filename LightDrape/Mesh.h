@@ -116,7 +116,7 @@ public:
 		}
 		if(mAvailableIntIndex.empty()){
 			for(size_t i = 0; i < mVertexCount; i++){
-				mPropertyList[i].intP.push_back(double());
+				mPropertyList[i].intP.push_back(int());
 			}
 			return mPropertyList[0].intP.size()-1;
 		}
@@ -131,11 +131,11 @@ public:
 		mAvailableIntIndex.push_back(i);
 	}
 
-	double getInt(size_t vertex, size_t internalIndex){
+	int getInt(size_t vertex, size_t internalIndex){
 		return mPropertyList[vertex].intP[internalIndex];
 	}
 
-	void setInt(size_t vertex, size_t internalIndex, const double d){
+	void setInt(size_t vertex, size_t internalIndex, const int d){
 		mPropertyList[vertex].intP[internalIndex] = d;
 	}
 };
@@ -243,16 +243,16 @@ public:
 	Vec3d getMax();
 
 	/** 获取包围盒对角线的长度 **/
-	float getDigonalLen();
+	double getDigonalLen();
 
 	/* x 轴 */
-	float getWidth();
+	double getWidth();
 
 	/* y 轴 */
-	float getHeight();
+	double getHeight();
 
 	/* z 轴 */
-	float getLength();
+	double getLength();
 	
 	/* 在Mesh中新增一个属性，为该属性分配空间，且将下标指向正确的位置 */
 	void registerProperty(Registerable_ vp){

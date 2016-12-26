@@ -16,7 +16,7 @@ public:
 
 	}
 
-	void getCount(){
+	size_t getCount(){
 		return mEdges.size();
 	}
 };

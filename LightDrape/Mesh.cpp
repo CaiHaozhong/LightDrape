@@ -35,19 +35,19 @@ Vec3d Mesh::getMax(){
 	return mMaxPoint;
 }
 
-float Mesh::getDigonalLen(){
+double Mesh::getDigonalLen(){
 	return (mMaxPoint-mMinPoint).length();
 }
 
-float Mesh::getWidth(){
+double Mesh::getWidth(){
 	return mMaxPoint.values_[0] - mMinPoint.values_[0];
 }
 
-float Mesh::getHeight(){
+double Mesh::getHeight(){
 	return mMaxPoint.values_[1] - mMinPoint.values_[1];
 }
 
-float Mesh::getLength(){
+double Mesh::getLength(){
 	return mMaxPoint.values_[2] - mMinPoint.values_[2];
 }
 
