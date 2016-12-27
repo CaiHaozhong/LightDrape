@@ -6,9 +6,9 @@ class ClothSegment :
 {	
 public:
 	enum ClothPart{
-		CLOTH_TORSE = 0,
-		CLOTH_LEFT_SLEEVES,
-		CLOTH_RIGHT_SLEEVES,
+		CLOTH_TORSO = 0,
+		CLOTH_LEFT_SLEEVE,
+		CLOTH_RIGHT_SLEEVE,
 		CLOTH_PART_COUNT
 	};
 private:
@@ -20,9 +20,9 @@ public:
 			mBodyClothMap[i] = -1;
 		for(size_t i = 0; i < CLOTH_PART_COUNT; i++)
 			mRegions[i] = nullptr;
-		mBodyClothMap[BODY_LEFT_HAND] = CLOTH_LEFT_SLEEVES;
-		mBodyClothMap[BODY_RIGHT_HAND] = CLOTH_RIGHT_SLEEVES;
-		mBodyClothMap[BODY_TORSE] = CLOTH_TORSE;
+		mBodyClothMap[BODY_LEFT_HAND] = CLOTH_LEFT_SLEEVE;
+		mBodyClothMap[BODY_RIGHT_HAND] = CLOTH_RIGHT_SLEEVE;
+		mBodyClothMap[BODY_TORSE] = CLOTH_TORSO;
 	}
 	~ClothSegment(void);
 	Region_ getMatch(BodyPart bodyPart){

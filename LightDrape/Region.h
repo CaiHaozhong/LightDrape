@@ -9,5 +9,13 @@ private:
 public:
 	Region(void);
 	~Region(void);
+
+	void addVertex(size_t vertex){
+		mVertics.push_back(vertex);
+	}
+
+	void addSkeleton(size_t skenode){
+		mSkeNodes.push_back(skenode);
+	}
 };
 S_PTR(Region);

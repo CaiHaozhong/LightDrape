@@ -37,6 +37,7 @@ public:
 		refineSegment();
 		mMesh->setSegment(mSegment);
 	}
+	WatertightMesh_ getMesh() const { return mMesh; }
 private:
 	/* 根据网格边的长度决定Level Set的间隔 */
 	void decideGranularity(){

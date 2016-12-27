@@ -101,6 +101,21 @@ public:
 		mAdjacencyList.clear();
 	}
 
+	/* 判断两个节点是否相邻或同一个 */
+	bool isNodeNeighbor(size_t node1, size_t node2){
+		if(node1 == node2){
+			return true;
+		}
+		else{
+			IndexList& neighbors = mAdjacencyList[node1];
+			if(std::find(neighbors.begin(), neighbors.end(), node2)
+				!= neighbors.end()){
+					return true;
+			}
+		}
+		return false;
+	}
+
 };
 
 S_PTR(Skeleton);

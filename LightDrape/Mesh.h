@@ -14,7 +14,9 @@ struct MyTrait : public OpenMesh::DefaultTraits{
 };
 typedef OpenMesh::TriMesh_ArrayKernelT<MyTrait> _Mesh;
 
-
+/* 存储Mesh中顶点属性的类
+ * 存储的类型包括 Vec3d， bool， double， int
+ */
 class PropertyManager{
 	struct CustomProperties{
 		std::vector<Vec3d> vecP;
@@ -86,8 +88,20 @@ public:
 	}
 
 	size_t requestBoolIndex(){
-		/* TO DO */
-		return -1;
+		if(mVertexCount == 0){
+			return -1;
+		}
+		if(mAvailableBoolIndex.empty()){
+			for(size_t i = 0; i < mVertexCount; i++){
+				mPropertyList[i].boolP.push_back(bool());
+			}
+			return mPropertyList[0].boolP.size()-1;
+		}
+		else{
+			size_t ret = mAvailableBoolIndex.back();
+			mAvailableBoolIndex.pop_back();
+			return ret;
+		}
 	}
 
 	void releaseBoolIndex(size_t i) {
@@ -102,6 +116,13 @@ public:
 		mPropertyList[vertex].vecP[internalIndex] = vec;
 	}
 
+	bool getBoolean(size_t vertex, size_t internalIndex){
+		return mPropertyList[vertex].boolP[internalIndex];
+	}
+
+	void setBoolean(size_t vertex, size_t internalIndex, const bool& b){
+		mPropertyList[vertex].boolP[internalIndex] = b;
+	}
 	double getDouble(size_t vertex, size_t internalIndex){
 		return mPropertyList[vertex].doubleP[internalIndex];
 	}
@@ -153,6 +174,7 @@ public:
 		mPropertyManager = pm;
 		requestInternalIndex();
 	}
+	/* 不同的属性类型，请求不同的下标 */
 	virtual void requestInternalIndex() = 0;
 	virtual ~Registerable(){}
 };
@@ -178,6 +200,24 @@ public:
 };
 S_PTR(Vec3dProperty);
 
+/* 布尔类型的属性 */
+class BooleanProperty : public Registerable{
+protected:
+	void requestInternalIndex(){
+		mInternalIndex = mPropertyManager->requestBoolIndex();
+	}
+public:
+	bool get(size_t index) const{
+		return mPropertyManager->getBoolean(index, mInternalIndex);
+	}
+	void set(size_t index, const bool& b){
+		mPropertyManager->setBoolean(index, mInternalIndex, b);
+	}
+	~BooleanProperty(){
+		mPropertyManager->releaseBoolIndex(mInternalIndex);
+	}
+};
+S_PTR(BooleanProperty);
 /* 浮点数的属性 */
 class DoubleProperty : public Registerable{
 protected:

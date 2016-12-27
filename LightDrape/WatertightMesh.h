@@ -66,6 +66,11 @@ public:
 
 	DoubleProperty_ getVertexPropertyGeoDis() const { return mVertexPropertyGeoDis; }
 	void setVertexPropertyGeoDis(DoubleProperty_ val) { mVertexPropertyGeoDis = val; }
+
+	/* 获取网格顶点对应的骨骼节点 */
+	size_t getCorrSkeletonNode(size_t vertex){
+		return mVertexPropertySKN->get(vertex);
+	}
 };
 S_PTR(WatertightMesh);
 
