@@ -5,7 +5,7 @@ class Region
 {
 private:
 	std::vector<size_t> mVertics;
-	std::vector<size_t> mSkeNodes;
+	std::vector<size_t> mSkeNodes;		
 public:
 	Region(void);
 	~Region(void);
@@ -17,5 +17,8 @@ public:
 	void addSkeleton(size_t skenode){
 		mSkeNodes.push_back(skenode);
 	}
+
+	std::vector<size_t>& getVertices() {return mVertics;};
+	std::vector<size_t>& getSkeNodes() { return mSkeNodes; }
 };
 S_PTR(Region);

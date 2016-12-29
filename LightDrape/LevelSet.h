@@ -1,4 +1,5 @@
 #pragma once
+#include <fstream>
 #include <vector>
 #include "WatertightMesh.h"
 /* edge 是该Node所在的边的下标
@@ -100,38 +101,80 @@ public:
 		}
 		return mCenterX;
 	}
-private:
-	/* 判断两条边是否相邻 */
-	bool isNeighbor(Mesh::EdgeHandle a, Mesh::EdgeHandle b, Mesh_ mesh){		
-		Mesh::HalfedgeHandle halfEdge = mesh->halfedge_handle(a, 0);
-		Mesh::VertexHandle fromV_a = mesh->from_vertex_handle(halfEdge);
-		Mesh::VertexHandle toV_a = mesh->to_vertex_handle(halfEdge);
-		for(Mesh::VertexEdgeIter ve_it = mesh->ve_begin(fromV_a); ve_it.is_valid(); ve_it++){
-			if(b == *ve_it){
-				return true;
-			}
-		}
-		for(Mesh::VertexEdgeIter ve_it = mesh->ve_begin(toV_a); ve_it.is_valid; ve_it++){
-			if(b == *ve_it){
-				return true;
-			}
-		}
-		return false;
-	}
 };
 S_PTR(LevelCircle);
 class LevelSet{
 private:
+	class CircleLinkedList{
+	private:
+		struct Node{
+			LevelNode_ mNode;
+			Node* next;
+			Node(){
+				next = nullptr;
+			}
+		};
+		Node* mHead;
+		size_t mCount;
+		Node* mCur;
+	public:
+		CircleLinkedList(){
+			mHead = nullptr;
+			mCur = nullptr;
+			mCount = 0;
+		}
+		void reset(){
+			mCur = mHead;
+		}
+		LevelNode_ next(){
+			if(isEmpty()){
+				return nullptr;
+			}
+			if(mCur == nullptr){
+				mCur = mHead;				
+			}
+			LevelNode_ ret = mCur->mNode;					
+			mCur = mCur->next;
+			return ret;			
+		}
+		bool isEmpty(){
+			return mHead == nullptr;
+		}
+		void removeCurrent(){
+			if(mCur == mHead){
+				mHead = mHead->next;
+			}
+			Node* nextNode = mCur->next;
+			delete mCur;			
+			mCur = nextNode;
+			mCount -= 1;
+		}
+		void add(LevelNode_ node){
+			Node* n = new Node;
+			n->mNode = node;
+			n->next = mHead;
+			mHead = n;
+			mCount += 1;
+		}
+	};
+	
 	WatertightMesh_ mMesh;
 	std::vector<LevelCircle_> mCircles;
-	std::vector<LevelNode_> mRawNodes;
+	CircleLinkedList mRawNodes;
+	size_t mNodeCount;
 public:
-	LevelSet(){}
+	LevelSet(){
+		mNodeCount = 0;		
+	}
 	~LevelSet(){}
-	void init(WatertightMesh_ mesh, std::vector<LevelNode_>& nodes){
-		mMesh = mesh;
-		mRawNodes.resize(nodes.size());
-		std::copy(nodes.begin(), nodes.end(), mRawNodes.begin());
+
+	/* 链表的形式存储节点 */
+	void addNode(LevelNode_ node){
+		mRawNodes.add(node);
+	}
+
+	void init(WatertightMesh_ mesh){
+		mMesh = mesh;		
 		classify();		
 	}
 
@@ -148,27 +191,55 @@ public:
 		}
 	}
 
+	void dump(int i){
+#ifdef _DEBUG_
+		std::string path = "../data/levelset/";
+		char back[8];
+		sprintf(back, "%d.cg", i);
+		std::ofstream out = std::ofstream(path + mMesh->getName() + back);
+		int edgeCount = 0;
+		for(size_t i = 0; i < mCircles.size(); i++){
+			edgeCount += mCircles[i]->levelNodes.size();
+		}
+		out << "# D:3 NV:" << mMesh->n_vertices() << " NE:" << edgeCount << "\n";
+		for(Mesh::VertexIter vi = mMesh->vertices_begin(); vi != mMesh->vertices_end();
+			vi++){
+				Vec3d p = mMesh->point(*vi);
+				out << "v " << p.values_[0] << " " << p.values_[1] << " " << p.values_[2] << "\n";
+		}
+		for(size_t i = 0; i < mCircles.size(); i++){
+			LevelCircle_ lc = mCircles[i];
+			for(size_t j = 0; j < lc->levelNodes.size(); j++){
+				LevelNode_ ln = lc->levelNodes[j];
+				auto vpair = mMesh->getEndVertices(Mesh::EdgeHandle(ln->edge));
+				out << "e " << vpair.first+1 << " " << vpair.second+1 << "\n";
+			}
+		}
+		out.close();
+#endif
+	}
 private:
 	/* 对该LevelSet上的点进行分类
 	 * 比如分成左手、躯干、右手三个环
 	 */
 	void classify(){
-		while(mRawNodes.empty() == false){			
-			LevelNode_ ln = mRawNodes.back();			
-			bool belongToOneCircle = false;
-			for(size_t i = 0; i < mCircles.size(); i++){
-				LevelCircle_ lc = mCircles[i];
-				if(lc->isInThisCircle(ln, mMesh)){
-					lc->addNode(ln);
-					belongToOneCircle = true;					
-				}
+		while(mRawNodes != nullptr){
+			LevelCircle_ levelCircle = smartNew(LevelCircle);
+			for(size_t i = 0; i < mRawNodes.size(); i++){
+				
 			}
-			if(!belongToOneCircle){
-				LevelCircle_ newCircle = smartNew(LevelCircle);
-				newCircle->addNode(ln);
-				mCircles.push_back(newCircle);
-			}
+			LevelNode_ ln = mRawNodes.back();						
 			mRawNodes.pop_back();
 		}
 	}
+	/* 判断两条边是否相邻 */
+	bool isNeighbor(Mesh::EdgeHandle a, Mesh::EdgeHandle b, Mesh_ mesh){	
+		std::pair<size_t, size_t> avs = mesh->getEndVertices(a);
+		std::pair<size_t, size_t> bvs = mesh->getEndVertices(b);
+		if(avs.first == bvs.first || avs.first == bvs.second
+			|| avs.second == bvs.first || avs.second == bvs.second)
+			return true;
+		return false;
+	}
 };
+S_PTR(LevelSet);

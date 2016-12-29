@@ -10,7 +10,7 @@ class MeshSkeletonization
 public:
 	MeshSkeletonization(void);
 	~MeshSkeletonization(void);
-	void skeletonize(WatertightMesh_ mesh){
+	virtual void skeletonize(WatertightMesh_ mesh){
 		CGAL_Surface_mesh triangle_mesh;
 
 		std::for_each(mesh->vertices_begin(), mesh->vertices_end(), [&](const Mesh::VertexHandle vIndex){
@@ -25,7 +25,7 @@ public:
 			for(Mesh::ConstFaceVertexIter faceVertexIter = mesh->cfv_begin(fIndex); faceVertexIter.is_valid(); faceVertexIter++){
 				face.push_back(faceVertexIter->idx());
 			}
-			assert(face.size() == 3, "not triangle face");
+			assert(face.size() == 3);
 			triangle_mesh.add_face(face);
 		});
 
@@ -38,7 +38,7 @@ public:
 		Skeleton_ skeleton  = makeSkeleton(cgalSkeleton);	
 		mesh->setSkeleton(skeleton);
 
-		/** Set vertex property on skeleton node **/
+		/** Set vertex property of skeleton node **/
 		IntProperty_ vertexPropertySKN = smartNew(IntProperty);
 		mesh->registerProperty(vertexPropertySKN);
 		const Skeleton::NodeList& nodeList = skeleton->getNodeList();
@@ -78,4 +78,4 @@ private:
 		return ret;
 	}
 };
-
+S_PTR(MeshSkeletonization);

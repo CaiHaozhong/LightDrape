@@ -35,6 +35,7 @@ public:
 	void addRegion(TrousersPart part, Region_ region){
 		if(part < TROUSERS_PART_COUNT && part >= 0)
 			mRegions[part] = region;
+		addRegionRaw(part, region);
 	}
 private:
 	size_t mBodyTrousersMap[BODY_PART_COUNT];

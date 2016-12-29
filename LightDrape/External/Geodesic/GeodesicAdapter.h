@@ -24,7 +24,7 @@ public:
 	GeodesicAdapter(Mesh& _meshOfOpenMesh){
 		std::vector<double> pointList;
 		std::vector<unsigned> faceList;
-		int source;
+/*		int source;*/
 		double maxYValue = -1000000, minYValue = 1000000;				
 		for (OpenMesh::PolyConnectivity::VertexIter v_it = _meshOfOpenMesh.vertices_begin(); v_it != _meshOfOpenMesh.vertices_end(); ++v_it)
 		{

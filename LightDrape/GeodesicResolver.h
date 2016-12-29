@@ -7,7 +7,7 @@ public:
 	GeodesicResolver(void);
 	~GeodesicResolver(void);
 
-	DoubleProperty_ resolveGeo(WatertightMesh_ mesh){
+	virtual DoubleProperty_ resolveGeo(WatertightMesh_ mesh){
 		DoubleProperty_ ret = smartNew(DoubleProperty);
 		mesh->registerProperty(ret);
 		GeodesicAdapter geodesicAdapter(*mesh);
@@ -21,4 +21,4 @@ public:
 		return ret;
 	}
 };
-
+S_PTR(GeodesicResolver);

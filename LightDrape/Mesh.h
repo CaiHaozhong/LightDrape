@@ -304,12 +304,34 @@ public:
 		mPropertyManager = smartNew(PropertyManager);
 		mPropertyManager->init(n_vertices());
 	}
+
+	/* 返回一条边两端的顶点的下标 */
+	std::pair<size_t, size_t> getEndVertices(Mesh::EdgeHandle e){
+		Mesh::HalfedgeHandle halfEdge = this->halfedge_handle(e, 0);
+		Mesh::VertexHandle fromV = this->from_vertex_handle(halfEdge);
+		Mesh::VertexHandle toV = this->to_vertex_handle(halfEdge);
+		return std::make_pair(fromV.idx(), toV.idx());
+	}
+
+	/* 返回一条边的长度 */
+	double getEdgeLength(Mesh::EdgeHandle e){
+		std::pair<size_t, size_t> vs = getEndVertices(e);
+		Vec3d a = this->point(VertexHandle(vs.first));
+		Vec3d b = this->point(VertexHandle(vs.second));
+		return (a-b).length();
+	}
+
+	std::string getName() const { return mName; }
+
+	void setName(std::string val) { mName = val; }
 private:
 	bool mHasRequestAABB;
 
 	Vec3d mMinPoint, mMaxPoint;
 
 	PropertyManager_ mPropertyManager;
+
+	std::string mName;
 
 };
 S_PTR(Mesh);

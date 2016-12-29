@@ -7,31 +7,22 @@ class ClothSegmenter :
 	public MeshSegmenter
 {
 public:
-	ClothSegmenter(void){
-		mClothSegment = smartNew(ClothSegment);
-		mTorso = smartNew(Region);
-		mLeftSleeve = smartNew(Region);
-		mRightSleeve = smartNew(Region);
-		mClothSegment->addRegion(ClothSegment::CLOTH_TORSO, mTorso);
-		mClothSegment->addRegion(ClothSegment::CLOTH_LEFT_SLEEVE, mLeftSleeve);
-		mClothSegment->addRegion(ClothSegment::CLOTH_RIGHT_SLEEVE, mRightSleeve);
-		Mesh_ mesh = MeshSegmenter::getMesh();
-		hasAdded = smartNew(BooleanProperty);
-		mesh->registerProperty(hasAdded);
-		for(size_t i = 0; i < mesh->n_vertices(); i++){
-			hasAdded->set(i, false);
-		}
-		hasSkeletonNodeAdded.resize(MeshSegmenter::getMesh()->getSkeleton()->nodeCount(), false);
-		mTorsoSkeNode = mLeftSleeveSkeNode = mRightSleeveSkeNode = -1;
+	ClothSegmenter(WatertightMesh_ mesh) : MeshSegmenter(mesh){
+		/* C++构造函数中调用虚函数时是不会调用子类函数的，所以分开调用init.(Java是可以的） */
+		initClothSegmenter(mesh);
 	}
+	ClothSegmenter(void){}
+
+	void init(WatertightMesh_ mesh){		
+		MeshSegmenter::init(mesh);
+		initClothSegmenter(mesh);
+	}
+	
 	~ClothSegmenter(void);
 private:
-	ClothSegment_ mClothSegment;
 	Region_ mTorso;
 	Region_ mLeftSleeve;
 	Region_ mRightSleeve;
-	BooleanProperty_ hasAdded;//TODO：测试一下是否回收了
-	std::vector<bool> hasSkeletonNodeAdded;//判断骨骼节点是否已经加入Region了
 	size_t mTorsoSkeNode, mLeftSleeveSkeNode, mRightSleeveSkeNode;
 protected:
 	/* Override */
@@ -93,58 +84,20 @@ protected:
 
 	/* Override */
 	Segment_ createSegment(){
+		ClothSegment_ mClothSegment = smartNew(ClothSegment);
+		mTorso = smartNew(Region);
+		mLeftSleeve = smartNew(Region);
+		mRightSleeve = smartNew(Region);
+		mClothSegment->addRegion(ClothSegment::CLOTH_TORSO, mTorso);
+		mClothSegment->addRegion(ClothSegment::CLOTH_LEFT_SLEEVE, mLeftSleeve);
+		mClothSegment->addRegion(ClothSegment::CLOTH_RIGHT_SLEEVE, mRightSleeve);
 		return mClothSegment;
 	}
 
 private:
-	/* 将一个LevelCircle加到一个Region中 */
-	void addToRegion(Region_ region, LevelCircle_ levelCircle){
-		std::vector<LevelNode_> levelNodes = levelCircle->levelNodes;
-		WatertightMesh_ mesh = MeshSegmenter::getMesh();
-		for(size_t i = 0; i < levelNodes.size(); i++){
-			LevelNode_ n = levelNodes[i];
-			size_t v = n->getNearestVertex(mesh);
-			if(!hasAdded->get(v)){
-				mTorso->addVertex(v);
-				hasAdded->set(v, true);
-			}
-			size_t skenode = mesh->getCorrSkeletonNode(v);
-			if(!hasSkeletonNodeAdded[skenode]){
-				mTorso->addSkeleton(skenode);
-				hasSkeletonNodeAdded[skenode] = true;
-			}
-		}
-	}
-	/* 获取一个LevelCircle对应的骨骼节点
-	 * 返回：对应这个LevelCircle中最多个节点的骨骼节点 
-	 */
-	size_t getCircleSkeletonNode(LevelCircle_ levelCircle){
-		WatertightMesh_ mesh = MeshSegmenter::getMesh();
-		std::map<size_t, size_t> nodeCountMap;
-		for(size_t i = 0; i < levelCircle->levelNodes.size(); i++){
-			LevelNode_ n = levelCircle->levelNodes[i];
-			size_t v = n->getNearestVertex(mesh);
-			size_t skeNode = mesh->getCorrSkeletonNode(v);
-			if(nodeCountMap.find(skeNode) == nodeCountMap.end()){
-				nodeCountMap[skeNode] = 1;
-			}
-			else{
-				nodeCountMap[skeNode] += 1;
-			}
-		}
-		int maxCount = -1;
-		size_t ret = -1;
-		for(std::map<size_t, size_t>::iterator it = nodeCountMap.begin();
-			it != nodeCountMap.end(); it++){
-				if(it->second > maxCount){
-					maxCount = it->second;
-					ret = it->first;
-				}
-		}
-		if(ret == -1){
-			PRINTLN("ERROR! In getCircleSkeletonNode. ret == -1");
-		}
-		return -1;
-	}
+	void initClothSegmenter(WatertightMesh_ mesh){
+		mTorsoSkeNode = mLeftSleeveSkeNode = mRightSleeveSkeNode = -1;
+	}	
+
 };
 

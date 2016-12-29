@@ -2,6 +2,7 @@
 #include "WatertightMesh.h"
 #include "LevelSet.h"
 #include "GeodesicResolver.h"
+#include "GeodesicResolverCached.h"
 #include "Segment.h"
 #include <vector>
 class MeshSegmenter
@@ -13,18 +14,33 @@ private:
 	Segment_ mSegment;
 	/* Level Set之间的间隔 */
 	double mGranularity;
+	
+	/* 判断网格顶点是否已经加入Region了
+	 * TODO：测试一下是否回收了 */ 
+	BooleanProperty_ hasAdded;
+	std::vector<bool> hasSkeletonNodeAdded;//判断骨骼节点是否已经加入Region了
 public:
 	MeshSegmenter(void);
 	MeshSegmenter(WatertightMesh_ mesh){
 		init(mesh);		
 	}
 	~MeshSegmenter(void);
-	void init(WatertightMesh_ mesh){
+	virtual void init(WatertightMesh_ mesh){
 		mMesh = mesh;
 		decideGranularity();
-		GeodesicResolver geodesicResolver;
-		mGeodisPropery = geodesicResolver.resolveGeo(mMesh);
+		PRINTLN("Begin compute Geodesic...");
+		GeodesicResolver_ geodesicResolver = smartNew(GeodesicResolverCached);
+		mGeodisPropery = geodesicResolver->resolveGeo(mMesh);
+		PRINTLN("End compute Geodesic...");
+		hasAdded = smartNew(BooleanProperty);
+		mMesh->registerProperty(hasAdded);
+		for(size_t i = 0; i < mMesh->n_vertices(); i++){
+			hasAdded->set(i, false);
+		}
+		hasSkeletonNodeAdded.resize(mMesh->getSkeleton()->nodeCount(), false);
+		PRINTLN("Begin computeLevelSet...");
 		computeLevelSet();
+		PRINTLN("End computeLevelSet...");
 	}		
 
 
@@ -32,23 +48,86 @@ public:
 	void segment(){
 		mSegment = createSegment();
 		std::vector<bool> isNoise;		
+		PRINTLN("Begin filterNoise...");
 		filterNoise(isNoise);
+		PRINTLN("End filterNoise...");
 		coarseSegment(isNoise);
 		refineSegment();
 		mMesh->setSegment(mSegment);
 	}
 	WatertightMesh_ getMesh() const { return mMesh; }
 private:
-	/* 根据网格边的长度决定Level Set的间隔 */
+	/* 根据网格边的长度决定Level Set的间隔 
+	 * 间隔为网格所有边的平均长度的一半
+	 */
 	void decideGranularity(){
-		mGranularity = 20;
+		double edgeLengthSum = 0;
+		for(Mesh::EdgeIter ei = mMesh->edges_begin();
+			ei != mMesh->edges_end(); ei++){
+				edgeLengthSum += mMesh->getEdgeLength(*ei);
+		}
+		mGranularity = edgeLengthSum/mMesh->n_edges()*5;
 	}
 
 	void computeLevelSet(){
-
+		std::vector<Mesh::EdgeHandle> meshEdges;
+		for(Mesh::EdgeIter eit = mMesh->edges_begin(); 
+			eit != mMesh->edges_end();eit++){
+				meshEdges.push_back(*eit);
+		}
+		std::sort(meshEdges.begin(), meshEdges.end(),[this](Mesh::EdgeHandle& a,
+			Mesh::EdgeHandle& b){				
+				double minDisA = getMinDisFromEdge(a);
+				double minDisB = getMinDisFromEdge(b);
+				return minDisA < minDisB;
+		});
+		double curLevel = mGranularity;
+		size_t cursor = 0;
+		mLevelSets.clear();
+		mLevelSets.push_back(LevelSet());
+		LevelSet* levelSet = &mLevelSets[mLevelSets.size()-1];
+		while(cursor < meshEdges.size()){						
+			Mesh::EdgeHandle e = meshEdges[cursor];
+			std::pair<size_t, size_t> vs = mMesh->getEndVertices(e);
+			std::pair<size_t, double> verDisPair01 
+				= std::make_pair(vs.first, mGeodisPropery->get(vs.first));
+			std::pair<size_t, double> verDisPair02
+				= std::make_pair(vs.second, mGeodisPropery->get(vs.second));
+			if(verDisPair01.second > verDisPair02.second){
+				std::swap(verDisPair01, verDisPair02);
+			}
+			if(verDisPair01.second < curLevel && verDisPair02.second > curLevel){
+				LevelNode_ node = smartNew(LevelNode);
+				node->edge = e.idx();
+				node->start_vertex = verDisPair01.first;
+				/* 可以用余弦定理精确求出，但计算量较大，这里简单插值 */
+				node->factor = (curLevel-verDisPair01.second)
+					/(verDisPair02.second-verDisPair01.second);	
+				levelSet->addNode(node);
+				++cursor;
+			}
+			else if(verDisPair01.second > curLevel){
+				curLevel += mGranularity;
+				mLevelSets.push_back(LevelSet());
+				levelSet = &mLevelSets[mLevelSets.size()-1];
+			}
+			else{
+				++cursor;
+			}			
+		}
+		for(size_t i = 0; i < mLevelSets.size(); i++){
+			mLevelSets[i].init(mMesh);			
+		}
+		mLevelSets[0].dump(0);
+		char c[20];
+		sprintf(c, "%d", mLevelSets.size());
+		PRINTLN(std::string("LevelSet Count ") + c);
 	}
 
-	void refineSegment();
+	void refineSegment(){
+		/* TO DO
+		 */ 
+	}
 
 	/* 不同的模型，分割的方法不同
 	 * 参数：isNoise，标记了分类数不正确的LevelSet
@@ -57,10 +136,12 @@ private:
 		size_t len = mLevelSets.size();
 		size_t seq = 1;
 		size_t i = 0;		
-		while(isNoise[i]){
+		while(i < len && isNoise[i]){
 			++i;
 		}
-		size_t last = mLevelSets[i].getCount();
+		size_t last = 0;
+		if(i < len)
+		last = mLevelSets[i].getCount();
 		for( ; i < len; ){
 			size_t cur = mLevelSets[i].getCount();
 			if(cur != last){
@@ -69,10 +150,18 @@ private:
 			}
 			onDifferentLevelSet(seq, mLevelSets[i]);
 			++i;
-			while(isNoise[i]){
+			while(i < len && isNoise[i]){
 				++i;
 			}
 		}
+	}
+
+	/* 获取一条边两个端点中，测地函数值最小的那一个 */
+	double getMinDisFromEdge(Mesh::EdgeHandle edge){
+		std::pair<size_t, size_t> vs = mMesh->getEndVertices(edge);
+		double minDis = std::min(mGeodisPropery->get(vs.first),
+			mGeodisPropery->get(vs.second));
+		return minDis;
 	}
 protected:
 
@@ -121,6 +210,54 @@ protected:
 				isNoise[start++] = true;
 			}
 		}
+	}
+
+	/* 将一个LevelCircle加到一个Region中 */
+	void addToRegion(Region_ region, LevelCircle_ levelCircle){
+		std::vector<LevelNode_> levelNodes = levelCircle->levelNodes;		
+		for(size_t i = 0; i < levelNodes.size(); i++){
+			LevelNode_ n = levelNodes[i];
+			size_t v = n->getNearestVertex(mMesh);
+			if(!hasAdded->get(v)){
+				region->addVertex(v);
+				hasAdded->set(v, true);
+			}
+			size_t skenode = mMesh->getCorrSkeletonNode(v);
+			if(hasSkeletonNodeAdded[skenode] == false){
+				region->addSkeleton(skenode);
+				hasSkeletonNodeAdded[skenode] = true;
+			}
+		}
+	}
+	/* 获取一个LevelCircle对应的骨骼节点
+	 * 返回：对应这个LevelCircle中最多个节点的骨骼节点 
+	 */
+	size_t getCircleSkeletonNode(LevelCircle_ levelCircle){		
+		std::map<size_t, size_t> nodeCountMap;
+		for(size_t i = 0; i < levelCircle->levelNodes.size(); i++){
+			LevelNode_ n = levelCircle->levelNodes[i];
+			size_t v = n->getNearestVertex(mMesh);
+			size_t skeNode = mMesh->getCorrSkeletonNode(v);
+			if(nodeCountMap.find(skeNode) == nodeCountMap.end()){
+				nodeCountMap[skeNode] = 1;
+			}
+			else{
+				nodeCountMap[skeNode] += 1;
+			}
+		}
+		int maxCount = -1;
+		size_t ret = -1;
+		for(std::map<size_t, size_t>::iterator it = nodeCountMap.begin();
+			it != nodeCountMap.end(); it++){
+				if(it->second > maxCount){
+					maxCount = it->second;
+					ret = it->first;
+				}
+		}
+		if(ret == -1){
+			PRINTLN("ERROR! In getCircleSkeletonNode. ret == -1");
+		}
+		return -1;
 	}
 };
 

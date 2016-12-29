@@ -5,8 +5,10 @@
 class Human :
 	public WatertightMesh
 {
-public:
+public:	
 	~Human(void);
+	Human(Mesh_ mesh):WatertightMesh(mesh){}
+
 	size_t getGeodesicSource(){
 		/* TO DO */
 		return WatertightMesh::getGeodesicSource();

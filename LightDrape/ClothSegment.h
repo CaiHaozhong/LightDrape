@@ -34,6 +34,7 @@ public:
 	void addRegion(ClothPart part, Region_ region){
 		if(part < CLOTH_PART_COUNT && part >=0 )
 			mRegions[part] = region;
+		addRegionRaw(part, region);
 	}
 };
 S_PTR(ClothSegment);

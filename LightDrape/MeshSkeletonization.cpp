@@ -1,6 +1,5 @@
 #include "MeshSkeletonization.h"
 
-
 MeshSkeletonization::MeshSkeletonization(void)
 {
 }
