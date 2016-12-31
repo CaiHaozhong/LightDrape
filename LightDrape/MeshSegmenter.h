@@ -66,7 +66,7 @@ private:
 			ei != mMesh->edges_end(); ei++){
 				edgeLengthSum += mMesh->getEdgeLength(*ei);
 		}
-		mGranularity = edgeLengthSum/mMesh->n_edges()*5;
+		mGranularity = edgeLengthSum/mMesh->n_edges()*2;
 	}
 
 	void computeLevelSet(){
@@ -84,6 +84,7 @@ private:
 		double curLevel = mGranularity;
 		size_t cursor = 0;
 		mLevelSets.clear();
+		mLevelSets.reserve(32);
 		mLevelSets.push_back(LevelSet());
 		LevelSet* levelSet = &mLevelSets[mLevelSets.size()-1];
 		while(cursor < meshEdges.size()){						
@@ -115,10 +116,14 @@ private:
 				++cursor;
 			}			
 		}
+		//mLevelSets[19].dumpRaw(mMesh, 19);
+// 		mLevelSets[19].init(mMesh);
+// 		mLevelSets[19].dump(19);
 		for(size_t i = 0; i < mLevelSets.size(); i++){
 			mLevelSets[i].init(mMesh);			
+			mLevelSets[i].dump(i);
 		}
-		mLevelSets[0].dump(0);
+		
 		char c[20];
 		sprintf(c, "%d", mLevelSets.size());
 		PRINTLN(std::string("LevelSet Count ") + c);
