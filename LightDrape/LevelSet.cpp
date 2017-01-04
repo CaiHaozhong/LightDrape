@@ -177,6 +177,11 @@ LevelSet::LevelSet()
 	mNodeCount = 0;
 }
 
+LevelSet::LevelSet( WatertightMesh_ mesh )
+{
+	mMesh = mesh;
+}
+
 LevelSet::~LevelSet()
 {
 
@@ -187,9 +192,8 @@ void LevelSet::addNode( LevelNode_ node )
 	mRawNodes.add(node);
 }
 
-void LevelSet::init( WatertightMesh_ mesh )
-{
-	mMesh = mesh;		
+void LevelSet::init()
+{		
 	classify();
 }
 
@@ -298,4 +302,14 @@ void LevelSet::classify()
 			notInCircleCount= 0;
 		}
 	}
+}
+
+void LevelSet::setMesh( WatertightMesh_ mesh )
+{
+	mMesh = mesh;
+}
+
+std::vector<LevelCircle_>& LevelSet::getCircles()
+{
+	return mCircles;
 }

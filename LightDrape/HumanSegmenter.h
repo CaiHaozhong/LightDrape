@@ -30,7 +30,7 @@ private:
 	Skeleton_ mMeshSkeleton;
 protected:
 	/* Override */
-	void onDifferentLevelSet(size_t seq, LevelSet& levelSet){
+	void onDifferentLevelSet(size_t seq, LevelSet_ levelSet){
 		if(seq == 1){
 			handleHead(levelSet);
 		}
@@ -78,26 +78,26 @@ private:
 		mMeshSkeleton = mMesh->getSkeleton();
 	}
 
-	void handleHead(LevelSet& levelSet){
-		if(levelSet.getCount() != 1){
+	void handleHead(LevelSet_ levelSet){
+		if(levelSet->getCount() != 1){
 			PRINTLN("Human Segment Error: incorrect categories of head");
 			return ;
 		}
-		addToRegion(mHead, levelSet.getCircle(0));
+		addToRegion(mHead, levelSet->getCircle(0));
 	}
 
 
-	void handleTorso(LevelSet& levelSet){
-		if(levelSet.getCount() != 3){
+	void handleTorso(LevelSet_ levelSet){
+		if(levelSet->getCount() != 3){
 			PRINTLN("Human Segment Error: incorrect categories of torso");
 			return ;
 		}
 		if(mTorsoSkeNode == -1){
 			/* compute mLeftHandSkeNode, mTorsoSkeNode, mRightHandSkeNode */
 			typedef std::pair<LevelCircle_, double> CircleCenterPair;				
-			LevelCircle_ lc0 = levelSet.getCircle(0);
-			LevelCircle_ lc1 = levelSet.getCircle(1);
-			LevelCircle_ lc2 = levelSet.getCircle(2);				
+			LevelCircle_ lc0 = levelSet->getCircle(0);
+			LevelCircle_ lc1 = levelSet->getCircle(1);
+			LevelCircle_ lc2 = levelSet->getCircle(2);				
 			CircleCenterPair ccp[3] = {
 				std::make_pair(lc0, lc0->getCenterX(mMesh)),
 				std::make_pair(lc1, lc1->getCenterX(mMesh)),
@@ -114,7 +114,7 @@ private:
 		}
 		else{			
 			for(size_t i = 0; i < 3; i++){
-				LevelCircle_ lc = levelSet.getCircle(i);
+				LevelCircle_ lc = levelSet->getCircle(i);
 				size_t skeNode = getCircleSkeletonNode(lc);
 				size_t disLH = mMeshSkeleton->nodeDis(skeNode, mLeftHandSkeNode);
 				size_t disTS = mMeshSkeleton->nodeDis(skeNode, mTorsoSkeNode);
@@ -148,13 +148,13 @@ private:
 	}
 
 
-	void handleLegs(LevelSet& levelSet){
-		if(levelSet.getCount() != 2){
+	void handleLegs(LevelSet_ levelSet){
+		if(levelSet->getCount() != 2){
 			PRINTLN("Human Segment Error: incorrect categories of legs");
 			return ;
 		}
-		LevelCircle_ leg1 = levelSet.getCircle(0);
-		LevelCircle_ leg2 = levelSet.getCircle(1);
+		LevelCircle_ leg1 = levelSet->getCircle(0);
+		LevelCircle_ leg2 = levelSet->getCircle(1);
 		size_t skeNode1 = getCircleSkeletonNode(leg1);
 		size_t skeNode2 = getCircleSkeletonNode(leg2);
 		if(mLeftLegSkeNode == -1){

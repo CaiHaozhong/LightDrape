@@ -1,4 +1,5 @@
 #include "MeshSkeletonizationCached.h"
+#include "WatertightMesh.h"
 #include <fstream>
 
 MeshSkeletonizationCached::MeshSkeletonizationCached(void)

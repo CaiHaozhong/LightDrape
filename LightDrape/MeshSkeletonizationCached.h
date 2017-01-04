@@ -1,5 +1,7 @@
 #pragma once
-#include "MyPrecompileHeader.h"
+#include "MeshSkeletonization.h"
+#include "Common.h"
+
 class MeshSkeletonizationCached :
 	public MeshSkeletonization
 {

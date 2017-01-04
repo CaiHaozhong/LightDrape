@@ -24,27 +24,28 @@ private:
 	Region_ mLeftSleeve;
 	Region_ mRightSleeve;
 	size_t mTorsoSkeNode, mLeftSleeveSkeNode, mRightSleeveSkeNode;
+	WatertightMesh_ mMesh;
 protected:
 	/* Override */
-	void onDifferentLevelSet(size_t seq, LevelSet& levelSet){		
+	void onDifferentLevelSet(size_t seq, LevelSet_ levelSet){		
 		if(seq == 1){
-			if(levelSet.getCount() != 1){
+			if(levelSet->getCount() != 1){
 				PRINTLN("Cloth Segment Error: incorrect categories of torso");
 				return ;
 			}
-			addToRegion(mTorso, levelSet.getCircle(0));
+			addToRegion(mTorso, levelSet->getCircle(0));
 		}
 		else if(seq == 2){
-			if(levelSet.getCount() != 3){
+			if(levelSet->getCount() != 3){
 				PRINTLN("Cloth Segment Error: incorrect categories of sleeves");
 				return ;
 			}
 			if(mTorsoSkeNode == -1){
 				typedef std::pair<LevelCircle_, double> CircleCenterPair;				
 				WatertightMesh_ mesh = MeshSegmenter::getMesh();
-				LevelCircle_ lc0 = levelSet.getCircle(0);
-				LevelCircle_ lc1 = levelSet.getCircle(1);
-				LevelCircle_ lc2 = levelSet.getCircle(2);				
+				LevelCircle_ lc0 = levelSet->getCircle(0);
+				LevelCircle_ lc1 = levelSet->getCircle(1);
+				LevelCircle_ lc2 = levelSet->getCircle(2);				
 				CircleCenterPair ccp[3] = {
 				std::make_pair(lc0, lc0->getCenterX(mesh)),
 				std::make_pair(lc1, lc1->getCenterX(mesh)),
@@ -63,7 +64,7 @@ protected:
 				int count = 3;
 				Skeleton_ skeleton = MeshSegmenter::getMesh()->getSkeleton();
 				while(count--){
-					LevelCircle_ lc = levelSet.getCircle(count);
+					LevelCircle_ lc = levelSet->getCircle(count);
 					size_t skeNode = getCircleSkeletonNode(lc);
 					if(skeleton->isNodeNeighbor(skeNode, mLeftSleeveSkeNode)){
 						mLeftSleeveSkeNode = skeNode;
@@ -83,7 +84,14 @@ protected:
 	}
 
 	/* Override */
-	void onFinishSegment(){}
+	void onFinishSegment(){
+		Segment_ seg = mMesh->getSegment();
+		std::vector< std::pair<size_t, Region_> >& regions = seg->getRegionsRaw();
+		for(std::vector< std::pair<size_t, Region_> >::iterator it = regions.begin();
+			it != regions.end(); it++){
+				it->second->expand();
+		}
+	}
 
 	/* Override */
 	Segment_ createSegment(){
@@ -100,6 +108,7 @@ protected:
 private:
 	void initClothSegmenter(WatertightMesh_ mesh){
 		mTorsoSkeNode = mLeftSleeveSkeNode = mRightSleeveSkeNode = -1;
+		mMesh = mesh;
 	}	
 
 };

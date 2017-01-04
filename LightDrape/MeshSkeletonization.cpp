@@ -1,4 +1,5 @@
-#include "MyPrecompileHeader.h"
+#include "MeshSkeletonization.h"
+#include "WatertightMesh.h"
 
 MeshSkeletonization::MeshSkeletonization(void)
 {

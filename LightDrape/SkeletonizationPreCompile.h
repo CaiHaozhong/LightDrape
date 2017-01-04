@@ -1,5 +1,7 @@
 /* For Skeletonization */
+#include <OpenMesh/Core/IO/MeshIO.hh>
 #include "MeshSkeletonization.h"
+#include "MeshSkeletonizationCached.h"
 /* For Geodesic */
 // #include <CGAL/Polyhedron_3.h>
 /*#include <CGAL/Polyhedron_items_with_id_3.h>

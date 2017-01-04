@@ -13,6 +13,9 @@ public:
 	size_t start_vertex;
 	double factor;
 
+	LevelNode(){}
+	~LevelNode(){}
+
 	/* 获取和该Node位置最接近的网格顶点的下标 */
 	size_t getNearestVertex(Mesh_ mesh);
 
@@ -53,9 +56,11 @@ private:
 	bool isNeighbor(Mesh::EdgeHandle a, Mesh::EdgeHandle b, Mesh_ mesh);
 };
 S_PTR(LevelCircle);
-class LevelSet{
+class LevelSet{	
 private:
-	/* 无序环形链表 */
+	/* 无序环形链表
+	 * 容器一个
+	 */
 	class CircleLinkedList{
 	private:
 		struct Node{
@@ -97,11 +102,14 @@ private:
 public:
 	LevelSet();
 	~LevelSet();
+	LevelSet(WatertightMesh_ mesh);
+
+	void setMesh(WatertightMesh_ mesh);
 
 	/* 链表的形式存储节点 */
 	void addNode(LevelNode_ node);
 
-	void init(WatertightMesh_ mesh);
+	void init();
 
 	size_t getCount();
 
@@ -109,6 +117,7 @@ public:
 	void dumpRaw(Mesh_ mesh, int i);
 	void dump(int i);
 
+	std::vector<LevelCircle_>& getCircles();
 private:
 	/* 对该LevelSet上的点进行分类
 	 * 比如分成左手、躯干、右手三个环

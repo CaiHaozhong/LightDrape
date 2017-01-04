@@ -5,11 +5,12 @@
 #include "GeodesicResolverCached.h"
 #include "Segment.h"
 #include <vector>
+#include "LevelSetCacher.h"
 class MeshSegmenter
 {
 private:
 	WatertightMesh_ mMesh;
-	std::vector<LevelSet> mLevelSets;
+	std::vector<LevelSet_> mLevelSets;
 	DoubleProperty_ mGeodisPropery;
 	Segment_ mSegment;
 	/* Level Set之间的间隔 */
@@ -39,7 +40,7 @@ public:
 // 		}
 // 		hasSkeletonNodeAdded.resize(mMesh->getSkeleton()->nodeCount(), false);
 		PRINTLN("Begin computeLevelSet...");
-		computeLevelSet();
+		computeLevelSet(true);
 		PRINTLN("End computeLevelSet...");
 	}		
 
@@ -51,7 +52,7 @@ public:
 		std::vector<bool> isNoise;		
 		PRINTLN("Begin filterNoise...");
 		for(size_t i = 0; i < mLevelSets.size(); i++){
-			std::cout << mLevelSets[i].getCount() << " ";
+			std::cout << mLevelSets[i]->getCount() << " ";
 		}
 		std::cout << "\n";
  		filterNoise(isNoise);
@@ -78,7 +79,14 @@ private:
 		mGranularity = edgeLengthSum/mMesh->n_edges()*5;
 	}
 
-	void computeLevelSet(){
+	void computeLevelSet(bool useCache = false){
+
+		LevelSetCacher lsc(mMesh);
+		if(useCache && lsc.hasLevelSetCached()){
+			PRINTLN("use cached levelset.");
+			lsc.read(mLevelSets);
+			return ;
+		}
 		std::vector<Mesh::EdgeHandle> meshEdges;
 		for(Mesh::EdgeIter eit = mMesh->edges_begin(); 
 			eit != mMesh->edges_end();eit++){
@@ -93,9 +101,9 @@ private:
 		double curLevel = mGranularity;
 		size_t cursor = 0;
 		mLevelSets.clear();
-		mLevelSets.reserve(32);
-		mLevelSets.push_back(LevelSet());
-		LevelSet* levelSet = &mLevelSets[mLevelSets.size()-1];
+		mLevelSets.reserve(32);//TO DO
+		mLevelSets.push_back(std::make_shared<LevelSet>(mMesh));
+		LevelSet_ levelSet = mLevelSets[mLevelSets.size()-1];
 		while(cursor < meshEdges.size()){						
 			Mesh::EdgeHandle e = meshEdges[cursor];
 			std::pair<size_t, size_t> vs = mMesh->getEndVertices(e);
@@ -118,30 +126,28 @@ private:
 			}
 			else if(verDisPair01.second > curLevel){
 				curLevel += mGranularity;
-				mLevelSets.push_back(LevelSet());
-				levelSet = &mLevelSets[mLevelSets.size()-1];
+				mLevelSets.push_back(std::make_shared<LevelSet>(mMesh));
+				levelSet = mLevelSets[mLevelSets.size()-1];
 			}
 			else{
 				++cursor;
 			}			
 		}
-		//mLevelSets[19].dumpRaw(mMesh, 19);
-// 		mLevelSets[19].init(mMesh);
-// 		mLevelSets[19].dump(19);
 		for(size_t i = 0; i < mLevelSets.size(); i++){
 			char msg[50];
 			sprintf(msg, "init levelset %d", i);
 			PRINTLN(msg);
-			mLevelSets[i].init(mMesh);
-			for(size_t j = 0; j < mLevelSets[i].getCount(); j++){
-				getCircleSkeletonNode(mLevelSets[i].getCircle(j));
-			}
-			mLevelSets[i].dump(i);
+			mLevelSets[i]->init();
 		}
 		
 		char c[20];
 		sprintf(c, "%d", mLevelSets.size());
 		PRINTLN(std::string("LevelSet Count ") + c);
+
+		if(useCache){
+			lsc.cache(mLevelSets);
+			PRINTLN("cached levelset.");
+		}
 	}
 
 	void refineSegment(){
@@ -161,9 +167,9 @@ private:
 		}
 		size_t last = 0;
 		if(i < len)
-		last = mLevelSets[i].getCount();
+		last = mLevelSets[i]->getCount();
 		for( ; i < len; ){
-			size_t cur = mLevelSets[i].getCount();
+			size_t cur = mLevelSets[i]->getCount();
 			if(cur != last){
 				++seq;
 				last = cur;
@@ -190,7 +196,7 @@ protected:
 	   seq表示不同类LevelSet出现的顺序，从1开始
 	   子类必须实现这个函数
 	 */
-	virtual void onDifferentLevelSet(size_t seq, LevelSet& levelSet) = 0;
+	virtual void onDifferentLevelSet(size_t seq, LevelSet_ levelSet) = 0;
 
 
 	/* 分割结束的回调，即遍历完所有的LevelSet */
@@ -210,11 +216,11 @@ protected:
 		isNoise.resize(mLevelSets.size(), false);
 		size_t len = mLevelSets.size();
 		int threshold = 2; // 连续个数小于等于threshold的都算噪音
-		int val = mLevelSets[0].getCount();
+		int val = mLevelSets[0]->getCount();
 		int accu = 1;
 		int start = 0;
 		for(size_t i = 1; i < len; i++){
-			int cur = mLevelSets[i].getCount();
+			int cur = mLevelSets[i]->getCount();
 			if(cur == val){
 				++accu;
 			}

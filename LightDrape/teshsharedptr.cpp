@@ -1,9 +1,7 @@
+#include "SkeletonizationPreCompile.h"
 #include <iostream>
 #include <vector>
-#include <OpenMesh/Core/IO/MeshIO.hh>
 #include "WatertightMesh.h"
-#include "MeshSkeletonization.h"
-#include "MeshSkeletonizationCached.h"
 #include "HumanSegmenter.h"
 #include "Human.h"
 
