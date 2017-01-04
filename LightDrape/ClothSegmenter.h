@@ -83,6 +83,9 @@ protected:
 	}
 
 	/* Override */
+	void onFinishSegment(){}
+
+	/* Override */
 	Segment_ createSegment(){
 		ClothSegment_ mClothSegment = smartNew(ClothSegment);
 		mTorso = smartNew(Region);

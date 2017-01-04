@@ -34,6 +34,7 @@ public:
 	}
 	std::vector<LevelNode_> levelNodes;
 	double mCenterX;
+	size_t mSkeNode;
 	bool isCenterXValid;
 	void addNode(LevelNode_ node);
 	/* 判断新的LevelNode是否在这个圈里面
@@ -107,6 +108,7 @@ public:
 	LevelCircle_ getCircle(size_t categoryIndex);
 	void dumpRaw(Mesh_ mesh, int i);
 	void dump(int i);
+
 private:
 	/* 对该LevelSet上的点进行分类
 	 * 比如分成左手、躯干、右手三个环

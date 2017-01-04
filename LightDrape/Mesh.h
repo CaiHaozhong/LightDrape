@@ -324,6 +324,7 @@ public:
 	std::string getName() const { return mName; }
 
 	void setName(std::string val) { mName = val; }
+
 private:
 	bool mHasRequestAABB;
 

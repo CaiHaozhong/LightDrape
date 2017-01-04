@@ -33,9 +33,14 @@ public:
 	}
 	void init(char* file){
 		std::string type;
+		std::string ignore;
 		std::ifstream configIn(file);
 		while(!configIn.eof()){
 			configIn >> type;
+			if(type == "#"){
+				getline(configIn, ignore);
+				continue;
+			}
 			if(type == "InPath"){
 				configIn >> InPath;
 			}
@@ -62,22 +67,25 @@ int main(){
 	PRINTLN("Begin Skeletonize...");
 	MeshSkeletonization_ skeletonizer = smartNew(MeshSkeletonizationCached);
 	skeletonizer->skeletonize(human);
+	//human->dumpSkeLinkMesh();
 	PRINTLN("End Skeletonize...");
 	HumanSegmenter segmenter(human);
 	segmenter.segment();
 	Segment_ seg = human->getSegment();
+	char* outSegName[] = {"leftHand","rightHand","leftLeg","rightLeg","head","torso"};
 	std::vector<std::pair<size_t, Region_> > regions = seg->getRegionsRaw();
 	for(size_t i = 0; i < regions.size(); i++){
 		std::pair<size_t, Region_> typeRegionPair = regions[i];
 		Region_ re = typeRegionPair.second;
 		Mesh out;
-		std::vector<size_t> vs = re->getVertices();
-		for(size_t vi = 0; vi < vs.size(); vi++){
-			Vec3d ver = human->point(Mesh::VertexHandle(vs[vi]));
+		std::set<size_t>& vs = re->getVertices();
+		for(std::set<size_t>::iterator it = vs.begin();
+			it != vs.end(); it++){
+			Vec3d ver = human->point(Mesh::VertexHandle(*it));
 			out.add_vertex(ver);
 		}
 		char of[200];
-		sprintf(of,"%d.obj", i);
+		sprintf(of,"%s.obj", outSegName[typeRegionPair.first]);
 		bool wsuc = OpenMesh::IO::write_mesh(out, config.OutPath+of);
 		if(wsuc){
 			std::cout << "write successfully of seg " << i << std::endl;

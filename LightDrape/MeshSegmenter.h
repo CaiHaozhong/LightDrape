@@ -17,8 +17,8 @@ private:
 	
 	/* 判断网格顶点是否已经加入Region了
 	 * TODO：测试一下是否回收了 */ 
-	BooleanProperty_ hasAdded;
-	std::vector<bool> hasSkeletonNodeAdded;//判断骨骼节点是否已经加入Region了
+// 	BooleanProperty_ hasAdded;
+// 	std::vector<bool> hasSkeletonNodeAdded;//判断骨骼节点是否已经加入Region了
 public:
 	MeshSegmenter(void);
 	MeshSegmenter(WatertightMesh_ mesh){
@@ -32,12 +32,12 @@ public:
 		GeodesicResolver_ geodesicResolver = smartNew(GeodesicResolverCached);
 		mGeodisPropery = geodesicResolver->resolveGeo(mMesh);
 		PRINTLN("End compute Geodesic...");
-		hasAdded = smartNew(BooleanProperty);
-		mMesh->registerProperty(hasAdded);
-		for(size_t i = 0; i < mMesh->n_vertices(); i++){
-			hasAdded->set(i, false);
-		}
-		hasSkeletonNodeAdded.resize(mMesh->getSkeleton()->nodeCount(), false);
+// 		hasAdded = smartNew(BooleanProperty);
+// 		mMesh->registerProperty(hasAdded);
+// 		for(size_t i = 0; i < mMesh->n_vertices(); i++){
+// 			hasAdded->set(i, false);
+// 		}
+// 		hasSkeletonNodeAdded.resize(mMesh->getSkeleton()->nodeCount(), false);
 		PRINTLN("Begin computeLevelSet...");
 		computeLevelSet();
 		PRINTLN("End computeLevelSet...");
@@ -47,13 +47,22 @@ public:
 	/* 开始分割，并将分割结果存储在Mesh中 */
 	void segment(){
 		mSegment = createSegment();
+		mMesh->setSegment(mSegment);
 		std::vector<bool> isNoise;		
 		PRINTLN("Begin filterNoise...");
-		filterNoise(isNoise);
+		for(size_t i = 0; i < mLevelSets.size(); i++){
+			std::cout << mLevelSets[i].getCount() << " ";
+		}
+		std::cout << "\n";
+ 		filterNoise(isNoise);
+		for(size_t i = 0; i < isNoise.size(); i++){
+			std::cout << isNoise[i] << " ";
+		}
+		std::cout << "\n";
 		PRINTLN("End filterNoise...");
 		coarseSegment(isNoise);
-		refineSegment();
-		mMesh->setSegment(mSegment);
+		onFinishSegment();
+		refineSegment();		
 	}
 	WatertightMesh_ getMesh() const { return mMesh; }
 private:
@@ -66,7 +75,7 @@ private:
 			ei != mMesh->edges_end(); ei++){
 				edgeLengthSum += mMesh->getEdgeLength(*ei);
 		}
-		mGranularity = edgeLengthSum/mMesh->n_edges()*2;
+		mGranularity = edgeLengthSum/mMesh->n_edges()*5;
 	}
 
 	void computeLevelSet(){
@@ -120,7 +129,13 @@ private:
 // 		mLevelSets[19].init(mMesh);
 // 		mLevelSets[19].dump(19);
 		for(size_t i = 0; i < mLevelSets.size(); i++){
-			mLevelSets[i].init(mMesh);			
+			char msg[50];
+			sprintf(msg, "init levelset %d", i);
+			PRINTLN(msg);
+			mLevelSets[i].init(mMesh);
+			for(size_t j = 0; j < mLevelSets[i].getCount(); j++){
+				getCircleSkeletonNode(mLevelSets[i].getCircle(j));
+			}
 			mLevelSets[i].dump(i);
 		}
 		
@@ -177,6 +192,10 @@ protected:
 	 */
 	virtual void onDifferentLevelSet(size_t seq, LevelSet& levelSet) = 0;
 
+
+	/* 分割结束的回调，即遍历完所有的LevelSet */
+	virtual void onFinishSegment() = 0;
+
 	/* 不同的模型，有不同的分割
 	   子类必须实现这个函数
 	 */
@@ -190,7 +209,7 @@ protected:
 	virtual void filterNoise(std::vector<bool>& isNoise){
 		isNoise.resize(mLevelSets.size(), false);
 		size_t len = mLevelSets.size();
-		int threshold = 3; // 连续个数小于等于threshold的都算噪音
+		int threshold = 2; // 连续个数小于等于threshold的都算噪音
 		int val = mLevelSets[0].getCount();
 		int accu = 1;
 		int start = 0;
@@ -223,21 +242,23 @@ protected:
 		for(size_t i = 0; i < levelNodes.size(); i++){
 			LevelNode_ n = levelNodes[i];
 			size_t v = n->getNearestVertex(mMesh);
-			if(!hasAdded->get(v)){
-				region->addVertex(v);
-				hasAdded->set(v, true);
-			}
+			region->addVertex(v);
+// 			if(!hasAdded->get(v)){
+// 				region->addVertex(v);
+// 				hasAdded->set(v, true);
+// 			}
 			size_t skenode = mMesh->getCorrSkeletonNode(v);
-			if(hasSkeletonNodeAdded[skenode] == false){
-				region->addSkeleton(skenode);
-				hasSkeletonNodeAdded[skenode] = true;
-			}
+			region->addSkeleton(skenode);
+// 			if(hasSkeletonNodeAdded[skenode] == false){
+// 				region->addSkeleton(skenode);
+// 				hasSkeletonNodeAdded[skenode] = true;
+// 			}
 		}
 	}
 	/* 获取一个LevelCircle对应的骨骼节点
 	 * 返回：对应这个LevelCircle中最多个节点的骨骼节点 
 	 */
-	size_t getCircleSkeletonNode(LevelCircle_ levelCircle){		
+	size_t getCircleSkeletonNode(LevelCircle_ levelCircle){
 		std::map<size_t, size_t> nodeCountMap;
 		for(size_t i = 0; i < levelCircle->levelNodes.size(); i++){
 			LevelNode_ n = levelCircle->levelNodes[i];
@@ -254,7 +275,8 @@ protected:
 		size_t ret = -1;
 		for(std::map<size_t, size_t>::iterator it = nodeCountMap.begin();
 			it != nodeCountMap.end(); it++){
-				if(it->second > maxCount){
+				size_t sec = it->second;
+				if((int)sec > maxCount){
 					maxCount = it->second;
 					ret = it->first;
 				}
@@ -262,7 +284,8 @@ protected:
 		if(ret == -1){
 			PRINTLN("ERROR! In getCircleSkeletonNode. ret == -1");
 		}
-		return -1;
+		levelCircle->mSkeNode = ret;
+		return ret;
 	}
 };
 

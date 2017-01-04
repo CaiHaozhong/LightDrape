@@ -4,14 +4,14 @@
 #include <vector>
 #include <iostream>
 #include <OpenMesh/Core/IO/MeshIO.hh>
-#include "Mesh.h"
+#include <OpenMesh/Core/Mesh/TriMesh_ArrayKernelT.hh>
 #include <fstream>
 #include "HoleInfo.h"
 #include <string>
 #include <sstream>
 #include <tuple>
-#include "SkeletonExtractor.h"
 #include <io.h>
+typedef OpenMesh::TriMesh_ArrayKernelT<> MyMesh;
 using namespace std;
 typedef std::pair<std::string,std::string> PPair;
 struct PLYHeader {
@@ -219,8 +219,8 @@ bool readMeshFileAscii(string _filename, MeshT* _mesh) {
 	uint        du, dv;
 	double      dx, dy, dz;
 	double      alpha;
-	Mesh::VertexHandle currentVertex;
-	std::vector<Mesh::VertexHandle> vertexIndices;
+	MyMesh::VertexHandle currentVertex;
+	std::vector<MyMesh::VertexHandle> vertexIndices;
 	// Parse file
 	std::ifstream ifs(_filename);
 	if (!ifs.is_open() || !ifs.good() || ifs.eof()) {
@@ -444,13 +444,13 @@ bool readMeshFileAscii(string _filename, MeshT* _mesh) {
 	ifs.close();
 	return true;
 }
-void transformMesh(Mesh& mesh){
-	for(Mesh::VertexIter it = mesh.vertices_begin(); it != mesh.vertices_end(); it++){
-		Mesh::Point& v = mesh.point(*it);
-		Mesh::Point tmp = Mesh::Point(v);
-		v.values_[0] = -tmp.values_[1];
-		v.values_[1] = tmp.values_[0];
-		v.values_[2] = tmp.values_[2];
+void transformMesh(MyMesh& mesh){
+	for(MyMesh::VertexIter it = mesh.vertices_begin(); it != mesh.vertices_end(); it++){
+		MyMesh::Point& v = mesh.point(*it);
+		MyMesh::Point tmp = MyMesh::Point(v);
+		v.values_[0] = -tmp.values_[2];
+		v.values_[1] = tmp.values_[1];
+		v.values_[2] = tmp.values_[0];
 	}
 }
 void getFiles( string path, string exd, vector<string>& files )
@@ -490,45 +490,44 @@ void getFiles( string path, string exd, vector<string>& files )
 		_findclose(hFile);
 	}
 }
-int mainforPLY2OBJAndHoleFill(){
-	Mesh mesh;	
-	string inPath = string("E:\\CG\\DrapeRepository\\Resource\\SCAPE\\scapecomp\\");
-	string outPath = string("E:\\CG\\DrapeRepository\\Resource\\SCAPE\\scapewatertightobj\\");
-	for (int i = 0; i < 72; i++){		
-		if(i == 51) continue;
-		char filename[20];
-		sprintf(filename, "mesh0%02d", i);
-		cout << "processing " << string(filename) << endl;
-		Mesh mesh;
-		string infile = inPath + string(filename) + ".ply";		
-		readMeshFileAscii(infile, &mesh);
-		cout << "v: " << mesh.n_vertices() << "\t" << "e: " << mesh.n_edges() << "\t" << "f: " << mesh.n_faces() << endl;
-		cout << "import suc!" << "\n";
-		HoleInfo holeInfo(&mesh);
-		holeInfo.getHoles();
-		vector<HoleInfo::Hole>* holes = holeInfo.holes();
-		cout << "holes cout: " << holes->size() << "\n";
-		holeInfo.fillAllHoles();
-		cout << "transform mesh... " << endl;
-		transformMesh(mesh);
-		cout << "end transform mesh... " << endl;
-		string s = outPath + string(filename) + ".obj";
-		bool suc = OpenMesh::IO::write_mesh(mesh, s.c_str());
-		if(!suc){
-			cout << "save fail!" << "\n";
-		}
-		else
-			cout << "save suc!" << "\n";
-		cout << "end processing " << string(filename) << endl;
-	}	
-	getchar();
-	return 0;
-}
+// int mainforPLY2OBJAndHoleFill(){
+// 	MyMesh mesh;	
+// 	string inPath = string("E:\\CG\\DrapeRepository\\Resource\\SCAPE\\scapecomp\\");
+// 	string outPath = string("E:\\CG\\DrapeRepository\\Resource\\SCAPE\\scapewatertightobj\\");
+// 	for (int i = 0; i < 72; i++){		
+// 		if(i == 51) continue;
+// 		char filename[20];
+// 		sprintf(filename, "mesh0%02d", i);
+// 		cout << "processing " << string(filename) << endl;
+// 		MyMesh mesh;
+// 		string infile = inPath + string(filename) + ".ply";		
+// 		readMeshFileAscii(infile, &mesh);
+// 		cout << "v: " << mesh.n_vertices() << "\t" << "e: " << mesh.n_edges() << "\t" << "f: " << mesh.n_faces() << endl;
+// 		cout << "import suc!" << "\n";
+// 		HoleInfo holeInfo(&mesh);
+// 		holeInfo.getHoles();
+// 		vector<HoleInfo::Hole>* holes = holeInfo.holes();
+// 		cout << "holes cout: " << holes->size() << "\n";
+// 		holeInfo.fillAllHoles();
+// 		cout << "transform mesh... " << endl;
+// 		transformMesh(mesh);
+// 		cout << "end transform mesh... " << endl;
+// 		string s = outPath + string(filename) + ".obj";
+// 		bool suc = OpenMesh::IO::write_mesh(mesh, s.c_str());
+// 		if(!suc){
+// 			cout << "save fail!" << "\n";
+// 		}
+// 		else
+// 			cout << "save suc!" << "\n";
+// 		cout << "end processing " << string(filename) << endl;
+// 	}	
+// 	getchar();
+// 	return 0;
+// }
 int main(){	
-	Mesh mesh;	
-	string inPath = string("E:\\Project\\LightDrape\\data\\upclothwithsleeves\\");
-	string skeOutPath = string("E:\\Project\\LightDrape\\data\\upclothwithsleeves_skeleton\\");
-	string objOutPath = string("E:\\Project\\LightDrape\\data\\upclothwithsleeves_watertight\\");
+	MyMesh mesh;	
+	string inPath = string("E:\\Project\\LightDrape\\data\\scapecomp_watertight\\");
+	string outPath = string("E:\\Project\\LightDrape\\data\\scapecomp_watertight_transform\\");
 	vector<string> files;
 	getFiles(inPath,"",files);
 	for (int i = 0; i < files.size(); i++){										
@@ -539,24 +538,13 @@ int main(){
 			return 0;
 		}
 		cout << string(files[i]) + " import suc" << endl;
-		mesh.request_vertex_normals();
-		mesh.request_face_normals();
-		mesh.update_face_normals();
-		mesh.update_vertex_normals();
-		HoleInfo holeInfo(&mesh);
-		holeInfo.getHoles();
-		vector<HoleInfo::Hole>* holes = holeInfo.holes();
-		cout << "holes cout: " << holes->size() << "\n";
-		holeInfo.fillAllHoles();
-		suc = OpenMesh::IO::write_mesh(mesh, (objOutPath+files[i]).c_str());
+		transformMesh(mesh);
+		suc = OpenMesh::IO::write_mesh(mesh, (outPath+files[i]).c_str());
 		if(!suc){
-			cout << "watertight save fail!" << "\n";
+			cout << "save fail!" << "\n";
 		}
 		else
-			cout << "watertight save suc!" << "\n";
- 		SkeletonExtractor skeletonExtractor;
- 		skeletonExtractor.extract(mesh);
- 		skeletonExtractor.dumpMesoSkeleton(skeOutPath+files[i].substr(0,files[i].size()-4)+".cg");
+			cout << "save suc!" << "\n";
 	}
 	getchar();
 	return 0;

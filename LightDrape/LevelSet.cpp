@@ -251,10 +251,19 @@ void LevelSet::dump( int i )
 	}
 	for(size_t i = 0; i < mCircles.size(); i++){
 		LevelCircle_ lc = mCircles[i];
+		SkeletonNode_ skn = mMesh->getSkeleton()->nodeAt(lc->mSkeNode);
+		out << "v " << skn->point.values_[0] << " " << skn->point.values_[1] << " "
+			<< skn->point.values_[2] << "\n";
+	}
+	for(size_t i = 0; i < mCircles.size(); i++){
+		LevelCircle_ lc = mCircles[i];
 		for(size_t j = 0; j < lc->levelNodes.size(); j++){
 			LevelNode_ ln = lc->levelNodes[j];
-			auto vpair = mMesh->getEndVertices(Mesh::EdgeHandle(ln->edge));
-			out << "e " << vpair.first+1 << " " << vpair.second+1 << "\n";
+			size_t v = ln->getNearestVertex(mMesh);
+			out << "e " << v+1 << " " << mMesh->n_vertices()+i+1 << "\n";
+//			auto vpair = mMesh->getEndVertices(Mesh::EdgeHandle(ln->edge));
+
+//			out << "e " << vpair.first+1 << " " << vpair.second+1 << "\n";
 		}
 	}
 	out.close();
@@ -270,7 +279,7 @@ void LevelSet::classify()
 	mRawNodes.removeCurrent();
 	mCircles.push_back(levelCircle);		
 	int notInCircleCount = 0;
-	while(mRawNodes.isEmpty() == false){									
+	while(mRawNodes.isEmpty() == false){								
 		LevelNode_ n = mRawNodes.cur();
 		if(levelCircle->isInThisCircle(n, mMesh)){
 			levelCircle->addNode(n);

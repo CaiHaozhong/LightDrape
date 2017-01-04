@@ -1,6 +1,5 @@
 #pragma once
 #include "Meshsegmenter.h"
-#include "Region.h"
 #include "Segment.h"
 class HumanSegmenter :
 	public MeshSegmenter
@@ -44,14 +43,24 @@ protected:
 	}
 
 	/* Override */
+	void onFinishSegment(){
+		Segment_ seg = mMesh->getSegment();
+		std::vector< std::pair<size_t, Region_> >& regions = seg->getRegionsRaw();
+		for(std::vector< std::pair<size_t, Region_> >::iterator it = regions.begin();
+			it != regions.end(); it++){
+				it->second->expand();
+		}
+	}
+
+	/* Override */
 	Segment_ createSegment(){
 		Segment_ seg = smartNew(Segment);
-		mHead = smartNew(Region);
-		mTorso = smartNew(Region);
-		mLeftHand = smartNew(Region);
-		mRightHand = smartNew(Region);
-		mLeftLeg = smartNew(Region);
-		mRightLeg = smartNew(Region);
+		mHead = std::make_shared<Region>(mMeshSkeleton);
+		mTorso = std::make_shared<Region>(mMeshSkeleton);
+		mLeftHand = std::make_shared<Region>(mMeshSkeleton);
+		mRightHand = std::make_shared<Region>(mMeshSkeleton);
+		mLeftLeg = std::make_shared<Region>(mMeshSkeleton);
+		mRightLeg = std::make_shared<Region>(mMeshSkeleton);
 		seg->addRegionRaw(Segment::BODY_HEAD, mHead);
 		seg->addRegionRaw(Segment::BODY_TORSE, mTorso);
 		seg->addRegionRaw(Segment::BODY_LEFT_HAND, mLeftHand);
@@ -107,18 +116,33 @@ private:
 			for(size_t i = 0; i < 3; i++){
 				LevelCircle_ lc = levelSet.getCircle(i);
 				size_t skeNode = getCircleSkeletonNode(lc);
-				if(mMeshSkeleton->isNodeNeighbor(skeNode, mLeftHandSkeNode)){
+				size_t disLH = mMeshSkeleton->nodeDis(skeNode, mLeftHandSkeNode);
+				size_t disTS = mMeshSkeleton->nodeDis(skeNode, mTorsoSkeNode);
+				size_t disRH = mMeshSkeleton->nodeDis(skeNode, mRightHandSkeNode);
+				if(disLH <= disTS && disLH <= disRH){
 					addToRegion(mLeftHand, lc);
-					mLeftHandSkeNode = skeNode;
+					mLeftHandSkeNode = skeNode;					
 				}
-				else if(mMeshSkeleton->isNodeNeighbor(skeNode, mTorsoSkeNode)){
+				else if(disTS <= disLH && disTS <= disRH){
 					addToRegion(mTorso, lc);
 					mTorsoSkeNode = skeNode;
 				}
-				else if(mMeshSkeleton->isNodeNeighbor(skeNode, mRightHandSkeNode)){
+				else if(disRH <= disTS && disRH <= disLH){
 					addToRegion(mRightHand, lc);
 					mRightHandSkeNode = skeNode;
 				}
+// 				if(mMeshSkeleton->isNodeNeighbor(skeNode, mLeftHandSkeNode)){
+// 					addToRegion(mLeftHand, lc);
+// 					mLeftHandSkeNode = skeNode;
+// 				}
+// 				else if(mMeshSkeleton->isNodeNeighbor(skeNode, mTorsoSkeNode)){
+// 					addToRegion(mTorso, lc);
+// 					mTorsoSkeNode = skeNode;
+// 				}
+// 				else if(mMeshSkeleton->isNodeNeighbor(skeNode, mRightHandSkeNode)){
+// 					addToRegion(mRightHand, lc);
+// 					mRightHandSkeNode = skeNode;
+// 				}
 			}
 		}
 	}
@@ -150,7 +174,9 @@ private:
 			}
 		}
 		else{
-			if(mMeshSkeleton->isNodeNeighbor(skeNode1, mLeftLegSkeNode)){
+			size_t dis1 = mMeshSkeleton->nodeDis(skeNode1, mLeftLegSkeNode);
+			size_t dis2 = mMeshSkeleton->nodeDis(skeNode1, mRightLegSkeNode);
+			if(dis1 < dis2){
 				addToRegion(mLeftLeg, leg1);
 				addToRegion(mRightLeg, leg2);
 				mLeftLegSkeNode = skeNode1;

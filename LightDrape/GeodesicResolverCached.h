@@ -52,7 +52,7 @@ private:
 		int count;
 		double dis;
 		in >> count;
-		for(size_t i = 0; i < count; i++){
+		for(int i = 0; i < count; i++){
 			in >> dis;
 			ret->set(i, dis);
 		}
