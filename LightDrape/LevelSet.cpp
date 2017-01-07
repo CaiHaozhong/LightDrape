@@ -32,6 +32,16 @@ size_t LevelNode::getToVertexIndex( Mesh_ mesh )
 	return ret;
 }
 
+LevelNode::LevelNode()
+{
+
+}
+
+LevelNode::~LevelNode()
+{
+
+}
+
 
 void LevelCircle::addNode( LevelNode_ node )
 {
@@ -83,6 +93,11 @@ double LevelCircle::getCenterX( Mesh_ mesh )
 		computeCenter(mesh);
 	}
 	return mCenterX;
+}
+
+LevelCircle::LevelCircle()
+{
+	isCenterXValid = false;
 }
 
 LevelSet::CircleLinkedList::CircleLinkedList()

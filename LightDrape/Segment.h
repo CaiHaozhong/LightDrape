@@ -4,32 +4,25 @@
 class Segment
 {	
 protected:
-	std::vector< std::pair<size_t, Region_> > mRegions;
+	std::vector< std::pair<int, Region_> > mRegions;
 public:
-	enum BodyPart{
-		BODY_LEFT_HAND = 0,
-		BODY_RIGHT_HAND,
-		BODY_LEFT_LEG,
-		BODY_RIGHT_LEG,
-		BODY_HEAD,
-		BODY_TORSE,
-		BODY_PART_COUNT
-	};
+	const static int BODY_LEFT_HAND = 0;	
+	const static int BODY_RIGHT_HAND = 1;
+	const static int BODY_LEFT_LEG = 2;
+	const static int BODY_RIGHT_LEG = 3;
+	const static int BODY_HEAD = 4;
+	const static int BODY_TORSE = 5;
+	const static int BODY_PART_COUNT = 6;
+
 	Segment(void);
 	~Segment(void);
 
 	/* 根据人体不同的部位返回匹配的部位 */
-	virtual Region_ getMatch(BodyPart bodyPart){
-		return nullptr;
-	}
+	virtual Region_ getMatch(int bodyPart);
 
 	/* 将Region添加至父类中的vector中 */
-	void addRegionRaw(size_t type, Region_ region){
-		mRegions.push_back(std::make_pair(type, region));
-	}
+	void addRegionRaw(int type, Region_ region);
 
-	std::vector< std::pair<size_t, Region_> >& getRegionsRaw(){
-		return mRegions;
-	}
+	std::vector< std::pair<int, Region_> >& getRegionsRaw();
 };
 S_PTR(Segment);

@@ -7,7 +7,8 @@
 
 #include <assert.h>
 #include <cstddef>
-
+#include <cmath>
+#include <algorithm>
 namespace geodesic{
 
 class Vertex; 
@@ -344,49 +345,7 @@ protected:
 	base_pointer m_p;			//could be face, vertex or edge pointer
 };
 
-inline edge_pointer Face::opposite_edge(vertex_pointer v)
-{
-	for(unsigned i=0; i<3; ++i)
-	{
-		edge_pointer e = adjacent_edges()[i];
-		if(!e->belongs(v))
-		{
-			return e;
-		}
-	}
-	assert(0);
-	return NULL;
-}
 
-inline vertex_pointer Face::opposite_vertex(edge_pointer e)
-{
-	for(unsigned i=0; i<3; ++i)
-	{
-		vertex_pointer v = adjacent_vertices()[i];
-		if(!e->belongs(v))
-		{
-			return v;
-		}
-	}
-	assert(0);
-	return NULL;
-}
-
-inline edge_pointer Face::next_edge(edge_pointer e, vertex_pointer v)
-{
-	assert(e->belongs(v));
-
-	for(unsigned i=0; i<3; ++i)
-	{
-		edge_pointer next = adjacent_edges()[i];
-		if(e->id() != next->id() && next->belongs(v))
-		{
-			return next;
-		}
-	}
-	assert(0);
-	return NULL;
-}
 
 struct HalfEdge			//prototype of the edge; used for mesh construction
 {
@@ -395,27 +354,11 @@ struct HalfEdge			//prototype of the edge; used for mesh construction
 	unsigned vertex_1;		//they are sorted, vertex_0 < vertex_1
 };
 
-inline bool operator < (const HalfEdge &x, const HalfEdge &y)
-{
-	if(x.vertex_0 == y.vertex_0)
-	{
-	    return x.vertex_1 < y.vertex_1;
-	}
-	else
-	{
-		return x.vertex_0 < y.vertex_0;
-	}
-}
+bool operator < (const HalfEdge &x, const HalfEdge &y);
 
-inline bool operator != (const HalfEdge &x, const HalfEdge &y)
-{
-	return x.vertex_0 != y.vertex_0 || x.vertex_1 != y.vertex_1;
-}
+bool operator != (const HalfEdge &x, const HalfEdge &y);
 
-inline bool operator == (const HalfEdge &x, const HalfEdge &y)
-{
-	return x.vertex_0 == y.vertex_0 && x.vertex_1 == y.vertex_1;
-}
+bool operator == (const HalfEdge &x, const HalfEdge &y);
 
 } //geodesic
 

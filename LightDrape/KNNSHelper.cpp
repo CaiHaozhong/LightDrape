@@ -35,3 +35,19 @@ bool KNNSHelper::kNeighborSearch(OpenMesh::Vec3f& q, int K, std::vector<Result>&
 	delete [] dists;
 	return r;
 }
+
+PointCloud::PointCloud( std::vector<OpenMesh::Vec3f>& ps )
+{
+	pts = ps;
+}
+
+PointCloud::PointCloud()
+{
+
+}
+
+size_t PointCloud::kdtree_get_point_count() const
+{
+	size_t ret = pts.size();
+	return ret;
+}

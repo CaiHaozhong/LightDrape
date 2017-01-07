@@ -5,9 +5,6 @@ class Trousers :
 {
 public:
 	~Trousers(void);
-	size_t getGeodesicSource(){
-		/* TO DO */
-		return WatertightMesh::getGeodesicSource();
-	}
+	size_t getGeodesicSource();
 };
 

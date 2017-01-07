@@ -1,28 +1,22 @@
 #pragma once
 #include "Common.h"
 #include <vector>
+#include <tuple>
 #include "Vec3d.h"
 class VertexAlter {
-private:
-	std::vector<Vec3d> mVertexDelta;
+public:
+	std::vector<std::pair<size_t, Vec3d> > vertexDelta;
+	Vec3d trans;
 public:
 	VertexAlter(void);
 	~VertexAlter(void);
 
-	void resize(size_t size){
-		mVertexDelta.resize(size);
-	}
+	/* 增加一个顶点的形变变化量
+	 * 返回增加后vertexDelta的大小
+	 */
+	size_t add(size_t index, const Vec3d& delta);
 
-	/* 增加一个顶点的位置变化 */
-	bool add(size_t index, const Vec3d& delta){
-		if(mVertexDelta.size() == 0){			
-			return false;
-		}
-		mVertexDelta[index] = Vec3d(delta);
-	}
+	void translate(const Vec3d& delta);
 
-	Vec3d& getDelta(size_t index){
-		return mVertexDelta[index];
-	}
 };
 S_PTR(VertexAlter);

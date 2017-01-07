@@ -1,16 +1,16 @@
 #define GEODESIC_DLL_IMPORT __declspec(dllexport)
-
+#include "geodesic_precompile.h"
 #include <boost\shared_ptr.hpp>
 #include <iostream>
 #include <fstream>
 #include <string>
 
-#include "geodesic_mesh.hh"
-#include "geodesic_algorithm_dijkstra_alternative.hh"
-#include "geodesic_algorithm_dijkstra.hh"
-#include "geodesic_algorithm_subdivision.hh"
-#include "geodesic_algorithm_exact.hh"
-#include "geodesic_matlab_api.hh"
+// #include "geodesic_mesh.hh"
+// #include "geodesic_algorithm_dijkstra_alternative.hh"
+// #include "geodesic_algorithm_dijkstra.hh"
+// #include "geodesic_algorithm_subdivision.hh"
+// #include "geodesic_algorithm_exact.hh"
+// #include "geodesic_matlab_api.hh"
 
 typedef boost::shared_ptr<geodesic::Mesh> mesh_shared_pointer;
 std::vector<mesh_shared_pointer> meshes;

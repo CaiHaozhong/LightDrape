@@ -4,6 +4,8 @@
 #include <vector>
 #include "Vec3d.h"
 #include "Common.h"
+class VertexAlter;
+S_PTR(VertexAlter);
 struct MyTrait : public OpenMesh::DefaultTraits{
   /* 将原本的Vec3f改为Vec3d */
   typedef Vec3d  Point;
@@ -295,36 +297,28 @@ public:
 	double getLength();
 	
 	/* 在Mesh中新增一个属性，为该属性分配空间，且将下标指向正确的位置 */
-	void registerProperty(Registerable_ vp){
-		vp->registerSelf(mPropertyManager);
-	}
+	void registerProperty(Registerable_ vp);
 
 	/* 读取了mesh之后，再调用这个函数，用顶点数初始化PropertyManager */
-	void initProperty(){
-		mPropertyManager = smartNew(PropertyManager);
-		mPropertyManager->init(n_vertices());
-	}
+	void initProperty();
 
 	/* 返回一条边两端的顶点的下标 */
-	std::pair<size_t, size_t> getEndVertices(Mesh::EdgeHandle e){
-		Mesh::HalfedgeHandle halfEdge = this->halfedge_handle(e, 0);
-		Mesh::VertexHandle fromV = this->from_vertex_handle(halfEdge);
-		Mesh::VertexHandle toV = this->to_vertex_handle(halfEdge);
-		return std::make_pair(fromV.idx(), toV.idx());
-	}
+	std::pair<size_t, size_t> getEndVertices(Mesh::EdgeHandle e);
 
 	/* 返回一条边的长度 */
-	double getEdgeLength(Mesh::EdgeHandle e){
-		std::pair<size_t, size_t> vs = getEndVertices(e);
-		Vec3d a = this->point(VertexHandle(vs.first));
-		Vec3d b = this->point(VertexHandle(vs.second));
-		return (a-b).length();
-	}
+	double getEdgeLength(Mesh::EdgeHandle e);
 
-	std::string getName() const { return mName; }
+	std::string getName() const;
 
-	void setName(std::string val) { mName = val; }
+	void setName(std::string val);
 
+	/* 修改下标为index的顶点的位置 */
+	void alterVertex(size_t index, const Vec3d& delta);
+
+	/* 平移模型 */
+	void translate(Vec3d delta);
+
+	VertexAlter_ getVertexAlter() const { return mVertexAlter; }
 private:
 	bool mHasRequestAABB;
 
@@ -334,5 +328,6 @@ private:
 
 	std::string mName;
 
+	VertexAlter_ mVertexAlter;	
 };
 S_PTR(Mesh);

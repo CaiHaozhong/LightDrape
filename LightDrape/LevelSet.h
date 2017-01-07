@@ -13,8 +13,8 @@ public:
 	size_t start_vertex;
 	double factor;
 
-	LevelNode(){}
-	~LevelNode(){}
+	LevelNode();
+	~LevelNode();
 
 	/* 获取和该Node位置最接近的网格顶点的下标 */
 	size_t getNearestVertex(Mesh_ mesh);
@@ -32,9 +32,7 @@ S_PTR(LevelNode);
 /* 一个独立的圈，这个圈里的节点与测地源点的测地距相等 */
 class LevelCircle{
 public:
-	LevelCircle(){
-		isCenterXValid = false;
-	}
+	LevelCircle();
 	std::vector<LevelNode_> levelNodes;
 	double mCenterX;
 	size_t mSkeNode;

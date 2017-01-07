@@ -1,4 +1,5 @@
 #pragma once
+#include "Common.h"
 #include "Mesh.h"
 class MeshTransformer
 {
@@ -11,6 +12,6 @@ public:
 		mMesh = mesh;
 	}
 
-
+	void transform();
 };
-
+S_PTR(MeshTransformer);

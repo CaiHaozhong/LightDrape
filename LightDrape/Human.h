@@ -3,19 +3,16 @@
 #include "Watertightmesh.h"
 #include "Garment.h"
 class Human :
-	public WatertightMesh
+	public WatertightMesh, public std::enable_shared_from_this<Human>
 {
 public:	
 	~Human(void);
-	Human(Mesh_ mesh):WatertightMesh(mesh){}
+	Human(Mesh_ mesh);
 
-	size_t getGeodesicSource(){
-		/* TO DO */
-		return WatertightMesh::getGeodesicSource();
-	}
+	size_t getGeodesicSource();
+
+	Vec3d getAlignPoint();
 	
-	void dress(Garment garment){
-
-	}
+	void dress(Garment_ garment);
 };
 S_PTR(Human);

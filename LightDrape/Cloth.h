@@ -5,9 +5,9 @@ class Cloth :
 {
 public:
 	~Cloth(void);
-	size_t getGeodesicSource(){
-		/* TO DO */
-		return WatertightMesh::getGeodesicSource();
-	}
-};
+	Cloth(Mesh_ mesh);
+	size_t getGeodesicSource();
 
+	Vec3d getAlignPoint();
+};
+S_PTR(Cloth);

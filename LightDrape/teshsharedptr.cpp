@@ -3,7 +3,10 @@
 #include <vector>
 #include "WatertightMesh.h"
 #include "HumanSegmenter.h"
+#include "ClothSegmenter.h"
 #include "Human.h"
+#include "Cloth.h"
+#include "MeshTransformer.h"
 
 int mainForSkeleton(){
 	Mesh_ m = smartNew(Mesh);
@@ -22,9 +25,11 @@ int mainForSkeleton(){
 }
 class Config{
 public:
-	std::string InPath;
-	std::string InFileName;
-	std::string OutPath;
+	std::string humanInPath;	
+	std::string clothInPath;
+	std::string humanInFileName;
+	std::string clothInFileName;
+	std::string clothOutPath;
 	Config(){}
 	Config(char* file){
 		init(file);
@@ -39,55 +44,85 @@ public:
 				getline(configIn, ignore);
 				continue;
 			}
-			if(type == "InPath"){
-				configIn >> InPath;
+			if(type == "human_in_path"){
+				configIn >> humanInPath;
 			}
-			else if(type == "InFileName"){
-				configIn >> InFileName;
+			else if(type == "cloth_in_path"){
+				configIn >> clothInPath;
 			}
-			else if(type == "OutPath"){
-				configIn >> OutPath;
+			else if(type == "human_in_file"){
+				configIn >> humanInFileName;
+			}
+			else if(type == "cloth_in_file"){
+				configIn >> clothInFileName;
+			}
+			else if(type == "cloth_out_path"){
+				configIn >> clothOutPath;
 			}
 		}
 	}
 };
-int main(){
-	
+int main(){	
 	Config config("E:\\Project\\LightDrape\\data\\config");	
-	Mesh_ mesh = smartNew(Mesh);
-	mesh->setName(config.InFileName.substr(0,config.InFileName.size()-4));
-	bool readSuc = OpenMesh::IO::read_mesh(*mesh, config.InPath + config.InFileName);
+
+	/* Human */
+	Mesh_ hRawmesh = smartNew(Mesh);
+	hRawmesh->setName(config.humanInFileName.substr(0,config.humanInFileName.size()-4));
+	bool readSuc = OpenMesh::IO::read_mesh(*hRawmesh, config.humanInPath + config.humanInFileName);
 	if(readSuc){
-		mesh->request_vertex_normals();
-		mesh->request_face_normals();	
+		hRawmesh->request_vertex_normals();
+		hRawmesh->request_face_normals();	
+		hRawmesh->requestAABB();
+	}	
+	Human_ human = std::make_shared<Human>(hRawmesh);
+
+	/* Garment */
+	Mesh_ gRawmesh = smartNew(Mesh);
+	gRawmesh->setName(config.clothInFileName.substr(0,config.clothInFileName.size()-4));
+	readSuc = OpenMesh::IO::read_mesh(*gRawmesh, config.clothInPath + config.clothInFileName);
+	if(readSuc){
+		gRawmesh->request_vertex_normals();
+		gRawmesh->request_face_normals();	
+		gRawmesh->requestAABB();
+	}	
+	Garment_ garment = std::make_shared<Cloth>(gRawmesh);
+
+	/* Dress */
+	human->dress(garment);
+	
+// 	MeshTransformer_ t = std::make_shared<MeshTransformer>(garment);
+// 	t->transform();
+
+	/* Output */
+	bool suc = OpenMesh::IO::write_mesh(*garment, config.clothOutPath+config.clothInFileName);
+	if(suc){
+		PRINTLN("write succsss!");
 	}
-	Human_ human = std::make_shared<Human>(mesh);
-	PRINTLN("Begin Skeletonize...");
-	MeshSkeletonization_ skeletonizer = smartNew(MeshSkeletonizationCached);
-	skeletonizer->skeletonize(human);
-	//human->dumpSkeLinkMesh();
-	PRINTLN("End Skeletonize...");
-	HumanSegmenter segmenter(human);
-	segmenter.segment();
-	Segment_ seg = human->getSegment();
-	char* outSegName[] = {"leftHand","rightHand","leftLeg","rightLeg","head","torso"};
-	std::vector<std::pair<size_t, Region_> > regions = seg->getRegionsRaw();
-	for(size_t i = 0; i < regions.size(); i++){
-		std::pair<size_t, Region_> typeRegionPair = regions[i];
-		Region_ re = typeRegionPair.second;
-		Mesh out;
-		std::set<size_t>& vs = re->getVertices();
-		for(std::set<size_t>::iterator it = vs.begin();
-			it != vs.end(); it++){
-			Vec3d ver = human->point(Mesh::VertexHandle(*it));
-			out.add_vertex(ver);
-		}
-		char of[200];
-		sprintf(of,"%s.obj", outSegName[typeRegionPair.first]);
-		bool wsuc = OpenMesh::IO::write_mesh(out, config.OutPath+of);
-		if(wsuc){
-			std::cout << "write successfully of seg " << i << std::endl;
-		}
+	else{
+		PRINTLN("write fail!");
 	}
+	
+	
+// 	Segment_ seg = watertightMesh->getSegment();
+// 	char* outSegNameHuman[] = {"leftHand","rightHand","leftLeg","rightLeg","head","torso"};
+// 	char* outSegNameCloth[] = {"torso", "leftSleeves", "rightSleeves"};
+// 	std::vector<std::pair<size_t, Region_> > regions = seg->getRegionsRaw();
+// 	for(size_t i = 0; i < regions.size(); i++){
+// 		std::pair<size_t, Region_> typeRegionPair = regions[i];
+// 		Region_ re = typeRegionPair.second;
+// 		Mesh out;
+// 		std::set<size_t>& vs = re->getVertices();
+// 		for(std::set<size_t>::iterator it = vs.begin();
+// 			it != vs.end(); it++){
+// 			Vec3d ver = watertightMesh->point(Mesh::VertexHandle(*it));
+// 			out.add_vertex(ver);
+// 		}
+// 		char of[200];
+// 		sprintf(of,"%s.obj", outSegNameCloth[typeRegionPair.first]);
+// 		bool wsuc = OpenMesh::IO::write_mesh(out, config.OutPath+of);
+// 		if(wsuc){
+// 			std::cout << "write successfully of seg " << i << std::endl;
+// 		}
+// 	}
 	getchar();
 }
