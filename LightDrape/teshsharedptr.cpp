@@ -63,7 +63,7 @@ public:
 	}
 };
 int main(){	
-	Config config("E:\\Project\\LightDrape\\data\\config");	
+	Config config("D:\\Develop\\project\\LightDrape\\C++\\data\\config");
 
 	/* Human */
 	Mesh_ hRawmesh = smartNew(Mesh);
