@@ -7,68 +7,13 @@
 #include "Human.h"
 #include "Cloth.h"
 #include "MeshTransformer.h"
-
-int mainForSkeleton(){
-	Mesh_ m = smartNew(Mesh);
-	char* file = "D:\\Develop\\project\\LightDrape\\C++\\data\\upclothwithsleeves\\cloth.obj";
-	bool ret = OpenMesh::IO::read_mesh(*m, file);
-	WatertightMesh_ wm = nullptr;
-	if(ret){
-		m->request_face_normals();
-		m->request_vertex_normals();
-		wm = std::make_shared<WatertightMesh>(m);
-		MeshSkeletonization msk;
-		msk.skeletonize(wm);
-	}
-	getchar();
-	return 0;
-}
-class Config{
-public:
-	std::string humanInPath;	
-	std::string clothInPath;
-	std::string humanInFileName;
-	std::string clothInFileName;
-	std::string clothOutPath;
-	Config(){}
-	Config(char* file){
-		init(file);
-	}
-	void init(char* file){
-		std::string type;
-		std::string ignore;
-		std::ifstream configIn(file);
-		while(!configIn.eof()){
-			configIn >> type;
-			if(type == "#"){
-				getline(configIn, ignore);
-				continue;
-			}
-			if(type == "human_in_path"){
-				configIn >> humanInPath;
-			}
-			else if(type == "cloth_in_path"){
-				configIn >> clothInPath;
-			}
-			else if(type == "human_in_file"){
-				configIn >> humanInFileName;
-			}
-			else if(type == "cloth_in_file"){
-				configIn >> clothInFileName;
-			}
-			else if(type == "cloth_out_path"){
-				configIn >> clothOutPath;
-			}
-		}
-	}
-};
-int main(){	
-	Config config("D:\\Develop\\project\\LightDrape\\C++\\data\\config");
-
+#include "Config.h"
+int main(){
+	Config_ config = Config::getInstance();
 	/* Human */
 	Mesh_ hRawmesh = smartNew(Mesh);
-	hRawmesh->setName(config.humanInFileName.substr(0,config.humanInFileName.size()-4));
-	bool readSuc = OpenMesh::IO::read_mesh(*hRawmesh, config.humanInPath + config.humanInFileName);
+	hRawmesh->setName(config->humanInFileName.substr(0,config->humanInFileName.size()-4));
+	bool readSuc = OpenMesh::IO::read_mesh(*hRawmesh, config->humanInPath + config->humanInFileName);
 	if(readSuc){
 		hRawmesh->request_vertex_normals();
 		hRawmesh->request_face_normals();	
@@ -76,10 +21,20 @@ int main(){
 	}	
 	Human_ human = std::make_shared<Human>(hRawmesh);
 
+	MeshTransformerFactory_ meshTransformerFactory = smartNew(AxisYTransFactory);
+	MeshTransformer_ transformer = meshTransformerFactory->createTransfomer(config->humanMeshDiretion);
+	if(transformer){
+		transformer->setMesh(human);
+		transformer->transform();
+	}
+
+	/* Output */
+	OpenMesh::IO::write_mesh(*human, config->clothOutPath+config->humanInFileName);
+
 	/* Garment */
 	Mesh_ gRawmesh = smartNew(Mesh);
-	gRawmesh->setName(config.clothInFileName.substr(0,config.clothInFileName.size()-4));
-	readSuc = OpenMesh::IO::read_mesh(*gRawmesh, config.clothInPath + config.clothInFileName);
+	gRawmesh->setName(config->clothInFileName.substr(0,config->clothInFileName.size()-4));
+	readSuc = OpenMesh::IO::read_mesh(*gRawmesh, config->clothInPath + config->clothInFileName);
 	if(readSuc){
 		gRawmesh->request_vertex_normals();
 		gRawmesh->request_face_normals();	
@@ -94,7 +49,7 @@ int main(){
 // 	t->transform();
 
 	/* Output */
-	bool suc = OpenMesh::IO::write_mesh(*garment, config.clothOutPath+config.clothInFileName);
+	bool suc = OpenMesh::IO::write_mesh(*garment, config->clothOutPath+config->clothInFileName);
 	if(suc){
 		PRINTLN("write succsss!");
 	}
@@ -125,4 +80,5 @@ int main(){
 // 		}
 // 	}
 	getchar();
+	return 0;
 }

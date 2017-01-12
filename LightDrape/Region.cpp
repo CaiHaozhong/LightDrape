@@ -165,48 +165,6 @@ void Region::toSortedSkeleton( std::vector<size_t>& skeNodes,
 			cur = next;
 		}
 	}
-// 
-// 	skeNodes.push_back(mStartSkeIndex);
-// 	size_t last = mStartSkeIndex;
-// 	Skeleton::IndexList& neighbors = mSkeleton->getNeighbors(mStartSkeIndex);
-// 	size_t nextCount = 0;
-// 	size_t next = 0;
-// 	for(size_t i = 0; i < neighbors.size(); i++){
-// 		size_t nei = neighbors[i];
-// 		if(mSkeNodes.find(nei) != mSkeNodes.end()){
-// 			nextCount += 1;
-// 			next = nei;
-// 		}
-// 	}
-// 	bool hasNext = true;
-// 	if(nextCount == 0){
-// 		PRINTLN("no next node.");
-// 		return;
-// 	}
-// 	else if(nextCount != 1){
-// 		PRINTLN("multi next node");		
-// 	}
-// 	while(hasNext){
-// 		skeNodes.push_back(next);
-// 		size_t cur = next;
-// 		Skeleton::IndexList& neighbors = mSkeleton->getNeighbors(next);
-// 		size_t nextCount = 0;
-// 		for(size_t i = 0; i < neighbors.size(); i++){
-// 			size_t nei = neighbors[i];
-// 			if(nei != last
-// 				&& mSkeNodes.find(nei) != mSkeNodes.end()){
-// 				nextCount += 1;
-// 				next = nei;
-// 			}
-// 		}
-// 		last = cur;
-// 		if(nextCount == 0){
-// 			hasNext = false;
-// 		}
-// 		if(nextCount != 0){
-// 			PRINTLN("multi next node");
-// 		}
-// 	}
 }
 
 void Region::dump( std::string name )
