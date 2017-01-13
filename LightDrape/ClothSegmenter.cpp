@@ -55,9 +55,6 @@ void ClothSegmenter::onDifferentLevelSet( size_t seq, LevelSet_ levelSet )
 			addToRegion(mLeftSleeve, ccp[0].first);
 			addToRegion(mTorso, ccp[1].first);
 			addToRegion(mRightSleeve, ccp[2].first);
-			mLeftSleeve->setPossibleStart(*(mLeftSleeve->getSkeNodes().begin()));
-			mTorso->setPossibleStart(*(mTorso->getSkeNodes().begin()));
-			mRightSleeve->setPossibleStart(*(mRightSleeve->getSkeNodes().begin()));
 		}
 		else{
 			for(size_t i = 0; i < 3; i++){

@@ -8,6 +8,7 @@ Mesh::Mesh() :_Mesh(){
 	mMinPoint = OpenMesh::Vec3f(maxFloat,maxFloat,maxFloat);
 	mMaxPoint = OpenMesh::Vec3f(minFloat,minFloat,minFloat);
 	mVertexAlter = smartNew(VertexAlter);
+	mEdgeAverageLength = -1;
 }
 
 Mesh::~Mesh() {
@@ -98,4 +99,18 @@ void Mesh::alterVertex(size_t index, const Vec3d& delta)
 void Mesh::translate( Vec3d delta )
 {
 	mVertexAlter->translate(delta);
+}
+
+double Mesh::getAverageEdgeLength()
+{
+	if(mEdgeAverageLength > 0){
+		return mEdgeAverageLength;
+	}
+	mEdgeAverageLength = 0;
+	for(Mesh::EdgeIter e_it = this->edges_begin(); e_it != this->edges_end();
+		e_it++){
+			mEdgeAverageLength += getEdgeLength(*e_it);
+	}
+	mEdgeAverageLength = mEdgeAverageLength / this->n_edges();
+	return mEdgeAverageLength;
 }

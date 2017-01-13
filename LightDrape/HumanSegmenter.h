@@ -22,6 +22,9 @@ private:
 		, mLeftLegSkeNode, mRightLegSkeNode;
 	WatertightMesh_ mMesh;
 	Skeleton_ mMeshSkeleton;
+
+	bool mIsHead;
+	double mLastLCRadius;
 protected:
 	/* Override */
 	void onDifferentLevelSet(size_t seq, LevelSet_ levelSet);
@@ -40,7 +43,10 @@ private:
 
 	void handleTorso(LevelSet_ levelSet);
 
-
 	void handleLegs(LevelSet_ levelSet);
+
+	bool isHead(LevelCircle_ lc);
+
+	double maxRadius(LevelCircle_ lc);
 };
 

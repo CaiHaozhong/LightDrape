@@ -1,5 +1,5 @@
 #include "WatertightMesh.h"
-
+#include <fstream>
 
 
 WatertightMesh::~WatertightMesh(void)
@@ -41,12 +41,12 @@ size_t WatertightMesh::getGeodesicSource()
 {
 	double maxYValue = getMax().values_[1];
 	double minYValue = getMin().values_[1];
-	double threshold = maxYValue - getEdgeLength(*(edges_begin()))*1.5;
+	double threshold = maxYValue - getAverageEdgeLength()*3;
 	typedef std::pair<Vec3d, size_t> Node;
 	std::vector<Node> candidatePoints;
 	int cur = 0;
 	double minX = std::numeric_limits<double>::max(),
-		maxX = -minX, maxZ = minX, minZ = -maxZ;
+		maxX = -minX, minZ = minX, maxZ = -minX;
 	for (VertexIter v_it = vertices_begin();
 		v_it != vertices_end(); ++v_it){
 			Vec3d& p = this->point(*v_it);
@@ -60,17 +60,29 @@ size_t WatertightMesh::getGeodesicSource()
 			cur++;
 	}
 	Vec3d centerTopPoint = Vec3d((maxX+minX)/2, maxYValue, (maxZ+minZ)/2);
-	double dis = 1000000;
+
+	std::ofstream out = std::ofstream("D:\\Develop\\project\\LightDrape\\C++\\data\\candidate.cg");	
+	out << "# D:3 NV:" << candidatePoints.size() << " NE:" << 0 << "\n";
+	for(size_t i = 0; i < candidatePoints.size(); i++){
+		Vec3d& p = candidatePoints[i].first;
+		out << "v " << p.values_[0] << " " << p.values_[1] << " " << p.values_[2] << "\n";
+	}
+	out.close();
+
+	out = std::ofstream("D:\\Develop\\project\\LightDrape\\C++\\data\\center.cg");	
+	out << "# D:3 NV:" << 1 << " NE:" << 0 << "\n";
+	out << "v " << centerTopPoint.values_[0] << " " << centerTopPoint.values_[1] << " " << centerTopPoint.values_[2] << "\n";
+	out.close();
+
+	double dis = std::numeric_limits<double>::max();
 	Node sourceNode;
-	for(size_t i = 0; i < candidatePoints.size(); i++)
-	{
+	for(size_t i = 0; i < candidatePoints.size(); i++){
 		Vec3d& curPoint = candidatePoints[i].first;
 		double dx = (curPoint.values_[0]-centerTopPoint.values_[0]);
-		double dy = (curPoint.values_[1]-centerTopPoint.values_[1]);
+//		double dy = (curPoint.values_[1]-centerTopPoint.values_[1]);
 		double dz = (curPoint.values_[2]-centerTopPoint.values_[2]);
-		double d = dx*dx + dy*dy + dz*dz;
-		if(d < dis)
-		{
+		double d = dx*dx + dz*dz;
+		if(d < dis){
 			dis = d;
 			sourceNode = candidatePoints[i];
 		}

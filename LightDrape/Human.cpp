@@ -43,11 +43,11 @@ void Human::dress( Garment_ garment )
 	PRINTLN("Segment garment end.");
 	
 	
-	GarmentFitter_ fitter = std::make_shared<GarmentFitter>(garment);
-	fitter->setMeshDeformer(smartNew(LaplacianMeshDeformer));
-	PRINTLN("Fitting garment...");
-	fitter->fit(shared_from_this());
-	PRINTLN("Fitting garment end.");
+// 	GarmentFitter_ fitter = std::make_shared<GarmentFitter>(garment);
+// 	fitter->setMeshDeformer(smartNew(LaplacianMeshDeformer));
+// 	PRINTLN("Fitting garment...");
+// 	fitter->fit(shared_from_this());
+// 	PRINTLN("Fitting garment end.");
 }
 
 Vec3d Human::getAlignPoint()

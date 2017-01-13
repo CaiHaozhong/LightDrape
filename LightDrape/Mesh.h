@@ -308,6 +308,9 @@ public:
 	/* 返回一条边的长度 */
 	double getEdgeLength(Mesh::EdgeHandle e);
 
+	/* 返回边的平均长度 */
+	double getAverageEdgeLength();
+
 	std::string getName() const;
 
 	void setName(std::string val);
@@ -329,5 +332,7 @@ private:
 	std::string mName;
 
 	VertexAlter_ mVertexAlter;	
+
+	double mEdgeAverageLength;
 };
 S_PTR(Mesh);

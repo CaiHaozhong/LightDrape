@@ -70,6 +70,8 @@ void HumanSegmenter::initHumanSegmenter( WatertightMesh_ mesh )
 		= mLeftLegSkeNode = mRightLegSkeNode = -1;
 	mMesh = mesh;
 	mMeshSkeleton = mMesh->getSkeleton();
+	mIsHead = true;
+	mLastLCRadius = -1;
 }
 
 void HumanSegmenter::handleHead( LevelSet_ levelSet )
@@ -78,9 +80,12 @@ void HumanSegmenter::handleHead( LevelSet_ levelSet )
 		PRINTLN("Human Segment Error: incorrect categories of head");
 		return ;
 	}
-	addToRegion(mHead, levelSet->getCircle(0));
-	if(mHead->hasStartSetted() == false){
-		mHead->setPossibleStart(*(mHead->getSkeNodes().begin()));
+	LevelCircle_ lc = levelSet->getCircle(0);
+	if(isHead(lc)){
+		addToRegion(mHead, lc);
+	}
+	else{
+		addToRegion(mTorso, lc);
 	}
 }
 
@@ -109,9 +114,6 @@ void HumanSegmenter::handleTorso( LevelSet_ levelSet )
 		addToRegion(mLeftHand, ccp[0].first);
 		addToRegion(mTorso, ccp[1].first);
 		addToRegion(mRightHand, ccp[2].first);
-		mLeftHand->setPossibleStart(*(mLeftHand->getSkeNodes().begin()));
-		mTorso->setPossibleStart(*(mTorso->getSkeNodes().begin()));
-		mRightHand->setPossibleStart(*(mRightHand->getSkeNodes().begin()));
 	}
 	else{			
 		for(size_t i = 0; i < 3; i++){
@@ -161,8 +163,6 @@ void HumanSegmenter::handleLegs( LevelSet_ levelSet )
 			addToRegion(mLeftLeg, leg2);
 			addToRegion(mRightLeg, leg1);
 		}
-		mLeftLeg->setPossibleStart(*(mLeftLeg->getSkeNodes().begin()));
-		mRightLeg->setPossibleStart(*(mRightLeg->getSkeNodes().begin()));
 	}
 	else{
 		size_t dis1 = mMeshSkeleton->intervalNodeCount(skeNode1, mLeftLegSkeNode);
@@ -180,4 +180,38 @@ void HumanSegmenter::handleLegs( LevelSet_ levelSet )
 			mRightLegSkeNode = skeNode1;
 		}
 	}
+}
+
+bool HumanSegmenter::isHead( LevelCircle_ lc )
+{
+	if(mIsHead == false){
+		return false;
+	}
+	if(mLastLCRadius < 0){
+		mLastLCRadius = maxRadius(lc);
+		return true;
+	}
+	double curRadius = maxRadius(lc);
+	double minBetweenTwo = std::min(mLastLCRadius, curRadius);
+	if(abs(curRadius-mLastLCRadius) > 0.65 * minBetweenTwo){
+		mIsHead = false;
+		return false;
+	}
+	mLastLCRadius = curRadius;
+	return true;
+}
+
+double HumanSegmenter::maxRadius( LevelCircle_ lc )
+{
+	double minD = std::numeric_limits<double>::min();
+	double maxD = std::numeric_limits<double>::max();
+	Vec3d minP = Vec3d(maxD, maxD, maxD);
+	Vec3d maxP = Vec3d(minD, minD, minD);
+	std::vector<LevelNode_> nodes = lc->levelNodes;
+	for(size_t i = 0; i < nodes.size(); i++){
+		LevelNode_ n = nodes[i];
+		minP.minimized(n->exactlyPoint(mMesh));
+		maxP.maximize(n->exactlyPoint(mMesh));
+	}
+	return (minP-maxP).length() / 2.0;
 }

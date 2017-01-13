@@ -20,7 +20,7 @@ void MeshSegmenter::init( WatertightMesh_ mesh )
 	mMesh = mesh;
 	decideGranularity();
 	PRINTLN("Begin compute Geodesic...");
-	GeodesicResolver_ geodesicResolver = smartNew(GeodesicResolverCached);
+	GeodesicResolver_ geodesicResolver = smartNew(GeodesicResolver);
 	mGeodisPropery = geodesicResolver->resolveGeo(mMesh);
 	PRINTLN("End compute Geodesic...");
 	// 		hasAdded = smartNew(BooleanProperty);
@@ -30,7 +30,7 @@ void MeshSegmenter::init( WatertightMesh_ mesh )
 	// 		}
 	// 		hasSkeletonNodeAdded.resize(mMesh->getSkeleton()->nodeCount(), false);
 	PRINTLN("Begin computeLevelSet...");
-	computeLevelSet(true);
+	computeLevelSet();
 	PRINTLN("End computeLevelSet...");
 }
 
@@ -122,6 +122,9 @@ void MeshSegmenter::computeLevelSet( bool useCache /*= false*/ )
 		else{
 			++cursor;
 		}			
+	}
+	for(size_t i = 0; i < mLevelSets.size(); i++){
+		mLevelSets[i]->dumpRaw(mMesh, i);
 	}
 	for(size_t i = 0; i < mLevelSets.size(); i++){
 		char msg[50];
@@ -218,7 +221,7 @@ void MeshSegmenter::filterNoise( std::vector<bool>& isNoise )
 
 void MeshSegmenter::addToRegion( Region_ region, LevelCircle_ levelCircle )
 {
-	std::vector<LevelNode_> levelNodes = levelCircle->levelNodes;		
+	std::vector<LevelNode_> levelNodes = levelCircle->levelNodes;	
 	for(size_t i = 0; i < levelNodes.size(); i++){
 		LevelNode_ n = levelNodes[i];
 		size_t v = n->getNearestVertex(mMesh);
@@ -233,6 +236,9 @@ void MeshSegmenter::addToRegion( Region_ region, LevelCircle_ levelCircle )
 		// 				region->addSkeleton(skenode);
 		// 				hasSkeletonNodeAdded[skenode] = true;
 		// 			}
+	}
+	if(region->hasStartSetted() == false){
+		region->setPossibleStart(*(region->getSkeNodes().begin()));
 	}
 }
 
