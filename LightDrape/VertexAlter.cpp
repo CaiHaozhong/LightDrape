@@ -1,15 +1,10 @@
 #include "VertexAlter.h"
 
 
-VertexAlter::VertexAlter(void)
-{
-	trans = Vec3d(0,0,0);
-}
+VertexAlter::VertexAlter(void){}
 
 
-VertexAlter::~VertexAlter(void)
-{
-}
+VertexAlter::~VertexAlter(void){}
 
 size_t VertexAlter::add( size_t index, const Vec3d& delta )
 {
@@ -17,7 +12,22 @@ size_t VertexAlter::add( size_t index, const Vec3d& delta )
 	return vertexDelta.size();
 }
 
-void VertexAlter::translate( const Vec3d& delta )
+size_t VertexAlter::size() const
 {
-	this->trans = delta;
+	return vertexDelta.size();
+}
+
+size_t VertexAlter::getIndex( size_t i ) const
+{
+	return vertexDelta.at(i).first;
+}
+
+Vec3d& VertexAlter::getDelta( size_t i )
+{
+	return vertexDelta[i].second;
+}
+
+std::pair<size_t, Vec3d>& VertexAlter::getAlter( size_t i )
+{
+	return vertexDelta[i];
 }

@@ -93,9 +93,9 @@ void ClothSegmenter::onFinishCoarseSegment()
 Segment_ ClothSegmenter::createSegment()
 {
 	ClothSegment_ mClothSegment = smartNew(ClothSegment);
-	mTorso = std::make_shared<Region>(mMeshSkeleton);
-	mLeftSleeve = std::make_shared<Region>(mMeshSkeleton);
-	mRightSleeve = std::make_shared<Region>(mMeshSkeleton);
+	mTorso = std::make_shared<Region>(mMesh);
+	mLeftSleeve = std::make_shared<Region>(mMesh);
+	mRightSleeve = std::make_shared<Region>(mMesh);
 	mClothSegment->addRegion(ClothSegment::CLOTH_TORSO, mTorso);
 	mClothSegment->addRegion(ClothSegment::CLOTH_LEFT_SLEEVE, mLeftSleeve);
 	mClothSegment->addRegion(ClothSegment::CLOTH_RIGHT_SLEEVE, mRightSleeve);				

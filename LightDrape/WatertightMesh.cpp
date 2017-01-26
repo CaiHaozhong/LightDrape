@@ -61,18 +61,18 @@ size_t WatertightMesh::getGeodesicSource()
 	}
 	Vec3d centerTopPoint = Vec3d((maxX+minX)/2, maxYValue, (maxZ+minZ)/2);
 
-	std::ofstream out = std::ofstream("D:\\Develop\\project\\LightDrape\\C++\\data\\candidate.cg");	
-	out << "# D:3 NV:" << candidatePoints.size() << " NE:" << 0 << "\n";
-	for(size_t i = 0; i < candidatePoints.size(); i++){
-		Vec3d& p = candidatePoints[i].first;
-		out << "v " << p.values_[0] << " " << p.values_[1] << " " << p.values_[2] << "\n";
-	}
-	out.close();
-
-	out = std::ofstream("D:\\Develop\\project\\LightDrape\\C++\\data\\center.cg");	
-	out << "# D:3 NV:" << 1 << " NE:" << 0 << "\n";
-	out << "v " << centerTopPoint.values_[0] << " " << centerTopPoint.values_[1] << " " << centerTopPoint.values_[2] << "\n";
-	out.close();
+// 	std::ofstream out = std::ofstream("D:\\Develop\\project\\LightDrape\\C++\\data\\candidate.cg");	
+// 	out << "# D:3 NV:" << candidatePoints.size() << " NE:" << 0 << "\n";
+// 	for(size_t i = 0; i < candidatePoints.size(); i++){
+// 		Vec3d& p = candidatePoints[i].first;
+// 		out << "v " << p.values_[0] << " " << p.values_[1] << " " << p.values_[2] << "\n";
+// 	}
+// 	out.close();
+// 
+// 	out = std::ofstream("D:\\Develop\\project\\LightDrape\\C++\\data\\center.cg");	
+// 	out << "# D:3 NV:" << 1 << " NE:" << 0 << "\n";
+// 	out << "v " << centerTopPoint.values_[0] << " " << centerTopPoint.values_[1] << " " << centerTopPoint.values_[2] << "\n";
+// 	out.close();
 
 	double dis = std::numeric_limits<double>::max();
 	Node sourceNode;

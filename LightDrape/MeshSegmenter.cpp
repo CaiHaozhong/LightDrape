@@ -23,12 +23,6 @@ void MeshSegmenter::init( WatertightMesh_ mesh )
 	GeodesicResolver_ geodesicResolver = smartNew(GeodesicResolver);
 	mGeodisPropery = geodesicResolver->resolveGeo(mMesh);
 	PRINTLN("End compute Geodesic...");
-	// 		hasAdded = smartNew(BooleanProperty);
-	// 		mMesh->registerProperty(hasAdded);
-	// 		for(size_t i = 0; i < mMesh->n_vertices(); i++){
-	// 			hasAdded->set(i, false);
-	// 		}
-	// 		hasSkeletonNodeAdded.resize(mMesh->getSkeleton()->nodeCount(), false);
 	PRINTLN("Begin computeLevelSet...");
 	computeLevelSet();
 	PRINTLN("End computeLevelSet...");
@@ -61,12 +55,7 @@ WatertightMesh_ MeshSegmenter::getMesh() const
 
 void MeshSegmenter::decideGranularity()
 {
-	double edgeLengthSum = 0;
-	for(Mesh::EdgeIter ei = mMesh->edges_begin();
-		ei != mMesh->edges_end(); ei++){
-			edgeLengthSum += mMesh->getEdgeLength(*ei);
-	}
-	mGranularity = edgeLengthSum/mMesh->n_edges()*2;
+	mGranularity = mMesh->getAverageEdgeLength()*2;
 }
 
 void MeshSegmenter::computeLevelSet( bool useCache /*= false*/ )
@@ -146,6 +135,7 @@ void MeshSegmenter::computeLevelSet( bool useCache /*= false*/ )
 		lsc.cache(mLevelSets);
 		PRINTLN("cached levelset.");
 	}
+	mLevelSetCount = mLevelSets.size();
 }
 
 void MeshSegmenter::refineSegment()
@@ -226,16 +216,8 @@ void MeshSegmenter::addToRegion( Region_ region, LevelCircle_ levelCircle )
 		LevelNode_ n = levelNodes[i];
 		size_t v = n->getNearestVertex(mMesh);
 		region->addVertex(v);
-		// 			if(!hasAdded->get(v)){
-		// 				region->addVertex(v);
-		// 				hasAdded->set(v, true);
-		// 			}
 		size_t skenode = mMesh->getCorrSkeletonNode(v);
-		region->addSkeleton(skenode);
-		// 			if(hasSkeletonNodeAdded[skenode] == false){
-		// 				region->addSkeleton(skenode);
-		// 				hasSkeletonNodeAdded[skenode] = true;
-		// 			}
+		region->addSkeletonNode(skenode);
 	}
 	if(region->hasStartSetted() == false){
 		region->setPossibleStart(*(region->getSkeNodes().begin()));

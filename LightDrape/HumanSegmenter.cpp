@@ -9,7 +9,7 @@ HumanSegmenter::~HumanSegmenter(void)
 HumanSegmenter::HumanSegmenter( WatertightMesh_ mesh ) : MeshSegmenter(mesh)
 {
 	/* C++构造函数中调用虚函数时是不会调用子类函数的，所以分开调用init.(Java是可以的） */
-	initHumanSegmenter(mesh);
+	initHumanSegmenter(mesh);	
 }
 
 HumanSegmenter::HumanSegmenter( void )
@@ -25,6 +25,7 @@ void HumanSegmenter::init( WatertightMesh_ mesh )
 
 void HumanSegmenter::onDifferentLevelSet( size_t seq, LevelSet_ levelSet )
 {
+	mCurLevelSet++;
 	if(seq == 1){
 		handleHead(levelSet);
 	}
@@ -49,12 +50,12 @@ void HumanSegmenter::onFinishCoarseSegment()
 Segment_ HumanSegmenter::createSegment()
 {
 	Segment_ seg = smartNew(Segment);
-	mHead = std::make_shared<Region>(mMeshSkeleton);
-	mTorso = std::make_shared<Region>(mMeshSkeleton);
-	mLeftHand = std::make_shared<Region>(mMeshSkeleton);
-	mRightHand = std::make_shared<Region>(mMeshSkeleton);
-	mLeftLeg = std::make_shared<Region>(mMeshSkeleton);
-	mRightLeg = std::make_shared<Region>(mMeshSkeleton);
+	mHead = std::make_shared<Region>(mMesh);
+	mTorso = std::make_shared<Region>(mMesh);
+	mLeftHand = std::make_shared<Region>(mMesh);
+	mRightHand = std::make_shared<Region>(mMesh);
+	mLeftLeg = std::make_shared<Region>(mMesh);
+	mRightLeg = std::make_shared<Region>(mMesh);
 	seg->addRegionRaw(Segment::BODY_HEAD, mHead);
 	seg->addRegionRaw(Segment::BODY_TORSE, mTorso);
 	seg->addRegionRaw(Segment::BODY_LEFT_HAND, mLeftHand);
@@ -72,6 +73,7 @@ void HumanSegmenter::initHumanSegmenter( WatertightMesh_ mesh )
 	mMeshSkeleton = mMesh->getSkeleton();
 	mIsHead = true;
 	mLastLCRadius = -1;
+	mCurLevelSet = 0;
 }
 
 void HumanSegmenter::handleHead( LevelSet_ levelSet )
@@ -191,13 +193,18 @@ bool HumanSegmenter::isHead( LevelCircle_ lc )
 		mLastLCRadius = maxRadius(lc);
 		return true;
 	}
-	double curRadius = maxRadius(lc);
-	double minBetweenTwo = std::min(mLastLCRadius, curRadius);
-	if(abs(curRadius-mLastLCRadius) > 0.65 * minBetweenTwo){
+// 	double curRadius = maxRadius(lc);
+// 	double minBetweenTwo = std::min(mLastLCRadius, curRadius);
+// 	if(abs(curRadius-mLastLCRadius) > 0.65 * minBetweenTwo){
+// 		mIsHead = false;
+// 		return false;
+// 	}
+// 	mLastLCRadius = curRadius;
+
+	if(mCurLevelSet >= getLevelSetCount() / 8.0){
 		mIsHead = false;
 		return false;
 	}
-	mLastLCRadius = curRadius;
 	return true;
 }
 

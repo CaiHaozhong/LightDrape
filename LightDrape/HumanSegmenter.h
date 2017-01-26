@@ -25,6 +25,7 @@ private:
 
 	bool mIsHead;
 	double mLastLCRadius;
+	size_t mCurLevelSet;
 protected:
 	/* Override */
 	void onDifferentLevelSet(size_t seq, LevelSet_ levelSet);

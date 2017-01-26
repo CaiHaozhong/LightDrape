@@ -96,11 +96,6 @@ void Mesh::alterVertex(size_t index, const Vec3d& delta)
 	mVertexAlter->add(index, delta);
 }
 
-void Mesh::translate( Vec3d delta )
-{
-	mVertexAlter->translate(delta);
-}
-
 double Mesh::getAverageEdgeLength()
 {
 	if(mEdgeAverageLength > 0){

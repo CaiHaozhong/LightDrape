@@ -1,6 +1,8 @@
 #pragma once
 #include "Common.h"
 #include "Region.h"
+class RegionFitter;
+S_PTR(RegionFitter);
 class Segment
 {	
 protected:
@@ -19,7 +21,10 @@ public:
 
 	/* 根据人体不同的部位返回匹配的部位 */
 	virtual Region_ getMatch(int bodyPart);
-
+	
+	/* 根据人体不同的部位返回匹配的算法 */
+	virtual RegionFitter_ getRegionFitter(int bodyPart);
+	
 	/* 将Region添加至父类中的vector中 */
 	void addRegionRaw(int type, Region_ region);
 

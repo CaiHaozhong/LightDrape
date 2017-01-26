@@ -43,7 +43,7 @@ Config_ Config::getInstance()
 {
 	if(mInstance == nullptr){
 		mInstance = std::shared_ptr<Config>(new Config());
-		mInstance->init("D:\\Develop\\project\\LightDrape\\C++\\data\\config");
+		mInstance->init("E:\\Project\\LightDrape\\data\\config");
 	}
 	return mInstance;
 }

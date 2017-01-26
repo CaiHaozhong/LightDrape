@@ -4,16 +4,18 @@
 #include <map>
 #include <tuple>
 #include <queue>
+#include "WatertightMesh.h"
 
 Region::Region(void)
 {
 	mHasStartSetted = false;
+	mMesh = nullptr;
 }
 
-Region::Region( Skeleton_ ske )
-{
-	setSkeleton(ske);
+Region::Region( WatertightMesh_ mesh )
+{	
 	mHasStartSetted = false;
+	setMesh(mesh);
 }
 
 
@@ -21,9 +23,9 @@ Region::~Region(void)
 {
 }
 
-void Region::setSkeleton( Skeleton_ ske )
+void Region::setMesh( WatertightMesh_ mesh )
 {
-	mSkeleton = ske;
+	mMesh = mesh;
 }
 
 std::set<size_t>::iterator Region::addVertex( size_t vertex )
@@ -31,7 +33,7 @@ std::set<size_t>::iterator Region::addVertex( size_t vertex )
 	return mVertics.insert(vertex).first;
 }
 
-std::set<size_t>::iterator Region::addSkeleton( size_t skenode )
+std::set<size_t>::iterator Region::addSkeletonNode( size_t skenode )
 {
 	return mSkeNodes.insert(skenode).first;
 }
@@ -59,11 +61,11 @@ std::set<size_t>& Region::getSkeNodes()
 
 void Region::expand()
 {
-	if(mSkeleton == nullptr)
+	if(mMesh == nullptr)
 		return;
-	
-
-	size_t nodeCount = mSkeleton->nodeCount();
+	/* expand skeleton */
+	Skeleton_ skeleton = mMesh->getSkeleton();
+	size_t nodeCount = skeleton->nodeCount();
 	bool* inRegion = new bool[nodeCount];
 	memset(inRegion, false, nodeCount);
 	size_t curSize = mSkeNodes.size();
@@ -81,7 +83,7 @@ void Region::expand()
 	while(!Q.empty()){
 		size_t cur = Q.front();
 		Q.pop();
-		Skeleton::IndexList& neighbors = mSkeleton->getNeighbors(cur);
+		Skeleton::IndexList& neighbors = skeleton->getNeighbors(cur);
 		size_t neiCount = neighbors.size();
 		for(size_t i = 0; i < neiCount; i++){
 			size_t nei = neighbors[i];
@@ -103,8 +105,9 @@ void Region::expand()
 			Q.push(nei);
 		}
 	}
-	sortSkeleton();
+	/* expand vertex */
 	expandVertices();
+
 	/* 确定起始骨骼节点 */
 	confirmStartSkeNode();
 	delete [] pre;
@@ -112,19 +115,15 @@ void Region::expand()
 	delete [] inRegion;
 }
 
-void Region::sortSkeleton()
-{		
-	// Use Set, no need to sort
-	/* TODO */
-}
-
 void Region::expandVertices()
 {
+	if(mMesh == nullptr) return;
+	Skeleton_ skeleton = mMesh->getSkeleton();
 	size_t vCount = mVertics.size();
 	size_t skeCount = mSkeNodes.size();			
 	for(std::set<size_t>::iterator it = mSkeNodes.begin();
 		it != mSkeNodes.end(); it++){
-			std::vector<size_t>& corrs = mSkeleton->nodeAt(*it)->correspondanceIndices;
+			std::vector<size_t>& corrs = skeleton->nodeAt(*it)->correspondanceIndices;
 			size_t corCount = corrs.size();
 			for(size_t j = 0; j < corCount; j++){
 				mVertics.insert(corrs[j]);
@@ -132,51 +131,18 @@ void Region::expandVertices()
 	}
 }
 
-void Region::toSortedSkeleton( std::vector<size_t>& skeNodes,
-							MultiNextNodeHandler_ multiNextNodeHandler)
-{
-	size_t cur = mStartSkeIndex;
-	bool curValid = true;
-	size_t last = cur;
-	while(curValid){
-		skeNodes.push_back(cur);
-		Skeleton::IndexList& neighbors = mSkeleton->getNeighbors(cur);
-		size_t neighborCount = neighbors.size();		
-		std::vector<size_t> nextNodes;
-		for(size_t i = 0; i < neighborCount; i++){
-			size_t nei = neighbors[i];
-			if(mSkeNodes.find(nei) != mSkeNodes.end()
-				&& nei != last){					
-					nextNodes.push_back(nei);
-			}
-		}
-		if(nextNodes.size() == 0){
-			curValid = false;
-		}
-		else{
-			size_t next = nextNodes[0];
-			if(nextNodes.size() != 1){							
-				next = multiNextNodeHandler->decide(cur, nextNodes);
-				char msg[100];				
-				sprintf(msg, "multi next node on %d, decide %d as next node", cur, next);
-				PRINTLN(msg);
-			}
-			last = cur;
-			cur = next;
-		}
-	}
-}
-
 void Region::dump( std::string name )
 {
 #ifdef _DEBUG_
+	if(mMesh == nullptr) return;
+	Skeleton_ skeleton = mMesh->getSkeleton();
 	std::string path = "../data/region/";
 	std::ofstream out = std::ofstream(path + name + ".cg");
 	size_t nodeCount = mSkeNodes.size();
 	out << "# D:3 NV:" << nodeCount
 		<< " NE:" << 0 << "\n";
 	for(auto it = mSkeNodes.begin(); it != mSkeNodes.end(); it++){
-		SkeletonNode_ skn = mSkeleton->nodeAt(*it);
+		SkeletonNode_ skn = skeleton->nodeAt(*it);
 		out << "v " << skn->point.values_[0] << " " << skn->point.values_[1] << " "
 			<< skn->point.values_[2] << "\n";
 	}
@@ -184,7 +150,7 @@ void Region::dump( std::string name )
 	out = std::ofstream(path + name + "_front.cg");
 	out << "# D:3 NV:" << 1
 		<< " NE:" << 0 << "\n";
-	SkeletonNode_ skn = mSkeleton->nodeAt(mStartSkeIndex);
+	SkeletonNode_ skn = skeleton->nodeAt(mStartSkeIndex);
 	out << "v " << skn->point.values_[0] << " " << skn->point.values_[1] << " "
 		<< skn->point.values_[2] << "\n";
 	out.close();
@@ -193,7 +159,9 @@ void Region::dump( std::string name )
 
 void Region::confirmStartSkeNode()
 {
-	Skeleton::IndexList neighbors = mSkeleton->getNeighbors(mStartSkeIndex);
+	if(mMesh == nullptr) return;
+	Skeleton_ skeleton = mMesh->getSkeleton();
+	Skeleton::IndexList neighbors = skeleton->getNeighbors(mStartSkeIndex);
 	size_t neiCount = neighbors.size();
 	size_t inRegionCount = 0;
 	for(size_t i = 0; i < neiCount; i++){
@@ -217,7 +185,7 @@ void Region::confirmStartSkeNode()
 	while (!Q.empty()){
 		size_t cur = Q.front();
 		Q.pop();
-		Skeleton::IndexList neighbors = mSkeleton->getNeighbors(cur);
+		Skeleton::IndexList neighbors = skeleton->getNeighbors(cur);
 		size_t neiCount = neighbors.size();
 		bool hasUnVisitInRegion = false;
 		for(size_t i = 0; i < neiCount; i++){
@@ -251,37 +219,14 @@ bool Region::hasStartSetted()
 	return mHasStartSetted;
 }
 
-size_t ChooseLongBranch::decide( size_t prev, std::vector<size_t>& nextNodes )
+Skeleton_ Region::getSkeleton()
 {
-	std::vector< std::pair<size_t, size_t> > nodeLens;
-	size_t nodeCount = nextNodes.size();
-	for(size_t i = 0; i < nodeCount; i++){
-		nodeLens.push_back(std::make_pair(nextNodes[i], length(prev, nextNodes[i])));
-	}
-	typedef std::pair<size_t, size_t> NL;
-	std::sort(nodeLens.begin(), nodeLens.end(), [](const NL& a, const NL& b){
-		return a.second > b.second;
-	});
-	return nodeLens[0].first;
+	if(mMesh == nullptr)
+		return nullptr;
+	return mMesh->getSkeleton();
 }
 
-size_t ChooseLongBranch::length( size_t prev, size_t node )
+WatertightMesh_ Region::getMesh()
 {
-	Skeleton::IndexList& neighbors = mSkeleton->getNeighbors(node);
-	size_t ret = 1;
-	size_t neiCount = neighbors.size();
-	/* 只有一个邻居或有两个以上的邻居都视为终点 */
-	while(neiCount == 2){
-		for(size_t i = 0; i < 2; i++){
-			size_t nei = neighbors[i];
-			if(nei != prev){
-				prev = node;
-				node = nei;
-				ret += 1;
-			}
-		}
-		neighbors = mSkeleton->getNeighbors(node);
-		neiCount = neighbors.size();
-	}
-	return ret;
+	return mMesh;
 }

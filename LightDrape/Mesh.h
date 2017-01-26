@@ -318,10 +318,8 @@ public:
 	/* 修改下标为index的顶点的位置 */
 	void alterVertex(size_t index, const Vec3d& delta);
 
-	/* 平移模型 */
-	void translate(Vec3d delta);
-
 	VertexAlter_ getVertexAlter() const { return mVertexAlter; }
+
 private:
 	bool mHasRequestAABB;
 

@@ -15,6 +15,10 @@ public:
 	ClothSegment(void);
 	~ClothSegment(void);
 	Region_ getMatch(int bodyPart);
+
+	/* 根据人体不同的部位返回匹配的方法 */
+	RegionFitter_ getRegionFitter(int bodyPart);
+
 	void addRegion(int part, Region_ region);
 };
 S_PTR(ClothSegment);
