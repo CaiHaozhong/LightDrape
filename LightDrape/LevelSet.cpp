@@ -100,6 +100,16 @@ LevelCircle::LevelCircle()
 	isCenterXValid = false;
 }
 
+Vec3d LevelCircle::getMeanPoint( Mesh_ mesh )
+{
+	Vec3d sum = Vec3d(0,0,0);
+	for(size_t i = 0; i < levelNodes.size(); i++){
+		Vec3d exactPoint = levelNodes[i]->exactlyPoint(mesh);
+		sum += exactPoint;
+	}
+	return sum / levelNodes.size();
+}
+
 LevelSet::CircleLinkedList::CircleLinkedList()
 {
 	mHead = nullptr;
@@ -262,7 +272,7 @@ void LevelSet::dump( int i )
 	for(size_t i = 0; i < mCircles.size(); i++){
 		edgeCount += mCircles[i]->levelNodes.size();
 	}
-	out << "# D:3 NV:" << mMesh->n_vertices() << " NE:" << edgeCount << "\n";
+	out << "# D:3 NV:" << mMesh->n_vertices()+mCircles.size() << " NE:" << edgeCount << "\n";
 	for(Mesh::VertexIter vi = mMesh->vertices_begin(); vi != mMesh->vertices_end();
 		vi++){
 			Vec3d p = mMesh->point(*vi);

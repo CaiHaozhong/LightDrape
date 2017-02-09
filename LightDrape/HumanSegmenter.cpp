@@ -189,10 +189,10 @@ bool HumanSegmenter::isHead( LevelCircle_ lc )
 	if(mIsHead == false){
 		return false;
 	}
-	if(mLastLCRadius < 0){
-		mLastLCRadius = maxRadius(lc);
-		return true;
-	}
+// 	if(mLastLCRadius < 0){
+// 		mLastLCRadius = maxRadius(lc);
+// 		return true;
+// 	}
 // 	double curRadius = maxRadius(lc);
 // 	double minBetweenTwo = std::min(mLastLCRadius, curRadius);
 // 	if(abs(curRadius-mLastLCRadius) > 0.65 * minBetweenTwo){

@@ -24,9 +24,10 @@ public:
 
 	void setGarment(Garment_ garment);
 
+	/* 设置变形的算法 */
 	void setMeshDeformer(MeshDeformer_ meshDeformer);
 
-	/* 穿衣, 变形衣服 */
+	/* 将衣服穿到人身上, 这将变形衣服 */
 	void fit(Human_ human);
 
 private:

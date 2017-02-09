@@ -74,5 +74,5 @@ void LaplacianLocalDeformer::deformMesh( Mesh_ mesh, VertexAlter_ vertexAlter )
 		Vec3d& p = mesh->point(Mesh::VertexHandle(sparseVertex));
 		p += (*resultVertices)[i].toOpenMeshVector();
 	}
-	delete [] resultVertices;
+	delete resultVertices;
 }

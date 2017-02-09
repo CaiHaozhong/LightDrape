@@ -1,5 +1,7 @@
 #include "MeshSegmenter.h"
-
+#include "GeodesicResolver.h"
+#include "GeodesicResolverCached.h"
+#include "LevelSetCacher.h"
 
 MeshSegmenter::MeshSegmenter(void)
 {
@@ -20,7 +22,7 @@ void MeshSegmenter::init( WatertightMesh_ mesh )
 	mMesh = mesh;
 	decideGranularity();
 	PRINTLN("Begin compute Geodesic...");
-	GeodesicResolver_ geodesicResolver = smartNew(GeodesicResolver);
+	GeodesicResolver_ geodesicResolver = smartNew(GeodesicResolverCached);
 	mGeodisPropery = geodesicResolver->resolveGeo(mMesh);
 	PRINTLN("End compute Geodesic...");
 	PRINTLN("Begin computeLevelSet...");
@@ -84,7 +86,7 @@ void MeshSegmenter::computeLevelSet( bool useCache /*= false*/ )
 	mLevelSets.push_back(std::make_shared<LevelSet>(mMesh));
 	LevelSet_ levelSet = mLevelSets[mLevelSets.size()-1];
 	while(cursor < meshEdges.size()){						
-		Mesh::EdgeHandle e = meshEdges[cursor];
+		Mesh::EdgeHandle& e = meshEdges[cursor];
 		std::pair<size_t, size_t> vs = mMesh->getEndVertices(e);
 		std::pair<size_t, double> verDisPair01 
 			= std::make_pair(vs.first, mGeodisPropery->get(vs.first));
@@ -93,7 +95,7 @@ void MeshSegmenter::computeLevelSet( bool useCache /*= false*/ )
 		if(verDisPair01.second > verDisPair02.second){
 			std::swap(verDisPair01, verDisPair02);
 		}
-		if(verDisPair01.second < curLevel && verDisPair02.second > curLevel){
+		if(verDisPair01.second <= curLevel && verDisPair02.second >= curLevel){
 			LevelNode_ node = smartNew(LevelNode);
 			node->edge = e.idx();
 			node->start_vertex = verDisPair01.first;
@@ -121,10 +123,10 @@ void MeshSegmenter::computeLevelSet( bool useCache /*= false*/ )
 		PRINTLN(msg);
 		mLevelSets[i]->init();
 		//			mLevelSets[i]->dumpRaw(mMesh, i);
-		// 			for(size_t c = 0; c < mLevelSets[i]->getCount(); c++){
-		// 				getCircleSkeletonNode(mLevelSets[i]->getCircle(c));
-		// 			}
-		// 			mLevelSets[i]->dump(i);
+		 			for(size_t c = 0; c < mLevelSets[i]->getCount(); c++){
+		 				getCircleSkeletonNode(mLevelSets[i]->getCircle(c));
+		 			}
+		 			mLevelSets[i]->dump(i);
 	}
 
 	char c[20];
@@ -135,7 +137,6 @@ void MeshSegmenter::computeLevelSet( bool useCache /*= false*/ )
 		lsc.cache(mLevelSets);
 		PRINTLN("cached levelset.");
 	}
-	mLevelSetCount = mLevelSets.size();
 }
 
 void MeshSegmenter::refineSegment()
@@ -211,7 +212,8 @@ void MeshSegmenter::filterNoise( std::vector<bool>& isNoise )
 
 void MeshSegmenter::addToRegion( Region_ region, LevelCircle_ levelCircle )
 {
-	std::vector<LevelNode_> levelNodes = levelCircle->levelNodes;	
+	region->addCircle(levelCircle);
+	std::vector<LevelNode_> levelNodes = levelCircle->levelNodes;
 	for(size_t i = 0; i < levelNodes.size(); i++){
 		LevelNode_ n = levelNodes[i];
 		size_t v = n->getNearestVertex(mMesh);

@@ -5,6 +5,7 @@
 #include <tuple>
 #include <queue>
 #include "WatertightMesh.h"
+#include "LevelSet.h"
 
 Region::Region(void)
 {
@@ -229,4 +230,25 @@ Skeleton_ Region::getSkeleton()
 WatertightMesh_ Region::getMesh()
 {
 	return mMesh;
+}
+
+size_t Region::addCircle( LevelCircle_ circle )
+{
+	mLevelCircles.push_back(circle);
+	return mLevelCircles.size();
+}
+
+size_t Region::getCircleCount() const
+{
+	return mLevelCircles.size();
+}
+
+std::vector<LevelCircle_>& Region::getCircles()
+{
+	return mLevelCircles;
+}
+
+size_t Region::getVerticesSize() const
+{
+	return mVertics.size();
 }

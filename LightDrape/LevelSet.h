@@ -49,6 +49,9 @@ public:
 	void computeCenter(Mesh_ mesh);
 
 	double getCenterX(Mesh_ mesh);
+
+	/* 计算该圆的中心点 */
+	Vec3d getMeanPoint(Mesh_ mesh);
 private:
 	/* 判断两条边是否相邻 */
 	bool isNeighbor(Mesh::EdgeHandle a, Mesh::EdgeHandle b, Mesh_ mesh);

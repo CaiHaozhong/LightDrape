@@ -5,6 +5,8 @@
 #include <tuple>
 class WatertightMesh;
 S_PTR(WatertightMesh);
+class Skeleton;
+S_PTR(Skeleton);
 class MultiNextNodeHandler{
 protected:
 	Skeleton_ mSkeleton;

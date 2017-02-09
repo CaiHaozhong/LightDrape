@@ -1,11 +1,8 @@
 #pragma once
 #include "WatertightMesh.h"
 #include "LevelSet.h"
-#include "GeodesicResolver.h"
-#include "GeodesicResolverCached.h"
 #include "Segment.h"
 #include <vector>
-#include "LevelSetCacher.h"
 class MeshSegmenter
 {
 private:
@@ -16,7 +13,6 @@ private:
 	/* Level Set之间的间隔 */
 	double mGranularity;
 	
-	size_t mLevelSetCount;	
 	/* 判断网格顶点是否已经加入Region了
 	 * TODO：测试一下是否回收了 */ 
 // 	BooleanProperty_ hasAdded;
@@ -32,7 +28,7 @@ public:
 	void segment();
 	WatertightMesh_ getMesh() const;
 
-	size_t getLevelSetCount() const { return mLevelSetCount; }
+	size_t getLevelSetCount() const { return mLevelSets.size(); }
 private:
 	/* 根据网格边的长度决定Level Set的间隔 
 	 * 间隔为网格所有边的平均长度的一半

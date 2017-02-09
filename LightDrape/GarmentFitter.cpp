@@ -27,7 +27,7 @@ GarmentFitter::~GarmentFitter(void)
 
 void GarmentFitter::fit( Human_ human )
 {
-	if(human == nullptr){
+	if(human == nullptr || mGarment == nullptr){
 		return;
 	}
 	mHuman = human;
