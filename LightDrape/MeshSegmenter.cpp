@@ -26,7 +26,7 @@ void MeshSegmenter::init( WatertightMesh_ mesh )
 	mGeodisPropery = geodesicResolver->resolveGeo(mMesh);
 	PRINTLN("End compute Geodesic...");
 	PRINTLN("Begin computeLevelSet...");
-	computeLevelSet();
+	computeLevelSet(true);
 	PRINTLN("End computeLevelSet...");
 }
 
@@ -57,7 +57,7 @@ WatertightMesh_ MeshSegmenter::getMesh() const
 
 void MeshSegmenter::decideGranularity()
 {
-	mGranularity = mMesh->getAverageEdgeLength()*2;
+	mGranularity = mMesh->getAverageEdgeLength()*3;
 }
 
 void MeshSegmenter::computeLevelSet( bool useCache /*= false*/ )

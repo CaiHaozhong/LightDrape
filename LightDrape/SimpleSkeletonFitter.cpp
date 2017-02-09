@@ -72,12 +72,8 @@ void SimpleSkeletonFitter::getSortedSkeleton( Region_ region, std::vector<size_t
 	size_t last = cur;
 	while(curValid){
 		sortedSkeNodes.push_back(cur);
-		if(sortedSkeNodes.size() == 18)
-			std::cout << sortedSkeNodes.size() << std::endl;
 		Skeleton::IndexList& neighbors = skeleton->getNeighbors(cur);
 		size_t neighborCount = neighbors.size();		
-		if(neighborCount == 4)
-			region->getMesh()->dumpSkeleton("4ske");
 		std::vector<size_t> nextNodes;
 		for(size_t i = 0; i < neighborCount; i++){
 			size_t nei = neighbors[i];

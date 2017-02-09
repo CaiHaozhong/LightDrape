@@ -49,37 +49,37 @@ int main(){
 // 	t->transform();
 
 	/* Output */
-// 	bool suc = OpenMesh::IO::write_mesh(*garment, config->clothOutPath+config->clothInFileName);
-// 	if(suc){
-// 		PRINTLN("write succsss!");
-// 	}
-// 	else{
-// 		PRINTLN("write fail!");
-// 	}
+	bool suc = OpenMesh::IO::write_mesh(*garment, config->clothOutPath+config->clothInFileName);
+	if(suc){
+		PRINTLN("write succsss!");
+	}
+	else{
+		PRINTLN("write fail!");
+	}
 	
 
 	/* Output Segments */
-	Segment_ seg = human->getSegment();
-	char* outSegNameHuman[] = {"leftHand","rightHand","leftLeg","rightLeg","head","torso"};
-	char* outSegNameCloth[] = {"torso", "leftSleeves", "rightSleeves"};
-	std::vector<std::pair<int, Region_> > regions = seg->getRegionsRaw();
-	for(size_t i = 0; i < regions.size(); i++){
-		std::pair<int, Region_> typeRegionPair = regions[i];
-		Region_ re = typeRegionPair.second;
-		Mesh out;
-		std::set<size_t>& vs = re->getVertices();
-		for(std::set<size_t>::iterator it = vs.begin();
-			it != vs.end(); it++){
-			Vec3d ver = human->point(Mesh::VertexHandle(*it));
-			out.add_vertex(ver);
-		}
-		char of[200];
-		sprintf(of,"%s_%s.obj", human->getName().c_str(), outSegNameHuman[typeRegionPair.first]);
-		bool wsuc = OpenMesh::IO::write_mesh(out, config->clothOutPath+of);
-		if(wsuc){
-			std::cout << "write successfully of seg " << i << std::endl;
-		}
-	}
+// 	Segment_ seg = human->getSegment();
+// 	char* outSegNameHuman[] = {"leftHand","rightHand","leftLeg","rightLeg","head","torso"};
+// 	char* outSegNameCloth[] = {"torso", "leftSleeves", "rightSleeves"};
+// 	std::vector<std::pair<int, Region_> > regions = seg->getRegionsRaw();
+// 	for(size_t i = 0; i < regions.size(); i++){
+// 		std::pair<int, Region_> typeRegionPair = regions[i];
+// 		Region_ re = typeRegionPair.second;
+// 		Mesh out;
+// 		std::set<size_t>& vs = re->getVertices();
+// 		for(std::set<size_t>::iterator it = vs.begin();
+// 			it != vs.end(); it++){
+// 			Vec3d ver = human->point(Mesh::VertexHandle(*it));
+// 			out.add_vertex(ver);
+// 		}
+// 		char of[200];
+// 		sprintf(of,"%s_%s.obj", human->getName().c_str(), outSegNameHuman[typeRegionPair.first]);
+// 		bool wsuc = OpenMesh::IO::write_mesh(out, config->clothOutPath+of);
+// 		if(wsuc){
+// 			std::cout << "write successfully of seg " << i << std::endl;
+// 		}
+// 	}
 	getchar();
 
 	return 0;

@@ -11,10 +11,9 @@ UglyDeformer::~UglyDeformer(void)
 {
 }
 
-void UglyDeformer::deformMesh( Mesh_ mesh )
+void UglyDeformer::deformMesh( Mesh_ mesh, VertexAlter_ vertexAlter)
 {
 	if(mesh == nullptr) return;		
-	VertexAlter_ vertexAlter = mesh->getVertexAlter();
 	if(vertexAlter == nullptr) return;		
 
 	std::vector<std::pair<size_t, Vec3d> >& alters = vertexAlter->vertexDelta;
