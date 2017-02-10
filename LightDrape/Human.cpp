@@ -3,6 +3,7 @@
 #include "HumanSegmenter.h"
 #include "ClothSegmenter.h"
 #include "GarmentFitter.h"
+#include "LaplacianGlobalDeformer.h"
 #include "LaplacianLocalDeformer.h"
 #include "UglyDeformer.h"
 
@@ -43,7 +44,7 @@ void Human::dress( Garment_ garment )
 	PRINTLN("Segment garment end.");
 	
 	GarmentFitter_ fitter = std::make_shared<GarmentFitter>(garment);
-	fitter->setMeshDeformer(smartNew(UglyDeformer));
+	fitter->setMeshDeformer(smartNew(LaplacianLocalDeformer));
 	PRINTLN("Fitting garment...");
 	fitter->fit(shared_from_this());
 	PRINTLN("Fitting garment end.");

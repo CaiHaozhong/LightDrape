@@ -35,33 +35,31 @@ void GarmentFitter::fit( Human_ human )
 	/* 先将衣服平移到人体身上 */
 	translateGarment();
 
-	Segment_ humSeg = human->getSegment();
-	if(humSeg == nullptr){
-		PRINTLN("Segment human first.");
-		return;
-	}
-	Segment_ garSeg = mGarment->getSegment();
-	if(garSeg == nullptr){
-		PRINTLN("Segment garment first.");
-		return;
-	}
-	std::vector<std::pair<int, Region_> > humanRegions = humSeg->getRegionsRaw();
-	size_t count = humanRegions.size();
-	for(size_t i = 0; i < count; i++){
-		int bodyPart = humanRegions[i].first;
-		if(bodyPart == Segment::BODY_TORSE)
-			continue;
-		Region_ bodyRegion = humanRegions[i].second;
-		RegionFitter_ fitter = garSeg->getRegionFitter(bodyPart);
-		if(fitter != nullptr){
-			VertexAlter_ vertexAlter = fitter->fit(bodyRegion);
-			if(mMeshDeformer == nullptr){
-				PRINTLN("No avalible meshdeformer.");
-				return;
-			}
-			mMeshDeformer->deformMesh(mGarment, vertexAlter);
-		}
-	}
+// 	Segment_ humSeg = human->getSegment();
+// 	if(humSeg == nullptr){
+// 		PRINTLN("Segment human first.");
+// 		return;
+// 	}
+// 	Segment_ garSeg = mGarment->getSegment();
+// 	if(garSeg == nullptr){
+// 		PRINTLN("Segment garment first.");
+// 		return;
+// 	}
+// 	std::vector<std::pair<int, Region_> > humanRegions = humSeg->getRegionsRaw();
+// 	size_t count = humanRegions.size();
+// 	for(size_t i = 0; i < count; i++){
+// 		int bodyPart = humanRegions[i].first;
+// 		Region_ bodyRegion = humanRegions[i].second;
+// 		RegionFitter_ fitter = garSeg->getRegionFitter(bodyPart);
+// 		if(fitter != nullptr){
+// 			VertexAlter_ vertexAlter = fitter->fit(bodyRegion);
+// 			if(mMeshDeformer == nullptr){
+// 				PRINTLN("No avalible meshdeformer.");
+// 				return;
+// 			}
+// 			mMeshDeformer->deformMesh(mGarment, vertexAlter);
+// 		}
+// 	}
 }
 
 void GarmentFitter::translateGarment()

@@ -26,7 +26,7 @@ void MeshSegmenter::init( WatertightMesh_ mesh )
 	mGeodisPropery = geodesicResolver->resolveGeo(mMesh);
 	PRINTLN("End compute Geodesic...");
 	PRINTLN("Begin computeLevelSet...");
-	computeLevelSet(true);
+	computeLevelSet();
 	PRINTLN("End computeLevelSet...");
 }
 
@@ -57,7 +57,7 @@ WatertightMesh_ MeshSegmenter::getMesh() const
 
 void MeshSegmenter::decideGranularity()
 {
-	mGranularity = mMesh->getAverageEdgeLength()*3;
+	mGranularity = mMesh->getAverageEdgeLength()*1.7;
 }
 
 void MeshSegmenter::computeLevelSet( bool useCache /*= false*/ )
@@ -123,6 +123,9 @@ void MeshSegmenter::computeLevelSet( bool useCache /*= false*/ )
 		PRINTLN(msg);
 		mLevelSets[i]->init();
 		//			mLevelSets[i]->dumpRaw(mMesh, i);
+		if(mLevelSets[i]->getCount() == 5){
+			mLevelSets[i]->dump(i);
+		}
 		 			for(size_t c = 0; c < mLevelSets[i]->getCount(); c++){
 		 				getCircleSkeletonNode(mLevelSets[i]->getCircle(c));
 		 			}

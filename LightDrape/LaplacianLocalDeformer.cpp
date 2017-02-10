@@ -14,7 +14,10 @@ LaplacianLocalDeformer::~LaplacianLocalDeformer(void)
 
 void LaplacianLocalDeformer::deformMesh( Mesh_ mesh, VertexAlter_ vertexAlter )
 {
+	/* 稀疏下标映射到紧密下标
+	 * 额外信息：该顶点的位移 */
 	std::unordered_map<size_t, std::pair<size_t, Vec3d> > sparseMapDense;
+
 	std::vector<size_t> denseMapSparse;
 	size_t alterCount = vertexAlter->size();
 	size_t denseCount = 0;
@@ -72,7 +75,7 @@ void LaplacianLocalDeformer::deformMesh( Mesh_ mesh, VertexAlter_ vertexAlter )
 	for(size_t i = 0; i < denseCount; i++){
 		size_t sparseVertex = denseMapSparse[i];
 		Vec3d& p = mesh->point(Mesh::VertexHandle(sparseVertex));
-		p += (*resultVertices)[i].toOpenMeshVector();
+		p = (*resultVertices)[i].toOpenMeshVector();
 	}
 	delete resultVertices;
 }

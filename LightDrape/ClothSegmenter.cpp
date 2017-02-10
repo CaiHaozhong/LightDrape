@@ -25,7 +25,7 @@ void ClothSegmenter::init( WatertightMesh_ mesh )
 
 void ClothSegmenter::onDifferentLevelSet( size_t seq, LevelSet_ levelSet )
 {
-	if(seq == 1){
+	if(seq == 1 || seq == 3){
 		if(levelSet->getCount() != 1){
 			PRINTLN("Cloth Segment Error: incorrect categories of torso");
 			return ;

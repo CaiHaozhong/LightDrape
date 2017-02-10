@@ -1,9 +1,5 @@
-#include "SkeletonizationPreCompile.h"
+#include <OpenMesh/Core/IO/MeshIO.hh>
 #include <iostream>
-#include <vector>
-#include "WatertightMesh.h"
-#include "HumanSegmenter.h"
-#include "ClothSegmenter.h"
 #include "Human.h"
 #include "Cloth.h"
 #include "MeshTransformer.h"

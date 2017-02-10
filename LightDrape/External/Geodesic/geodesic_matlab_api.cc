@@ -1,5 +1,6 @@
-#define GEODESIC_DLL_IMPORT __declspec(dllexport)
 #include "geodesic_precompile.h"
+#define GEODESIC_DLL_IMPORT __declspec(dllexport)
+#include "geodesic_matlab_api.hh"
 #include <boost\shared_ptr.hpp>
 #include <iostream>
 #include <fstream>
