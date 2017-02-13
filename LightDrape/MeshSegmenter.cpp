@@ -57,7 +57,7 @@ WatertightMesh_ MeshSegmenter::getMesh() const
 
 void MeshSegmenter::decideGranularity()
 {
-	mGranularity = mMesh->getAverageEdgeLength()*1.7;
+	mGranularity = mMesh->getAverageEdgeLength()*3;//1.7
 }
 
 void MeshSegmenter::computeLevelSet( bool useCache /*= false*/ )
@@ -124,6 +124,9 @@ void MeshSegmenter::computeLevelSet( bool useCache /*= false*/ )
 		mLevelSets[i]->init();
 		//			mLevelSets[i]->dumpRaw(mMesh, i);
 		if(mLevelSets[i]->getCount() == 5){
+			for(size_t c = 0; c < mLevelSets[i]->getCount(); c++){
+				getCircleSkeletonNode(mLevelSets[i]->getCircle(c));
+			}
 			mLevelSets[i]->dump(i);
 		}
 		 			for(size_t c = 0; c < mLevelSets[i]->getCount(); c++){

@@ -49,12 +49,18 @@ private:
 	 * 参数 garSkeTrans 为输出
 	 * garSkeTrans中的骨骼节点按照连接关系从开始节点按顺序存储
 	 */
-	void fitSkeleton(std::vector< std::pair<size_t, Vec3d> >& garSkeTrans, Region_ humanRegion);
+	void fitSkeleton(std::vector< std::pair<size_t, Vec3d> >& garSkeTrans, 
+		std::vector< std::pair<size_t, std::pair<Vec3d, double> > >& garSkeRotate,
+		Region_ humanRegion);
 
 	/* 加权计算骨骼节点对应的网格顶点的位移
 	 * 每个网格顶点受其对应的骨骼节点及相邻两个骨骼节点的影响，边界则为一个
 	 * 按网格顶点与骨骼节点的距离加权平均
 	 */
-	VertexAlter_ computeVertexAlters(WatertightMesh_ mesh, std::vector< std::pair<size_t, Vec3d> >& garSkeTrans);
+	void computeTranslation(VertexAlter_ ret, WatertightMesh_ mesh, std::vector< std::pair<size_t, Vec3d> >& garSkeTrans);
+
+	/* 对骨骼节点对应的网格顶点进行旋转 */
+	void computeRotation(VertexAlter_ ret, WatertightMesh_ mesh, 
+		std::vector< std::pair<size_t, std::pair<Vec3d, double> > >& garSkeRotate);
 };
 S_PTR(SimpleSkeletonFitter);

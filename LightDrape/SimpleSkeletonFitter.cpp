@@ -53,9 +53,15 @@ SimpleSkeletonFitter::~SimpleSkeletonFitter(void)
 
 VertexAlter_ SimpleSkeletonFitter::fit( Region_ humanRegion )
 {
+	VertexAlter_ ret = smartNew(VertexAlter);
+	/* size_t：骨骼节点，Vec3d：骨骼节点位移向量 */
 	std::vector< std::pair<size_t, Vec3d> > garSkeTrans;
-	fitSkeleton(garSkeTrans, humanRegion);
-	return computeVertexAlters(mGarmentRegion->getMesh(), garSkeTrans);
+	/* size_t：骨骼节点，Vec3d：骨骼节点旋转轴，double：旋转角 */
+	std::vector< std::pair<size_t, std::pair<Vec3d, double> > > garSkeRotate;
+	fitSkeleton(garSkeTrans, garSkeRotate, humanRegion);
+	computeTranslation(ret, mGarmentRegion->getMesh(), garSkeTrans);
+	computeRotation(ret, mGarmentRegion->getMesh(), garSkeRotate);
+	return ret;
 }
 
 std::string SimpleSkeletonFitter::getName(){
@@ -99,7 +105,9 @@ void SimpleSkeletonFitter::getSortedSkeleton( Region_ region, std::vector<size_t
 	}
 }
 
-void SimpleSkeletonFitter::fitSkeleton( std::vector< std::pair<size_t, Vec3d> >& garSkeTrans, Region_ humanRegion )
+void SimpleSkeletonFitter::fitSkeleton(std::vector< std::pair<size_t, Vec3d> >& garSkeTrans, 
+									   std::vector< std::pair<size_t, std::pair<Vec3d, double> > >& garSkeRotate,
+									   Region_ humanRegion)
 {
 	if( mGarmentRegion == nullptr || humanRegion == nullptr){
 		PRINTLN("In SimpleSkeletonFitter, regions should not be null.");
@@ -136,13 +144,24 @@ void SimpleSkeletonFitter::fitSkeleton( std::vector< std::pair<size_t, Vec3d> >&
 		Vec3d hp2 = humSkeleton->nodeAt(humOrderSkes[humCurIndex])->point;
 		Vec3d transVec = hp2 + (hp1-hp2) * (humLen-garLen)/cachedLen;
 		garSkeTrans.push_back(std::make_pair(curSke, transVec - garSkeleton->nodeAt(curSke)->point));
+
+		/* 计算骨骼旋转量 */
+		Vec3d humanVec = hp2-hp1;
+		const Vec3d& garCurPoint = garSkeleton->nodeAt(curSke)->point;
+		Vec3d garVec = garCurPoint - garSkeleton->nodeAt(garOrderedSkes[i-1])->point;
+		if(i + 1 < garOrderedSkes.size()){
+			garVec += (garSkeleton->nodeAt(garOrderedSkes[i+1])->point - garCurPoint);
+			garVec *= 0.5;
+		}
+		Vec3d axis = humanVec % garVec;
+		double angle = -acos((humanVec|garVec)/(humanVec.length()*garVec.length()));
+		garSkeRotate.push_back(std::make_pair(curSke, std::make_pair(axis, angle)));
 	}
 
 }
 
-VertexAlter_ SimpleSkeletonFitter::computeVertexAlters( WatertightMesh_ mesh, std::vector< std::pair<size_t, Vec3d> >& garSkeTrans )
-{
-	VertexAlter_ ret = smartNew(VertexAlter);
+void SimpleSkeletonFitter::computeTranslation( VertexAlter_ ret, WatertightMesh_ mesh, std::vector< std::pair<size_t, Vec3d> >& garSkeTrans )
+{	
 	Skeleton_ skeleton = mesh->getSkeleton();
 	size_t skeCount = garSkeTrans.size();
 	std::vector< size_t > involvedSkeNode;
@@ -179,5 +198,17 @@ VertexAlter_ SimpleSkeletonFitter::computeVertexAlters( WatertightMesh_ mesh, st
 			ret->add(v, vDelta);
 		}
 	}
-	return ret;
+}
+
+void SimpleSkeletonFitter::computeRotation( VertexAlter_ ret, WatertightMesh_ mesh, 
+										   std::vector< std::pair<size_t, std::pair<Vec3d, double> > >& garSkeRotates )
+{
+	size_t count = garSkeRotates.size();
+	Skeleton_ skeleton = mesh->getSkeleton();
+	for(size_t i = 0; i < count; i++){
+		size_t skeNode = garSkeRotates[i].first;
+		const std::pair<Vec3d, double>& rotation = garSkeRotates[i].second;
+		const std::vector<size_t>& corrs = skeleton->nodeAt(skeNode)->correspondanceIndices;
+		rotateCircle(ret, mesh, corrs, skeleton->nodeAt(skeNode)->point, rotation.first, rotation.second);
+	}
 }

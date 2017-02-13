@@ -34,5 +34,6 @@ Vec3d Cloth::getAlignPoint()
 				ret += getSkeleton()->nodeAt(startSke)->point;
 		}
 	}
+//	ret.values_[1] -= this->getHeight() * 0.35;
 	return ret/2.0;
 }
