@@ -19,14 +19,15 @@ MeshSegmenter::~MeshSegmenter(void)
 
 void MeshSegmenter::init( WatertightMesh_ mesh )
 {
-	mMesh = mesh;
-	decideGranularity();
+	mMesh = mesh;	
 	PRINTLN("Begin compute Geodesic...");
-	GeodesicResolver_ geodesicResolver = smartNew(GeodesicResolverCached);
-	mGeodisPropery = geodesicResolver->resolveGeo(mMesh);
+	mGeodesicResolver = smartNew(GeodesicResolverCached);
+	mGeodesicResolver->resolveGeo(mMesh);
+	mGeodesicResolver->normalize(mMesh->getVertexPropertyGeoDis(), mMesh->n_vertices()); // 将测地值归一化
+	decideGranularity();
 	PRINTLN("End compute Geodesic...");
 	PRINTLN("Begin computeLevelSet...");
-	computeLevelSet();
+	computeLevelSet(true);
 	PRINTLN("End computeLevelSet...");
 }
 
@@ -34,6 +35,7 @@ void MeshSegmenter::segment()
 {
 	mSegment = createSegment();
 	mMesh->setSegment(mSegment);
+	onBeginSegmentHook();
 	std::vector<bool> isNoise;		
 	PRINTLN("Begin filterNoise...");
 	for(size_t i = 0; i < mLevelSets.size(); i++){
@@ -48,6 +50,7 @@ void MeshSegmenter::segment()
 	PRINTLN("End filterNoise...");
 	coarseSegment(isNoise);	
 	refineSegment();
+	onFinishSegmentHook();
 }
 
 WatertightMesh_ MeshSegmenter::getMesh() const
@@ -55,9 +58,30 @@ WatertightMesh_ MeshSegmenter::getMesh() const
 	return mMesh;
 }
 
+size_t MeshSegmenter::getLevelSetCount() const
+{
+	return mLevelSets.size();
+}
+
+LevelSet_ MeshSegmenter::getLevelSet( size_t i )
+{
+	if(i < mLevelSets.size())
+		return mLevelSets[i];
+	return nullptr;
+}
+
+double MeshSegmenter::getGranularity() const
+{
+	return mGranularity;
+}
+
+
 void MeshSegmenter::decideGranularity()
 {
-	mGranularity = mMesh->getAverageEdgeLength()*3;//1.7
+	//mGranularity = mMesh->getAverageEdgeLength();//1.7
+	//mGranularity = 0.02;
+	double len = mGeodesicResolver->getMaxGeoDis() - mGeodesicResolver->getMinGeoDis();
+	mGranularity = (mMesh->getAverageEdgeLength()*0.8) / len;
 }
 
 void MeshSegmenter::computeLevelSet( bool useCache /*= false*/ )
@@ -80,22 +104,27 @@ void MeshSegmenter::computeLevelSet( bool useCache /*= false*/ )
 			return minDisA < minDisB;
 	});
 	double curLevel = mGranularity;
+	int stub = -1;//计算上一个LevelSet时第一条符合条件的边，使得curLevel位于边上
 	size_t cursor = 0;
 	mLevelSets.clear();
 	mLevelSets.reserve(32);//TO DO
-	mLevelSets.push_back(std::make_shared<LevelSet>(mMesh));
+	mLevelSets.push_back(std::make_shared<LevelSet>(mMesh));	
 	LevelSet_ levelSet = mLevelSets[mLevelSets.size()-1];
-	while(cursor < meshEdges.size()){						
+	levelSet->setHeight(curLevel);
+	while(cursor < meshEdges.size()){	
 		Mesh::EdgeHandle& e = meshEdges[cursor];
 		std::pair<size_t, size_t> vs = mMesh->getEndVertices(e);
 		std::pair<size_t, double> verDisPair01 
-			= std::make_pair(vs.first, mGeodisPropery->get(vs.first));
+			= std::make_pair(vs.first, mMesh->getGeodesicDis(vs.first));
 		std::pair<size_t, double> verDisPair02
-			= std::make_pair(vs.second, mGeodisPropery->get(vs.second));
+			= std::make_pair(vs.second, mMesh->getGeodesicDis(vs.second));
 		if(verDisPair01.second > verDisPair02.second){
 			std::swap(verDisPair01, verDisPair02);
 		}
 		if(verDisPair01.second <= curLevel && verDisPair02.second >= curLevel){
+			if(stub == -1){
+				stub = cursor;
+			}
 			LevelNode_ node = smartNew(LevelNode);
 			node->edge = e.idx();
 			node->start_vertex = verDisPair01.first;
@@ -109,6 +138,11 @@ void MeshSegmenter::computeLevelSet( bool useCache /*= false*/ )
 			curLevel += mGranularity;
 			mLevelSets.push_back(std::make_shared<LevelSet>(mMesh));
 			levelSet = mLevelSets[mLevelSets.size()-1];
+			levelSet->setHeight(curLevel);
+			if(stub > -1){
+				cursor = (size_t)stub;
+				stub = -1;
+			}
 		}
 		else{
 			++cursor;
@@ -123,16 +157,16 @@ void MeshSegmenter::computeLevelSet( bool useCache /*= false*/ )
 		PRINTLN(msg);
 		mLevelSets[i]->init();
 		//			mLevelSets[i]->dumpRaw(mMesh, i);
-		if(mLevelSets[i]->getCount() == 5){
-			for(size_t c = 0; c < mLevelSets[i]->getCount(); c++){
-				getCircleSkeletonNode(mLevelSets[i]->getCircle(c));
-			}
-			mLevelSets[i]->dump(i);
-		}
-		 			for(size_t c = 0; c < mLevelSets[i]->getCount(); c++){
-		 				getCircleSkeletonNode(mLevelSets[i]->getCircle(c));
-		 			}
-		 			mLevelSets[i]->dump(i);
+// 		if(mLevelSets[i]->getCount() == 5){
+// 			for(size_t c = 0; c < mLevelSets[i]->getCount(); c++){
+// 				getCircleSkeletonNode(mLevelSets[i]->getCircle(c));
+// 			}
+// 			mLevelSets[i]->dump(i);
+// 		}
+// 		 			for(size_t c = 0; c < mLevelSets[i]->getCount(); c++){
+// 		 				getCircleSkeletonNode(mLevelSets[i]->getCircle(c));
+// 		 			}
+// 		 			mLevelSets[i]->dump(i);
 	}
 
 	char c[20];
@@ -177,11 +211,20 @@ void MeshSegmenter::coarseSegment( std::vector<bool>& isNoise )
 	onFinishCoarseSegment();
 }
 
+void MeshSegmenter::onFinishCoarseSegment()
+{
+	std::vector< std::pair<int, Region_> >& regions = mSegment->getRegionsRaw();
+	for(std::vector< std::pair<int, Region_> >::iterator it = regions.begin();
+		it != regions.end(); it++){
+			it->second->expand();
+	}
+}
+
 double MeshSegmenter::getMinDisFromEdge( Mesh::EdgeHandle edge )
 {
 	std::pair<size_t, size_t> vs = mMesh->getEndVertices(edge);
-	double minDis = std::min(mGeodisPropery->get(vs.first),
-		mGeodisPropery->get(vs.second));
+	double minDis = std::min(mMesh->getGeodesicDis(vs.first),
+		mMesh->getGeodesicDis(vs.second));
 	return minDis;
 }
 
@@ -262,3 +305,9 @@ size_t MeshSegmenter::getCircleSkeletonNode( LevelCircle_ levelCircle )
 	levelCircle->mSkeNode = ret;
 	return ret;
 }
+
+void MeshSegmenter::onFinishSegmentHook(){}
+
+void MeshSegmenter::onBeginSegmentHook(){}
+
+

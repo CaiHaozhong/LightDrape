@@ -15,7 +15,12 @@ public:
 	/* 添加一个测地源点 */
 	void addSource(unsigned int s);
 
+	/* 设置一个源点，保证只有一个源点 */
+	void setSource(unsigned int s);
+
 	void computeGeodesicFromSource(std::vector<double>& ret);
+
+	double averageGeodesicDisFromSource(unsigned int s);
 private:
 	geodesic::Mesh _mesh;
 	geodesic::GeodesicAlgorithmExact* _algorithm;

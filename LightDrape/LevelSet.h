@@ -7,6 +7,8 @@
  * 该Node的位置
  * point(start_vertex) + factor * (point(end_vertex)-point(start_vertex))
  */
+class LevelSet;
+S_PTR(LevelSet);
 class LevelNode{
 public:
 	size_t edge;
@@ -33,6 +35,7 @@ S_PTR(LevelNode);
 class LevelCircle{
 public:
 	LevelCircle();
+	LevelCircle(LevelSet_ parent);
 	std::vector<LevelNode_> levelNodes;
 	double mCenterX;
 	size_t mSkeNode;
@@ -52,12 +55,21 @@ public:
 
 	/* 计算该圆的中心点 */
 	Vec3d getMeanPoint(Mesh_ mesh);
+
+	void setParent(LevelSet_ parent);
+
+	LevelSet_ getParent() const;
+
+	/* 获取该Circle的测地值 */
+	double getHeight();
 private:
 	/* 判断两条边是否相邻 */
 	bool isNeighbor(Mesh::EdgeHandle a, Mesh::EdgeHandle b, Mesh_ mesh);
+
+	LevelSet_ mParent;
 };
 S_PTR(LevelCircle);
-class LevelSet{	
+class LevelSet : public std::enable_shared_from_this<LevelSet>{	
 private:
 	/* 无序环形链表
 	 * 容器一个
@@ -99,7 +111,9 @@ private:
 	WatertightMesh_ mMesh;
 	std::vector<LevelCircle_> mCircles;
 	CircleLinkedList mRawNodes;
-	size_t mNodeCount;
+
+	/* 测地值 */
+	double mHeight;
 public:
 	LevelSet();
 	~LevelSet();
@@ -112,9 +126,15 @@ public:
 
 	void init();
 
+	/* 获取Circle的个数 */
 	size_t getCount();
 
 	LevelCircle_ getCircle(size_t categoryIndex);
+
+	double getHeight() const;
+	
+	void setHeight(double height);
+
 	void dumpRaw(Mesh_ mesh, int i);
 	void dump(int i);
 

@@ -68,7 +68,8 @@ void LevelSetCacher::setMesh( WatertightMesh_ mesh )
 void LevelSetCacher::cacheLevelSet(std::ofstream& out, LevelSet_ levelSet )
 {
 	size_t count = levelSet->getCount();
-	out << count << "\n";
+	double height = levelSet->getHeight();
+	out << height << " " << count << "\n";
 	for(size_t i = 0; i < count; i++){
 		LevelCircle_ lc = levelSet->getCircle(i);
 		size_t nodeCount = lc->levelNodes.size();
@@ -86,7 +87,9 @@ LevelSet_ LevelSetCacher::readLevelSet( std::ifstream& in )
 	ret->setMesh(mMesh);
 	std::vector<LevelCircle_>& circlesInRet = ret->getCircles();	
 	size_t circleCount;
-	in >> circleCount;
+	double height;
+	in >> height >> circleCount;
+	ret->setHeight(height);
 	while(circleCount--){
 		LevelCircle_ lc = smartNew(LevelCircle);
 		size_t nodeCount;
@@ -97,6 +100,7 @@ LevelSet_ LevelSetCacher::readLevelSet( std::ifstream& in )
 			lc->addNode(ln);
 		}
 		circlesInRet.push_back(lc);
+		lc->setParent(ret);
 	}
 	return ret;
 }

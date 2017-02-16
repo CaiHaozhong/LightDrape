@@ -36,6 +36,12 @@ void Config::init( char* file )
 		else if(type == "human_mesh_diretion"){
 			configIn >> humanMeshDiretion;
 		}
+		else if(type == "human_seg_out_path"){
+			configIn >> humanSegOutPath;
+		}
+		else if(type == "cloth_seg_out_path"){
+			configIn >> clothSegOutPath;
+		}
 	}
 }
 

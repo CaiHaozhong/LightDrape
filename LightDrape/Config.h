@@ -16,5 +16,7 @@ public:
 	std::string clothInFileName;
 	std::string clothOutPath;
 	std::string humanMeshDiretion;
+	std::string humanSegOutPath;
+	std::string clothSegOutPath;
 	static Config_ getInstance();
 };

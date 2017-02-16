@@ -20,6 +20,7 @@ private:
 	size_t mTorsoSkeNode, mLeftSleeveSkeNode, mRightSleeveSkeNode;
 	WatertightMesh_ mMesh;
 	Skeleton_ mMeshSkeleton;
+	size_t mCurLevelSet;
 protected:
 	/* Override */
 	void onDifferentLevelSet(size_t seq, LevelSet_ levelSet);
@@ -29,6 +30,15 @@ protected:
 
 	/* Override */
 	Segment_ createSegment();
+
+	/* Override */
+	void onFinishSegmentHook();
+
+	/* Override */
+	void onBeginSegmentHook();
+
+	/* Override */
+	void refineSegment();
 
 private:
 	void initClothSegmenter(WatertightMesh_ mesh);	

@@ -3,20 +3,19 @@
 #include "LevelSet.h"
 #include "Segment.h"
 #include <vector>
+class GeodesicResolver;
+S_PTR(GeodesicResolver);
 class MeshSegmenter
 {
 private:
 	WatertightMesh_ mMesh;
 	std::vector<LevelSet_> mLevelSets;
-	DoubleProperty_ mGeodisPropery;
-	Segment_ mSegment;
+	GeodesicResolver_ mGeodesicResolver;	
 	/* Level Set之间的间隔 */
 	double mGranularity;
-	
-	/* 判断网格顶点是否已经加入Region了
-	 * TODO：测试一下是否回收了 */ 
-// 	BooleanProperty_ hasAdded;
-// 	std::vector<bool> hasSkeletonNodeAdded;//判断骨骼节点是否已经加入Region了
+
+protected:
+	Segment_ mSegment;
 public:
 	MeshSegmenter(void);
 	MeshSegmenter(WatertightMesh_ mesh);
@@ -28,7 +27,10 @@ public:
 	void segment();
 	WatertightMesh_ getMesh() const;
 
-	size_t getLevelSetCount() const { return mLevelSets.size(); }
+	size_t getLevelSetCount() const;
+	LevelSet_ getLevelSet(size_t i);
+
+	double getGranularity() const;
 private:
 	/* 根据网格边的长度决定Level Set的间隔 
 	 * 间隔为网格所有边的平均长度的一半
@@ -36,8 +38,7 @@ private:
 	void decideGranularity();
 
 	void computeLevelSet(bool useCache = false);
-
-	void refineSegment();
+	
 
 	/* 不同的模型，分割的方法不同
 	 * 参数：isNoise，标记了分类数不正确的LevelSet
@@ -56,8 +57,8 @@ protected:
 	virtual void onDifferentLevelSet(size_t seq, LevelSet_ levelSet) = 0;
 
 
-	/* 分割结束的回调，即遍历完所有的LevelSet */
-	virtual void onFinishCoarseSegment() = 0;
+	/* 粗略分割结束的回调，即遍历完所有的LevelSet后调用 */
+	virtual void onFinishCoarseSegment();
 
 	/* 不同的模型，有不同的分割
 	   子类必须实现这个函数
@@ -77,5 +78,14 @@ protected:
 	 * 返回：对应这个LevelCircle中最多个节点的骨骼节点 
 	 */
 	size_t getCircleSkeletonNode(LevelCircle_ levelCircle);
+
+	/* 结束分割的回调 */
+	virtual void onFinishSegmentHook();
+
+	/* 开始分割的回调 */
+	virtual void onBeginSegmentHook();
+
+	/* 进一步分割 */
+	virtual void refineSegment() = 0;
 };
 S_PTR(MeshSegmenter);

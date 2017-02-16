@@ -38,6 +38,9 @@ public:
 
 	void alterOriginalMesh();
 
+	/* 获取一个顶点的测地值 */
+	double getGeodesicDis(size_t ver);
+
 	IntProperty_ getVertexPropertySKN() const { return mVertexPropertySKN; }
 	void setVertexPropertySKN(IntProperty_ val) { mVertexPropertySKN = val; }
 
@@ -47,7 +50,7 @@ public:
 	/* 获取网格顶点对应的骨骼节点 */
 	size_t getCorrSkeletonNode(size_t vertex);
 
-	void dumpSkeLinkMesh();
+	void dumpSkeLinkMesh(size_t skeNode, std::string sunPath);
 
 	void dumpSkeleton(std::string name);
 };

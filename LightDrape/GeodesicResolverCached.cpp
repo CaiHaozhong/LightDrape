@@ -14,7 +14,9 @@ DoubleProperty_ GeodesicResolverCached::resolveGeo( WatertightMesh_ mesh )
 {
 	if(hasGeoCached(mesh)){
 		PRINTLN("Use cached geo.");
-		return readCached(mesh, getGeoFileName(mesh));
+		DoubleProperty_ ret = readCached(mesh, getGeoFileName(mesh));
+		mesh->setVertexPropertyGeoDis(ret);
+		return ret;
 	}
 	else{
 		DoubleProperty_ ret = GeodesicResolver::resolveGeo(mesh);
@@ -62,9 +64,17 @@ DoubleProperty_ GeodesicResolverCached::readCached( Mesh_ mesh, std::string file
 	int count;
 	double dis;
 	in >> count;
+	mMaxDis = std::numeric_limits<double>::min();
+	mMinDis = std::numeric_limits<double>::max();
 	for(int i = 0; i < count; i++){
 		in >> dis;
 		ret->set(i, dis);
+		if(dis > mMaxDis){
+			mMaxDis = dis;
+		}
+		if(dis < mMinDis){
+			mMinDis = dis;
+		}
 	}
 	return ret;
 }

@@ -33,6 +33,8 @@ public:
 
 	std::set<size_t>::iterator addSkeletonNode(size_t skenode);
 
+	void removeVertex(size_t vertex);
+
 	/* 保存原始的LevelSet */
 	size_t addCircle(LevelCircle_ circle);
 

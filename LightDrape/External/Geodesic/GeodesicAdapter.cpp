@@ -17,8 +17,8 @@ GeodesicAdapter::GeodesicAdapter( Mesh& _meshOfOpenMesh )
 	std::vector<double> pointList;
 	std::vector<unsigned> faceList;
 	/*		int source;*/
-	double maxYValue = std::numeric_limits<double>::min(), 
-		minYValue = std::numeric_limits<double>::max();
+// 	double maxYValue = std::numeric_limits<double>::min(), 
+// 		minYValue = std::numeric_limits<double>::max();
 	for (OpenMesh::PolyConnectivity::VertexIter v_it = _meshOfOpenMesh.vertices_begin();
 		v_it != _meshOfOpenMesh.vertices_end(); ++v_it)
 	{
@@ -27,14 +27,14 @@ GeodesicAdapter::GeodesicAdapter( Mesh& _meshOfOpenMesh )
 		{
 			pointList.push_back(point.values_[i]);
 		}
-		if(point.values_[1] > maxYValue)
-		{
-			maxYValue = point.values_[1];
-		}		
-		if(point.values_[1] < minYValue)
-		{
-			minYValue = point.values_[1];
-		}
+// 		if(point.values_[1] > maxYValue)
+// 		{
+// 			maxYValue = point.values_[1];
+// 		}		
+// 		if(point.values_[1] < minYValue)
+// 		{
+// 			minYValue = point.values_[1];
+// 		}
 	}		
 	for(OpenMesh::PolyConnectivity::FaceIter f_it = _meshOfOpenMesh.faces_begin();
 		f_it != _meshOfOpenMesh.faces_end(); ++f_it)
@@ -85,4 +85,35 @@ void GeodesicAdapter::computeGeodesicFromSource( std::vector<double>& ret )
 
 		ret.push_back(distance);
 	}
+}
+
+void GeodesicAdapter::setSource( unsigned int s )
+{
+	_all_sources.clear();
+	addSource(s);
+}
+
+double GeodesicAdapter::averageGeodesicDisFromSource( unsigned int s )
+{
+	if(!_algorithm)
+		return 0;
+
+	setSource(s);
+
+	_algorithm->propagate(_all_sources);
+
+	double sum = 0;
+	size_t vCount = _mesh.vertices().size();
+	for(unsigned i = 0; i < vCount; ++i)
+	{
+		geodesic::SurfacePoint p(&_mesh.vertices()[i]);		
+
+		double distance;
+		
+		_algorithm->best_source(p,distance);
+
+		sum += distance;
+	}
+
+	return sum / (vCount - 1);
 }

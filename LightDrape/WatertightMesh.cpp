@@ -9,6 +9,8 @@ WatertightMesh::~WatertightMesh(void)
 WatertightMesh::WatertightMesh( Mesh_ mesh ) :Mesh(*mesh)
 {
 	mOriginalMesh = mesh;
+	mVertexPropertySKN = nullptr;
+	mVertexPropertyGeoDis = nullptr;
 	HoleInfo holeInfo(this);
 	holeInfo.getHoles();
 	PRINT("holes Count: ");
@@ -101,36 +103,39 @@ size_t WatertightMesh::getGeodesicSource()
 	// 		return vh.idx();
 }
 
-void WatertightMesh::dumpSkeLinkMesh()
+void WatertightMesh::dumpSkeLinkMesh(size_t skeNode, std::string subPath)
 {
 #ifdef _DEBUG_
-	std::string path = "../data/skeLinkMesh/";
-	for(size_t i = 0; i < mSkeleton->nodeCount(); i++){
-		char back[8];
-		sprintf(back, "%d.cg", i);
-		std::ofstream out = std::ofstream(path + getName() + back);
-		int edgeCount = mSkeleton->nodeAt(i)->correspondanceIndices.size();
-		out << "# D:3 NV:" << n_vertices()+1
-			<< " NE:" << edgeCount << "\n";
-		for(Mesh::VertexIter vi = vertices_begin(); vi != vertices_end();
-			vi++){
-				Vec3d p = point(*vi);
-				out << "v " << p.values_[0] << " " << p.values_[1] << " " << p.values_[2] << "\n";
-		}
-		SkeletonNode_ skn = mSkeleton->nodeAt(i);
-		out << "v " << skn->point.values_[0] << " " << skn->point.values_[1] << " "
-			<< skn->point.values_[2] << "\n";
-		std::vector<size_t> cors = skn->correspondanceIndices;
-		for(size_t k = 0; k < cors.size(); k++){
-			out << "e " << cors.at(k)+1 << " " << n_vertices()+1 << "\n";
-		}
-		out.close();
+	std::string path = "../data/skeLinkMesh/" + subPath + "/";
+	char back[8];
+	sprintf(back, "%d.cg", skeNode);
+	std::ofstream out = std::ofstream(path + getName() + back);
+	SkeletonNode_ skn = mSkeleton->nodeAt(skeNode);
+	std::vector<size_t> cors = skn->correspondanceIndices;
+	int corrCount = cors.size();
+	out << "# D:3 NV:" << corrCount+1
+		<< " NE:" << corrCount << "\n";
+	for(size_t k = 0; k < corrCount; k++){
+		const Vec3d& p = this->point(Mesh::VertexHandle(cors[k]));
+		out << "v " << p.values_[0] << " " << p.values_[1] << " " << p.values_[2] << "\n";
 	}
+	const Vec3d& skePoint = skn->point;
+	out << "v " << skePoint.values_[0] << " " << skePoint.values_[1] << " "
+		<< skePoint.values_[2] << "\n";
+
+	for(size_t k = 0; k < corrCount; k++){
+		out << "e " << corrCount+1 << " " << k+1 << "\n";
+	}
+	out.close();
 #endif
 }
 
 size_t WatertightMesh::getCorrSkeletonNode( size_t vertex )
 {
+	if(mVertexPropertySKN == nullptr){
+		PRINTLN("In WatertightMesh::getCorrSkeletonNode, should skeletonize first.");
+		return 0;
+	}
 	return mVertexPropertySKN->get(vertex);
 }
 
@@ -159,4 +164,13 @@ void WatertightMesh::dumpSkeleton(std::string name)
 	}
 	out.close();
 #endif
+}
+
+double WatertightMesh::getGeodesicDis( size_t ver )
+{
+	if(mVertexPropertyGeoDis == nullptr){
+		PRINTLN("In WatertightMesh::getGeodesicDis, should compute geodesic first.");
+		return -1;
+	}
+	return mVertexPropertyGeoDis->get(ver);
 }

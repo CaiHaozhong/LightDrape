@@ -1,6 +1,7 @@
 #pragma once
 #include "Meshsegmenter.h"
 #include "Segment.h"
+#include <unordered_set>
 class HumanSegmenter :
 	public MeshSegmenter
 {
@@ -36,11 +37,19 @@ protected:
 	/* Override */
 	Segment_ createSegment();
 
+	/* Override */
+	void onFinishSegmentHook();
+
+	/* Override */
+	void onBeginSegmentHook();
+
+	/* Override */
+	void refineSegment();
+
 private:
 	void initHumanSegmenter(WatertightMesh_ mesh);
 
 	void handleHead(LevelSet_ levelSet);
-
 
 	void handleTorso(LevelSet_ levelSet);
 
@@ -49,5 +58,13 @@ private:
 	bool isHead(LevelCircle_ lc);
 
 	double maxRadius(LevelCircle_ lc);
+
+	void refineHands();
+
+	void refineLegs();
+
+	void getVertexFromLevelSet(LevelSet_ ls, std::vector<size_t>& ret);
+
+	void addCircleToHashSet(std::unordered_set<size_t>& set, LevelCircle_ circle);	
 };
 

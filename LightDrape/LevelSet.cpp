@@ -98,6 +98,12 @@ double LevelCircle::getCenterX( Mesh_ mesh )
 LevelCircle::LevelCircle()
 {
 	isCenterXValid = false;
+	mParent = nullptr;
+}
+
+LevelCircle::LevelCircle( LevelSet_ parent ) : mParent(parent)
+{
+	isCenterXValid = false;
 }
 
 Vec3d LevelCircle::getMeanPoint( Mesh_ mesh )
@@ -108,6 +114,25 @@ Vec3d LevelCircle::getMeanPoint( Mesh_ mesh )
 		sum += exactPoint;
 	}
 	return sum / levelNodes.size();
+}
+
+void LevelCircle::setParent( LevelSet_ parent )
+{
+	mParent = parent;
+}
+
+LevelSet_ LevelCircle::getParent() const
+{
+	return mParent;
+}
+
+double LevelCircle::getHeight()
+{
+	if(mParent == nullptr){
+		PRINTLN("circle's parent should not be null");
+		return -1;
+	}
+	return mParent->getHeight();
 }
 
 LevelSet::CircleLinkedList::CircleLinkedList()
@@ -199,12 +224,13 @@ size_t LevelSet::CircleLinkedList::getCount()
 
 LevelSet::LevelSet()
 {
-	mNodeCount = 0;
+	mHeight = -1;
 }
 
 LevelSet::LevelSet( WatertightMesh_ mesh )
 {
 	mMesh = mesh;
+	mHeight = -1;
 }
 
 LevelSet::~LevelSet()
@@ -304,7 +330,8 @@ void LevelSet::classify()
 	if(mRawNodes.isEmpty())
 		return;
 	LevelCircle_ levelCircle = smartNew(LevelCircle);
-	levelCircle->addNode(mRawNodes.cur());		
+	levelCircle->setParent(shared_from_this());
+	levelCircle->addNode(mRawNodes.cur());
 	mRawNodes.removeCurrent();
 	mCircles.push_back(levelCircle);		
 	int notInCircleCount = 0;
@@ -321,6 +348,7 @@ void LevelSet::classify()
 		}
 		if(mRawNodes.isEmpty() == false && notInCircleCount >= mRawNodes.getCount()){
 			levelCircle = smartNew(LevelCircle);
+			levelCircle->setParent(shared_from_this());
 			levelCircle->addNode(mRawNodes.cur());		
 			mRawNodes.removeCurrent();
 			mCircles.push_back(levelCircle);
@@ -337,4 +365,14 @@ void LevelSet::setMesh( WatertightMesh_ mesh )
 std::vector<LevelCircle_>& LevelSet::getCircles()
 {
 	return mCircles;
+}
+
+double LevelSet::getHeight() const
+{
+	return mHeight;
+}
+
+void LevelSet::setHeight( double height )
+{
+	mHeight = height;
 }

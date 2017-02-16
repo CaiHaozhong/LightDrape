@@ -1,5 +1,6 @@
+#include <OpenMesh/Core/IO/MeshIO.hh>
 #include "ClothSegmenter.h"
-
+#include "Config.h"
 
 
 ClothSegmenter::~ClothSegmenter(void)
@@ -30,7 +31,9 @@ void ClothSegmenter::onDifferentLevelSet( size_t seq, LevelSet_ levelSet )
 			PRINTLN("Cloth Segment Error: incorrect categories of torso");
 			return ;
 		}
-		addToRegion(mTorso, levelSet->getCircle(0));
+		/* 防止补洞后的顶点影响，其实也没关系，映射到原网格时直接忽略就好 */
+		if(mCurLevelSet < getLevelSetCount()-3)
+			addToRegion(mTorso, levelSet->getCircle(0));
 	}
 	else if(seq == 2){
 		if(levelSet->getCount() != 3){
@@ -53,7 +56,11 @@ void ClothSegmenter::onDifferentLevelSet( size_t seq, LevelSet_ levelSet )
 			mTorsoSkeNode = getCircleSkeletonNode(ccp[1].first);
 			mRightSleeveSkeNode = getCircleSkeletonNode(ccp[2].first);
 			addToRegion(mLeftSleeve, ccp[0].first);
-			addToRegion(mTorso, ccp[1].first);
+
+			/* 防止补洞后的顶点影响，其实也没关系，映射到原网格时直接忽略就好 */
+			if(mCurLevelSet < getLevelSetCount()-3)
+				addToRegion(mTorso, ccp[1].first);
+
 			addToRegion(mRightSleeve, ccp[2].first);
 		}
 		else{
@@ -68,8 +75,11 @@ void ClothSegmenter::onDifferentLevelSet( size_t seq, LevelSet_ levelSet )
 					mLeftSleeveSkeNode = skeNode;					
 				}
 				else if(disTS <= disLH && disTS <= disRH){
-					addToRegion(mTorso, lc);
-					mTorsoSkeNode = skeNode;
+					/* 防止补洞后的顶点影响，其实也没关系，映射到原网格时直接忽略就好 */
+					if(mCurLevelSet < getLevelSetCount()-3){
+						addToRegion(mTorso, lc);
+						mTorsoSkeNode = skeNode;
+					}
 				}
 				else if(disRH <= disTS && disRH <= disLH){
 					addToRegion(mRightSleeve, lc);
@@ -78,16 +88,18 @@ void ClothSegmenter::onDifferentLevelSet( size_t seq, LevelSet_ levelSet )
 			}
 		}
 	}
+	mCurLevelSet++;
 }
 
 void ClothSegmenter::onFinishCoarseSegment()
 {
-	Segment_ seg = mMesh->getSegment();
-	std::vector< std::pair<int, Region_> >& regions = seg->getRegionsRaw();
-	for(std::vector< std::pair<int, Region_> >::iterator it = regions.begin();
-		it != regions.end(); it++){
-			it->second->expand();
+	MeshSegmenter::onFinishCoarseSegment();
+	//----------------------------------------------------------------------------
+	auto& skes = mTorso->getSkeNodes();
+	for(auto it = skes.begin(); it != skes.end(); it++){
+		mMesh->dumpSkeLinkMesh(*it, "torse");
 	}
+	//----------------------------------------------------------------------------
 }
 
 Segment_ ClothSegmenter::createSegment()
@@ -107,4 +119,42 @@ void ClothSegmenter::initClothSegmenter( WatertightMesh_ mesh )
 	mTorsoSkeNode = mLeftSleeveSkeNode = mRightSleeveSkeNode = -1;
 	mMesh = mesh;
 	mMeshSkeleton = mMesh->getSkeleton();
+	mCurLevelSet = 0;
+}
+void ClothSegmenter::onFinishSegmentHook()
+{
+	PRINTLN("End HumanSegment");
+
+	/* Output Segments */	
+	Config_ config = Config::getInstance();	
+	char* outSegNameCloth[] = {"torso", "leftSleeves", "rightSleeves"};
+	std::vector<std::pair<int, Region_> > regions = mSegment->getRegionsRaw();
+	for(size_t i = 0; i < regions.size(); i++){
+		std::pair<int, Region_> typeRegionPair = regions[i];
+		Region_ re = typeRegionPair.second;
+		Mesh out;
+		std::set<size_t>& vs = re->getVertices();
+		for(std::set<size_t>::iterator it = vs.begin();
+			it != vs.end(); it++){
+				Vec3d ver = mMesh->point(Mesh::VertexHandle(*it));
+				out.add_vertex(ver);
+		}
+		char of[200];
+		sprintf(of,"%s_%s.obj", mMesh->getName().c_str(), outSegNameCloth[typeRegionPair.first]);
+		bool wsuc = OpenMesh::IO::write_mesh(out, config->clothSegOutPath+of);
+		if(wsuc){
+			std::cout << "write successfully of cloth seg " << i << std::endl;
+		}
+	}
+
+}
+
+void ClothSegmenter::onBeginSegmentHook()
+{
+	PRINTLN("Begin HumanSegment");
+}
+
+void ClothSegmenter::refineSegment()
+{
+
 }

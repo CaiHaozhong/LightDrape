@@ -39,6 +39,11 @@ std::set<size_t>::iterator Region::addSkeletonNode( size_t skenode )
 	return mSkeNodes.insert(skenode).first;
 }
 
+void Region::removeVertex( size_t vertex )
+{
+	mVertics.erase(vertex);
+}
+
 void Region::setPossibleStart( size_t start )
 {
 	mStartSkeIndex = start;
@@ -252,3 +257,4 @@ size_t Region::getVerticesSize() const
 {
 	return mVertics.size();
 }
+
