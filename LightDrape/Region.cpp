@@ -11,12 +11,14 @@ Region::Region(void)
 {
 	mHasStartSetted = false;
 	mMesh = nullptr;
+	mSkeleton = smartNew(RegionSkeleton);
 }
 
 Region::Region( WatertightMesh_ mesh )
 {	
 	mHasStartSetted = false;
 	setMesh(mesh);
+	mSkeleton = smartNew(RegionSkeleton);
 }
 
 
@@ -163,6 +165,11 @@ void Region::dump( std::string name )
 #endif
 }
 
+void Region::dumpRegionSkeleton( std::string regionName )
+{
+	mSkeleton->dump(mMesh, regionName);
+}
+
 void Region::confirmStartSkeNode()
 {
 	if(mMesh == nullptr) return;
@@ -239,7 +246,17 @@ WatertightMesh_ Region::getMesh()
 
 size_t Region::addCircle( LevelCircle_ circle )
 {
-	mLevelCircles.push_back(circle);
+	if(circle != nullptr){
+		if(mSkeleton != nullptr){
+			mSkeleton->push_back(circle);
+		}
+		auto& nodes = circle->levelNodes;
+		for(auto it = nodes.begin(); it != nodes.end(); it++){
+			this->addVertex((*it)->start_vertex);
+			this->addVertex((*it)->getNearestVertex(mMesh));
+		}
+		mLevelCircles.push_back(circle);
+	}
 	return mLevelCircles.size();
 }
 
@@ -258,3 +275,118 @@ size_t Region::getVerticesSize() const
 	return mVertics.size();
 }
 
+RegionSkeleton_ Region::getRegionSkeleton() const
+{
+	return mSkeleton;
+}
+
+void Region::addVertices( std::vector<size_t>& vers, Vec3d& center, double height )
+{
+	for(auto it = vers.begin(); it != vers.end(); it++){
+		addVertex(*it);
+	}
+	mSkeleton->push_back(vers, center, height);
+}
+
+Vec3d Region::computeCenter( std::vector<size_t>& vers, Mesh_ mesh )
+{
+	Vec3d ret(0,0,0);
+	for(auto it = vers.begin(); it != vers.end(); it++){
+		ret += mesh->point(Mesh::VertexHandle(*it));
+	}
+	return ret / vers.size();
+}
+
+
+void RegionSkeleton::push_front( LevelCircle_ lc )
+{
+	Mesh_ mesh = lc->getParent()->getMesh();
+	Vec3d center = lc->getMeanPoint(mesh);
+	std::vector<size_t> vers;
+	getVerticesFromCircle(lc, vers);
+	push_front(vers, center, lc->getHeight());
+}
+
+void RegionSkeleton::push_front( const std::vector<size_t>& vers, const Vec3d& center, double height )
+{
+	RegionSkeletonNode_ rsn = smartNew(RegionSkeletonNode);
+	rsn->center = center;
+	rsn->vers = vers;
+	rsn->height = height;
+	mNodes.insert(mNodes.begin(), rsn);
+}
+
+void RegionSkeleton::push_back( LevelCircle_ lc )
+{
+	Mesh_ mesh = lc->getParent()->getMesh();
+	Vec3d center = lc->getMeanPoint(mesh);
+	std::vector<size_t> vers;
+	getVerticesFromCircle(lc, vers);
+	push_back(vers, center, lc->getHeight());
+}
+
+void RegionSkeleton::push_back( const std::vector<size_t>& vers, const Vec3d& center, double height )
+{
+	RegionSkeletonNode_ rsn = smartNew(RegionSkeletonNode);
+	rsn->center = center;
+	rsn->vers = vers;
+	rsn->height = height;
+	mNodes.push_back(rsn);
+}
+
+RegionSkeletonNode_ RegionSkeleton::start()
+{
+	if(mNodes.size() > 0 )
+		return mNodes[0];
+	return nullptr;
+}
+
+size_t RegionSkeleton::count() const
+{
+	return mNodes.size();
+}
+
+RegionSkeletonNode_ RegionSkeleton::getNode( size_t index )
+{
+	if(index < mNodes.size()){
+		return mNodes[index];
+	}
+	return nullptr;
+}
+
+void RegionSkeleton::getVerticesFromCircle( LevelCircle_ circle, std::vector<size_t>& ret )
+{
+	Mesh_ mesh = circle->getParent()->getMesh();
+	auto& nodes = circle->levelNodes;
+	for(auto it = nodes.begin(); it != nodes.end(); it++){
+		ret.push_back((*it)->start_vertex);
+		ret.push_back((*it)->getNearestVertex(mesh));
+	}
+}
+
+void RegionSkeleton::dump( Mesh_ mesh, std::string regionName )
+{
+	for(size_t i = 0; i < count(); i++){
+		char fileName[10];
+		sprintf(fileName, "%d.cg", i);
+		std::string file = "../data/region_skeleton/" + regionName + fileName;
+		mNodes[i]->dump(mesh, file);
+	}
+}
+
+void RegionSkeletonNode::dump( Mesh_ mesh, std::string file )
+{
+#ifdef _DEBUG_
+	std::ofstream out(file);
+	out << "# D:3 NV:" << vers.size() + 1 << " NE:" << vers.size() << "\n";
+	out << "v " << center.values_[0] << " " << center.values_[1] << " " << center.values_[2] << "\n";
+	for(auto it = vers.begin(); it != vers.end(); it++){
+		auto& p = mesh->point(Mesh::VertexHandle(*it)).values_;
+		out << "v " << p[0] << " " << p[1] << " " << p[2] << "\n";
+	}
+	for(size_t i = 0; i < vers.size(); i ++){
+		out << "e " << 1 << " " << i+2 << "\n";
+	}
+	out.close();
+#endif // _DEBUG_
+}

@@ -35,7 +35,7 @@ void ClothSegment::addRegion( int part, Region_ region )
 RegionFitter_ ClothSegment::getRegionFitter( int bodyPart )
 {
 	if(bodyPart == Segment::BODY_LEFT_HAND || bodyPart == Segment::BODY_RIGHT_HAND){
-		return std::make_shared<SimpleSkeletonFitter>(getMatch(bodyPart));
+		return std::make_shared<LevelSetSkeletonFitter>(getMatch(bodyPart));
 	}
 	else if(bodyPart == Segment::BODY_TORSE){
 		return std::make_shared<LevelSetSkeletonFitter>(getMatch(bodyPart));

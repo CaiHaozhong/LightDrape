@@ -27,7 +27,7 @@ void MeshSegmenter::init( WatertightMesh_ mesh )
 	decideGranularity();
 	PRINTLN("End compute Geodesic...");
 	PRINTLN("Begin computeLevelSet...");
-	computeLevelSet(true);
+	computeLevelSet();
 	PRINTLN("End computeLevelSet...");
 }
 
@@ -149,7 +149,7 @@ void MeshSegmenter::computeLevelSet( bool useCache /*= false*/ )
 		}			
 	}
 	for(size_t i = 0; i < mLevelSets.size(); i++){
-		mLevelSets[i]->dumpRaw(mMesh, i);
+		mLevelSets[i]->dumpRaw(i);
 	}
 	for(size_t i = 0; i < mLevelSets.size(); i++){
 		char msg[50];
@@ -232,7 +232,7 @@ void MeshSegmenter::filterNoise( std::vector<bool>& isNoise )
 {
 	isNoise.resize(mLevelSets.size(), false);
 	size_t len = mLevelSets.size();
-	int threshold = 2; // 连续个数小于等于threshold的都算噪音
+	int threshold = 4; // 连续个数小于等于threshold的都算噪音
 	int val = mLevelSets[0]->getCount();
 	int accu = 1;
 	int start = 0;
@@ -266,7 +266,6 @@ void MeshSegmenter::addToRegion( Region_ region, LevelCircle_ levelCircle )
 	for(size_t i = 0; i < levelNodes.size(); i++){
 		LevelNode_ n = levelNodes[i];
 		size_t v = n->getNearestVertex(mMesh);
-		region->addVertex(v);
 		size_t skenode = mMesh->getCorrSkeletonNode(v);
 		region->addSkeletonNode(skenode);
 	}
@@ -310,4 +309,8 @@ void MeshSegmenter::onFinishSegmentHook(){}
 
 void MeshSegmenter::onBeginSegmentHook(){}
 
+size_t MeshSegmenter::getLevelSetIndex( LevelSet_ ls )
+{
+	return (size_t)(ls->getHeight() / getGranularity() + 0.5) - 1; //+0.5是为了四舍五入
+}
 

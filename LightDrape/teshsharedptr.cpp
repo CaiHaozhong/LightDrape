@@ -25,7 +25,7 @@ int main(){
 	}
 
 	/* Output */
-	//OpenMesh::IO::write_mesh(*human, config->clothOutPath+config->humanInFileName);
+	OpenMesh::IO::write_mesh(*human, config->clothOutPath+config->humanInFileName);
 
 	/* Garment */
 	Mesh_ gRawmesh = smartNew(Mesh);

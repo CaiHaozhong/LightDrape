@@ -3,9 +3,10 @@
 #include "LevelSet.h"
 #include "Segment.h"
 #include <vector>
+#include <unordered_set>
 class GeodesicResolver;
 S_PTR(GeodesicResolver);
-class MeshSegmenter
+class MeshSegmenter : public std::enable_shared_from_this<MeshSegmenter>
 {
 private:
 	WatertightMesh_ mMesh;
@@ -28,7 +29,11 @@ public:
 	WatertightMesh_ getMesh() const;
 
 	size_t getLevelSetCount() const;
+
 	LevelSet_ getLevelSet(size_t i);
+
+	/* 计算该LevelSet在mLevelSets中的下标 */
+	size_t getLevelSetIndex(LevelSet_ ls);
 
 	double getGranularity() const;
 private:
@@ -87,5 +92,6 @@ protected:
 
 	/* 进一步分割 */
 	virtual void refineSegment() = 0;
+
 };
 S_PTR(MeshSegmenter);

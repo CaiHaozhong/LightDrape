@@ -1,4 +1,6 @@
 #include "LevelSet.h"
+#include <unordered_map>
+#include <vector>
 size_t LevelNode::getNearestVertex( Mesh_ mesh )
 {
 	if(factor < 0.5){
@@ -263,27 +265,52 @@ LevelCircle_ LevelSet::getCircle( size_t categoryIndex )
 	}
 }
 
-void LevelSet::dumpRaw( Mesh_ mesh, int i )
+void LevelSet::dumpRaw( int i )
 {
 #ifdef _DEBUG_
 	std::string path = "../data/levelset/";
 	char back[20];
-	sprintf(back, "raw%d.cg", i);
-	std::ofstream out = std::ofstream(path + mesh->getName() + back);
-	int edgeCount = mRawNodes.getCount();		
-	out << "# D:3 NV:" << mesh->n_vertices() << " NE:" << edgeCount << "\n";
-	for(Mesh::VertexIter vi = mesh->vertices_begin(); vi != mesh->vertices_end();
-		vi++){
-			Vec3d p = mesh->point(*vi);
-			out << "v " << p.values_[0] << " " << p.values_[1] << " " << p.values_[2] << "\n";
-	}
-	while(edgeCount--){
+	sprintf(back, "edge%d.cg", i);
+	std::ofstream edgeOut = std::ofstream(path + mMesh->getName() + back);
+	sprintf(back, "ver%d.cg", i);
+	std::ofstream verOut = std::ofstream(path + mMesh->getName() + back);
+	int edgeCount = mRawNodes.getCount();
+	std::unordered_map<size_t, size_t> sparseMapDense;
+	std::vector<size_t> denseMapSparse;
+	int tmp = edgeCount;
+	while(tmp--){
 		LevelNode_ ln = mRawNodes.cur();
 		mRawNodes.next();
-		auto vpair = mesh->getEndVertices(Mesh::EdgeHandle(ln->edge));
-		out << "e " << vpair.first+1 << " " << vpair.second+1 << "\n";
-	}									
-	out.close();
+		auto vpair = mMesh->getEndVertices(Mesh::EdgeHandle(ln->edge));
+		if(sparseMapDense.find(vpair.first) == sparseMapDense.end()){
+			denseMapSparse.push_back(vpair.first);
+			sparseMapDense[vpair.first] = denseMapSparse.size()-1;
+		}
+		if(sparseMapDense.find(vpair.second) == sparseMapDense.end()){
+			denseMapSparse.push_back(vpair.second);
+			sparseMapDense[vpair.second] = denseMapSparse.size()-1;
+		}
+	}
+	tmp = edgeCount;
+	verOut << "# D:3 NV:" << edgeCount << " NE:" << 0 << "\n";
+	edgeOut << "# D:3 NV:" << edgeCount << " NE:" << edgeCount << "\n";
+	for(auto it = denseMapSparse.begin(); it != denseMapSparse.end(); it++){
+		auto p = mMesh->point(Mesh::VertexHandle(*it)).values_;
+		edgeOut << "v " << p[0] << " " << p[1] << " " << p[2] << "\n";
+	}			
+	while(tmp--){
+		LevelNode_ ln = mRawNodes.cur();
+		mRawNodes.next();
+		auto nearestV = ln->getNearestVertex(mMesh);
+		auto vPair = mMesh->getEndVertices(Mesh::EdgeHandle(ln->edge));
+		auto nearP = mMesh->point(Mesh::VertexHandle(nearestV)).values_;
+		auto start = sparseMapDense[vPair.first];
+		auto end = sparseMapDense[vPair.second];
+		verOut << "v " << nearP[0] << " " << nearP[1] << " " << nearP[2] << "\n";
+		edgeOut << "e " << start+1 << " " << end+1 << "\n";
+	}
+	verOut.close();
+	edgeOut.close();
 #endif
 }
 
@@ -375,4 +402,7 @@ double LevelSet::getHeight() const
 void LevelSet::setHeight( double height )
 {
 	mHeight = height;
+}
+WatertightMesh_ LevelSet::getMesh() const {
+	return mMesh;
 }

@@ -1,7 +1,7 @@
 #include <OpenMesh/Core/IO/MeshIO.hh>
 #include "ClothSegmenter.h"
 #include "Config.h"
-
+#include "LeftTorseRightRefiner.h"
 
 ClothSegmenter::~ClothSegmenter(void)
 {
@@ -156,5 +156,89 @@ void ClothSegmenter::onBeginSegmentHook()
 
 void ClothSegmenter::refineSegment()
 {
-
+	LeftTorseRightRefiner_ refiner = std::make_shared<LeftTorseRightRefiner>(
+		shared_from_this(),
+		mLeftSleeve,
+		mTorso,
+		mRightSleeve
+		);
+	refiner->refine();
+	mLeftSleeve->dumpRegionSkeleton(mMesh->getName() + "_leftsleeve");
+	mRightSleeve->dumpRegionSkeleton(mMesh->getName() + "_rightsleeve");
+	mTorso->dumpRegionSkeleton(mMesh->getName() + "_torse");
+// 	if(mLeftSleeve->getCircleCount() <= 0
+// 		|| mRightSleeve->getCircleCount() <= 0)
+// 		return ;
+// 	LevelCircle_ leftTopCircle = mLeftSleeve->getCircles()[0];
+// 	LevelCircle_ rightTopCircle = mRightSleeve->getCircles()[0];
+// 	LevelSet_ topLevelSet = leftTopCircle->getParent();
+// 	if(topLevelSet == nullptr) return ;
+// 	std::unordered_set<size_t> leftSet, rightSet, torseSet;
+// 	addCircleToHashSet(leftSet, leftTopCircle);
+// 	addCircleToHashSet(rightSet, rightTopCircle);
+// 	for(size_t i = 0; i < topLevelSet->getCount(); i++){
+// 		LevelCircle_ lc = topLevelSet->getCircle(i);
+// 		if(lc != leftTopCircle && lc != rightTopCircle){
+// 			addCircleToHashSet(torseSet, lc);
+// 			break;
+// 		}
+// 	}
+// 	/* 位于手臂的首端的LevelSet的下标 */
+// 	size_t curLevelSetIndex = getLevelSetIndex(topLevelSet);	
+// 	while(curLevelSetIndex--){
+// 		bool allVertexInTorse = true;
+// 		LevelSet_ curLS = getLevelSet(curLevelSetIndex);
+// 		std::vector<size_t> vers;
+// 		getVertexFromLevelSet(curLS, vers);		
+// 		for(auto it = vers.begin(); it != vers.end(); it++){
+// 			size_t v = *it;
+// 			bool maybeInLeft = false, maybeInRight = false, isInTorse = false;
+// 			if(leftSet.find(v) != leftSet.end())
+// 				maybeInLeft = true;
+// 			else if(rightSet.find(v) != rightSet.end()) 
+// 				maybeInRight = true;
+// 			else if(torseSet.find(v) != torseSet.end()) {
+// 				isInTorse = true;				
+// 			}
+// 			else{
+// 				for(auto vv_it = mMesh->vv_begin(Mesh::VertexHandle(v)); 
+// 					vv_it.is_valid(); vv_it++){
+// 						size_t v_nei = vv_it->idx();
+// 						if(leftSet.find(v_nei) != leftSet.end()) 
+// 							maybeInLeft = true;
+// 						else if(rightSet.find(v_nei) != rightSet.end()) 
+// 							maybeInRight = true;
+// 						else if(torseSet.find(v_nei) != torseSet.end()) {
+// 							isInTorse = true;
+// 							break;
+// 						}
+// 				}
+// 			}
+// 			if(!isInTorse){				
+// 				if(maybeInLeft){
+// 					leftSet.insert(v);
+// 					mLeftSleeve->addVertex(v);
+// 					mTorso->removeVertex(v);
+// 					allVertexInTorse = false;
+// 				}
+// 				else if(maybeInRight){		
+// 					rightSet.insert(v);
+// 					mRightSleeve->addVertex(v);					
+// 					mTorso->removeVertex(v);
+// 					allVertexInTorse = false;
+// 				}
+// 				else{
+// 					std::cout << "isolate: " << curLevelSetIndex << " ";
+// 				}
+// 			}
+// 			else{
+// 				torseSet.insert(v);
+// 			}
+// 
+// 		}
+// 		if(allVertexInTorse)//当一个LevelSet所有的顶点都位于Torse，则退出
+// 			break;
+// 	}
+// 	regionSub(mTorso, mLeftSleeve);
+// 	regionSub(mTorso, mRightSleeve);
 }

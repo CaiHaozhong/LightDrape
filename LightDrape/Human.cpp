@@ -64,8 +64,17 @@ Vec3d Human::getAlignPoint()
 		std::pair<int, Region_>& reg = regions[i];
 		if(reg.first == Segment::BODY_LEFT_HAND
 			|| reg.first == Segment::BODY_RIGHT_HAND){
-			size_t startSke = reg.second->getStart();
-			ret += getSkeleton()->nodeAt(startSke)->point;
+			//size_t startSke = reg.second->getStart();
+			//ret += getSkeleton()->nodeAt(startSke)->point;
+			/*ret += reg.second->getRegionSkeleton()->start()->center;*/
+			RegionSkeleton_ rs = reg.second->getRegionSkeleton();
+			for(size_t r = 0; r < rs->count(); r++){
+				RegionSkeletonNode_ node = rs->getNode(r);
+				if(node->vers.size() > 10){
+					ret += node->center;
+					break;
+				}
+			}
 		}
 	}
 	return ret/2.0;

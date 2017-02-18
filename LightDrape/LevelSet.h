@@ -121,6 +121,8 @@ public:
 
 	void setMesh(WatertightMesh_ mesh);
 
+	WatertightMesh_ getMesh() const;
+
 	/* 链表的形式存储节点 */
 	void addNode(LevelNode_ node);
 
@@ -135,7 +137,7 @@ public:
 	
 	void setHeight(double height);
 
-	void dumpRaw(Mesh_ mesh, int i);
+	void dumpRaw( int i);
 	void dump(int i);
 
 	std::vector<LevelCircle_>& getCircles();

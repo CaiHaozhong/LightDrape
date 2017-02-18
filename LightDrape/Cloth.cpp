@@ -30,8 +30,17 @@ Vec3d Cloth::getAlignPoint()
 		std::pair<int, Region_>& reg = regions[i];
 		if(reg.first == ClothSegment::CLOTH_LEFT_SLEEVE
 			|| reg.first == ClothSegment::CLOTH_RIGHT_SLEEVE){
-				size_t startSke = reg.second->getStart();
-				ret += getSkeleton()->nodeAt(startSke)->point;
+// 				size_t startSke = reg.second->getStart();
+// 				ret += getSkeleton()->nodeAt(startSke)->point;
+				RegionSkeleton_ rs = reg.second->getRegionSkeleton();
+				for(size_t r = 0; r < rs->count(); r++){
+					RegionSkeletonNode_ node = rs->getNode(r);
+					if(node->vers.size() > 10){
+						ret += node->center;
+						break;
+					}
+				}
+				//ret += reg.second->getRegionSkeleton()->start()->center;
 		}
 	}
 //	ret.values_[1] -= this->getHeight() * 0.35;

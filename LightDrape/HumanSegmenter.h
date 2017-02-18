@@ -63,8 +63,5 @@ private:
 
 	void refineLegs();
 
-	void getVertexFromLevelSet(LevelSet_ ls, std::vector<size_t>& ret);
-
-	void addCircleToHashSet(std::unordered_set<size_t>& set, LevelCircle_ circle);	
 };
 

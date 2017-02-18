@@ -1,7 +1,7 @@
 #include <OpenMesh/Core/IO/MeshIO.hh>
 #include "HumanSegmenter.h"
 #include "Config.h"
-
+#include "LeftTorseRightRefiner.h"
 
 
 HumanSegmenter::~HumanSegmenter(void)
@@ -262,71 +262,16 @@ void HumanSegmenter::refineSegment()
 
 void HumanSegmenter::refineHands()
 {
-	if(mLeftHand->getCircleCount() <= 0
-		|| mRightHand->getCircleCount() <= 0)
-		return ;
-	LevelCircle_ leftTopCircle = mLeftHand->getCircles()[0];
-	LevelCircle_ rightTopCircle = mRightHand->getCircles()[0];
-	LevelSet_ topLevelSet = leftTopCircle->getParent();
-	if(topLevelSet == nullptr) return ;
-	std::unordered_set<size_t> leftHandSet, rightHandSet, torseSet;
-	addCircleToHashSet(leftHandSet, leftTopCircle);
-	addCircleToHashSet(rightHandSet, rightTopCircle);
-	for(size_t i = 0; i < topLevelSet->getCount(); i++){
-		LevelCircle_ lc = topLevelSet->getCircle(i);
-		if(lc != leftTopCircle && lc != rightTopCircle){
-			addCircleToHashSet(torseSet, lc);
-			break;
-		}
-	}
-	/* 位于手臂的首端的LevelSet的下标 */
-	size_t topLevelSetIndex = (size_t)(topLevelSet->getHeight() / getGranularity() + 0.5) - 1; //+0.5是为了四舍五入
-	size_t curLevelSetIndex = topLevelSetIndex;	
-	while(curLevelSetIndex--){
-		bool allVertexInTorse = true;
-		LevelSet_ curLS = getLevelSet(curLevelSetIndex);
-		std::vector<size_t> vers;
-		getVertexFromLevelSet(curLS, vers);		
-		for(auto it = vers.begin(); it != vers.end(); it++){
-			size_t v = *it;
-			bool maybeInLeft = false, maybeInRight = false, isInTorse = false;
-			for(auto vv_it = mMesh->vv_begin(Mesh::VertexHandle(v)); 
-				vv_it.is_valid(); vv_it++){
-					size_t v_nei = vv_it->idx();
-					if(leftHandSet.find(v_nei) != leftHandSet.end()) 
-						maybeInLeft = true;
-					else if(rightHandSet.find(v_nei) != rightHandSet.end()) 
-						maybeInRight = true;
-					else if(torseSet.find(v_nei) != torseSet.end()) {
-						isInTorse = true;
-						break;
-					}
-			}
-			if(!isInTorse){				
-				if(maybeInLeft){
-					leftHandSet.insert(v);
-					mLeftHand->addVertex(v);
-					mTorso->removeVertex(v);
-					allVertexInTorse = false;
-				}
-				else if(maybeInRight){		
-					rightHandSet.insert(v);
-					mRightHand->addVertex(v);					
-					mTorso->removeVertex(v);
-					allVertexInTorse = false;
-				}
-				else{
-					std::cout << "isolate: " << curLevelSetIndex << " ";
-				}
-			}
-			else{
-				torseSet.insert(v);
-			}
-			
-		}
-		if(allVertexInTorse)//当一个LevelSet所有的顶点都位于Torse，则退出
-			break;
-	}
+	LeftTorseRightRefiner_ refiner = std::make_shared<LeftTorseRightRefiner>(
+		shared_from_this(),
+		mLeftHand,
+		mTorso,
+		mRightHand
+		);
+	refiner->refine();
+	mLeftHand->dumpRegionSkeleton(mMesh->getName() + "_lefthand");
+	mRightHand->dumpRegionSkeleton(mMesh->getName() + "_righthand");
+	mTorso->dumpRegionSkeleton(mMesh->getName() + "_torse");
 }
 
 void HumanSegmenter::refineLegs()
@@ -334,24 +279,3 @@ void HumanSegmenter::refineLegs()
 
 }
 
-void HumanSegmenter::getVertexFromLevelSet( LevelSet_ ls, std::vector<size_t>& ret )
-{
-	for(size_t i = 0; i < ls->getCount(); i++){
-		LevelCircle_ lc = ls->getCircle(i);
-		std::vector<LevelNode_>& nodes = lc->levelNodes;
-		for(auto it = nodes.begin(); it != nodes.end(); it++){
-			ret.push_back((*it)->start_vertex);
-			ret.push_back((*it)->getToVertexIndex(mMesh));
-		}
-	}
-}
-
-void HumanSegmenter::addCircleToHashSet( std::unordered_set<size_t>& set, LevelCircle_ circle )
-{
-	std::vector<LevelNode_>& nodes = circle->levelNodes;
-	size_t count = nodes.size();
-	for(size_t i = 0; i < count; i++){
-		set.insert(nodes[i]->start_vertex);
-		set.insert(nodes[i]->getToVertexIndex(mMesh));
-	}
-}
