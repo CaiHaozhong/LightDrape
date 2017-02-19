@@ -36,12 +36,6 @@ void Config::init( char* file )
 		else if(type == "human_mesh_diretion"){
 			configIn >> humanMeshDiretion;
 		}
-		else if(type == "human_seg_out_path"){
-			configIn >> humanSegOutPath;
-		}
-		else if(type == "cloth_seg_out_path"){
-			configIn >> clothSegOutPath;
-		}
 	}
 }
 
@@ -49,7 +43,7 @@ Config_ Config::getInstance()
 {
 	if(mInstance == nullptr){
 		mInstance = std::shared_ptr<Config>(new Config());
-		mInstance->init("D:\\Develop\\project\\LightDrape\\C++\\data\\config");
+		mInstance->init("E:\\Project\\LightDrape\\data\\config");
 	}
 	return mInstance;
 }

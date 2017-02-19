@@ -378,15 +378,15 @@ void RegionSkeletonNode::dump( Mesh_ mesh, std::string file )
 {
 #ifdef _DEBUG_
 	std::ofstream out(file);
-	out << "# D:3 NV:" << vers.size() + 1 << " NE:" << vers.size() << "\n";
+	out << "# D:3 NV:" << 1 << " NE:" << 0 << "\n";
 	out << "v " << center.values_[0] << " " << center.values_[1] << " " << center.values_[2] << "\n";
-	for(auto it = vers.begin(); it != vers.end(); it++){
-		auto& p = mesh->point(Mesh::VertexHandle(*it)).values_;
-		out << "v " << p[0] << " " << p[1] << " " << p[2] << "\n";
-	}
-	for(size_t i = 0; i < vers.size(); i ++){
-		out << "e " << 1 << " " << i+2 << "\n";
-	}
+// 	for(auto it = vers.begin(); it != vers.end(); it++){
+// 		auto& p = mesh->point(Mesh::VertexHandle(*it)).values_;
+// 		out << "v " << p[0] << " " << p[1] << " " << p[2] << "\n";
+// 	}
+// 	for(size_t i = 0; i < vers.size(); i ++){
+// 		out << "e " << 1 << " " << i+2 << "\n";
+// 	}
 	out.close();
 #endif // _DEBUG_
 }

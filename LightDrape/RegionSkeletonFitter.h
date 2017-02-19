@@ -2,6 +2,10 @@
 #include "regionfitter.h"
 class Quaternion;
 S_PTR(Quaternion);
+class RegionSkeleton;
+S_PTR(RegionSkeleton);
+class WatertightMesh;
+S_PTR(WatertightMesh);
 class RegionSkeletonFitter :
 	public RegionFitter
 {
@@ -21,6 +25,17 @@ public:
 	std::string getName();
 
 	void fitSkeleton(std::vector< std::pair<size_t, Vec3d> >& garSkeTrans, 
-		std::vector< std::pair<size_t, Quaternion_ > >& garSkeRotate);
+		std::vector< std::pair<size_t, std::pair<Vec3d, double> > >& garSkeRotate);
+private:
+	/* 加权计算骨骼节点对应的网格顶点的位移
+	 * 每个网格顶点受其对应的骨骼节点及相邻两个骨骼节点的影响，边界则为一个
+	 * 按网格顶点与骨骼节点的距离加权平均
+	 */
+	void computeTranslation(VertexAlter_ ret,
+		std::vector< std::pair<size_t, Vec3d> >& garSkeTrans);
+
+	/* 对骨骼节点对应的网格顶点进行旋转 */
+	void computeRotation(VertexAlter_ ret,
+		std::vector< std::pair<size_t, std::pair<Vec3d, double> > >& garSkeRotate);
 };
 

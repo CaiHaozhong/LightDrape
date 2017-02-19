@@ -86,6 +86,17 @@ void GarmentFitter::translateGarment()
 	for(size_t i = 0; i < nodes.size(); i++){
 		nodes[i]->point += transVec;
 	}
+
+	/* Translate Region Skeleton */
+	std::vector< std::pair<int, Region_> >& regions = mGarment->getSegment()->getRegionsRaw();
+	for(std::vector< std::pair<int, Region_> >::iterator it = regions.begin();
+		it != regions.end(); it++){
+			RegionSkeleton_ regionSkeleton = it->second->getRegionSkeleton();
+			size_t count = regionSkeleton->count();
+			for(size_t i = 0; i < count; i++){
+				regionSkeleton->getNode(i)->center += transVec;
+			}
+	}
 }
 
 void GarmentFitter::setGarment( Garment_ garment )
