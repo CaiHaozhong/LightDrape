@@ -10,8 +10,8 @@ class WatertightMesh :
 private:
 	Skeleton_ mSkeleton;
 	Segment_ mSegment;
-	Mesh_ mOriginalMesh;
-	
+	Mesh_ mOriginalMesh;		
+
 	
 	/* 每一个网格顶点有一个存储该顶点对应的骨骼节点下标的属性 */
 	IntProperty_ mVertexPropertySKN;
@@ -53,6 +53,18 @@ public:
 	void dumpSkeLinkMesh(size_t skeNode, std::string sunPath);
 
 	void dumpSkeleton(std::string name);
+
+	Mesh_ getOriginalMesh() const { return mOriginalMesh; }
+
+	int getOriginVertex(size_t watertightVertex);
+
+	int getWatertightVertex(size_t originVertex);
+
+private:
+	void computeMap();
+private:
+	std::vector<int> mWatertightMapOrigin;
+	std::vector<int> mOriginMapWatertight;
 };
 S_PTR(WatertightMesh);
 

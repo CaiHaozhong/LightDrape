@@ -1,6 +1,6 @@
 #include "WatertightMesh.h"
 #include <fstream>
-
+#include "KNNSHelper.h"
 
 WatertightMesh::~WatertightMesh(void)
 {
@@ -17,6 +17,7 @@ WatertightMesh::WatertightMesh( Mesh_ mesh ) :Mesh(*mesh)
 	PRINTLN(holeInfo.holes()->size());
 	holeInfo.fillAllHoles();	
 	initProperty();
+	computeMap();
 }
 
 Skeleton_ WatertightMesh::getSkeleton() const
@@ -173,4 +174,41 @@ double WatertightMesh::getGeodesicDis( size_t ver )
 		return -1;
 	}
 	return mVertexPropertyGeoDis->get(ver);
+}
+
+void WatertightMesh::computeMap()
+{
+	mOriginMapWatertight.resize(mOriginalMesh->n_vertices(), -1);
+	mWatertightMapOrigin.resize(this->n_vertices(), -1);
+	std::vector<Vec3d> pointCloud;
+	pointCloud.reserve(this->n_vertices());
+	for(auto it = this->vertices_begin(); it != this->vertices_end(); it++){
+		pointCloud.push_back(this->point(*it));
+	}
+	KNNSHelper kNNS(pointCloud);
+	KNNSHelper::Result result;
+	for(auto it = mOriginalMesh->vertices_begin(); it != mOriginalMesh->vertices_end(); it++){
+		Vec3d& query = mOriginalMesh->point(*it);
+		kNNS.singleNeighborSearch(query, result);
+		mOriginMapWatertight[it->idx()] = result.index;
+		mWatertightMapOrigin[result.index] = it->idx();
+	}
+}
+
+int WatertightMesh::getOriginVertex( size_t watertightVertex )
+{
+	if(watertightVertex >= this->n_vertices()){
+		PRINTLN("watertightVertex out of bound");
+		return -1;
+	}
+	return mWatertightMapOrigin[watertightVertex];
+}
+
+int WatertightMesh::getWatertightVertex( size_t originVertex )
+{
+	if(originVertex >= mOriginalMesh->n_vertices()){
+		PRINTLN("originVertex out of bound");
+		return -1;
+	}
+	return mOriginMapWatertight[originVertex];
 }

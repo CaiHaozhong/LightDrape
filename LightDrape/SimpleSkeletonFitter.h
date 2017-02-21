@@ -36,15 +36,8 @@ public:
 	~SimpleSkeletonFitter(void);
 	VertexAlter_ fit(Region_ humanRegion);
 	std::string getName();
-private:
-	/* 对骨骼节点按照连接关系进行排序
-	 * 参数：sortedSkeNodes 输出
-	 * 参数：multiNextNodeHandler 当一个节点的下一个节点有多个可选时，由这个对象
-	 * 决定选哪个
-	 */
-	void getSortedSkeleton(Region_ region, std::vector<size_t>& sortedSkeNodes, 
-		MultiNextNodeHandler_ multiNextNodeHandler);
 
+protected:
 	/* 根据人体的区域来得到衣服区域的骨骼节点的位移量 
 	 * 参数 garSkeTrans 为输出
 	 * garSkeTrans中的骨骼节点按照连接关系从开始节点按顺序存储
@@ -62,5 +55,15 @@ private:
 	/* 对骨骼节点对应的网格顶点进行旋转 */
 	void computeRotation(VertexAlter_ ret, WatertightMesh_ mesh, 
 		std::vector< std::pair<size_t, std::pair<Vec3d, double> > >& garSkeRotate);
+
+private:
+	/* 对骨骼节点按照连接关系进行排序
+	 * 参数：sortedSkeNodes 输出
+	 * 参数：multiNextNodeHandler 当一个节点的下一个节点有多个可选时，由这个对象
+	 * 决定选哪个
+	 */
+	void getSortedSkeleton(Region_ region, std::vector<size_t>& sortedSkeNodes, 
+		MultiNextNodeHandler_ multiNextNodeHandler);
+
 };
 S_PTR(SimpleSkeletonFitter);

@@ -1,6 +1,6 @@
 #include "KNNSHelper.h"
 
-KNNSHelper::KNNSHelper( std::vector<OpenMesh::Vec3f>& points )
+KNNSHelper::KNNSHelper( std::vector<Vec3d>& points )
 {
 	mPointCloud = PointCloud(points);
 	mKDTree = new KDTree(3, mPointCloud, nanoflann::KDTreeSingleIndexAdaptorParams(10 /* max leaf */) );
@@ -11,7 +11,7 @@ KNNSHelper::~KNNSHelper(){
 	delete mKDTree;	
 }
 
-bool KNNSHelper::singleNeighborSearch(OpenMesh::Vec3f q, Result& ret)
+bool KNNSHelper::singleNeighborSearch(Vec3d q, Result& ret)
 {	
 	std::vector<Result> rets;
 	bool r = kNeighborSearch(q, 1, rets);
@@ -20,11 +20,11 @@ bool KNNSHelper::singleNeighborSearch(OpenMesh::Vec3f q, Result& ret)
 	return r;
 }
 
-bool KNNSHelper::kNeighborSearch(OpenMesh::Vec3f& q, int K, std::vector<Result>& ret)
+bool KNNSHelper::kNeighborSearch(Vec3d& q, int K, std::vector<Result>& ret)
 {
-	nanoflann::KNNResultSet<float> resultSet(K);
+	nanoflann::KNNResultSet<double> resultSet(K);
 	size_t* indices = new size_t[K];
-	float* dists = new float[K];
+	double* dists = new double[K];
 	resultSet.init(indices, dists);
 	bool r = mKDTree->findNeighbors(resultSet, q.values_, nanoflann::SearchParams(10));
 	size_t retSize = resultSet.size();
@@ -36,7 +36,7 @@ bool KNNSHelper::kNeighborSearch(OpenMesh::Vec3f& q, int K, std::vector<Result>&
 	return r;
 }
 
-PointCloud::PointCloud( std::vector<OpenMesh::Vec3f>& ps )
+PointCloud::PointCloud( std::vector<Vec3d>& ps )
 {
 	pts = ps;
 }
