@@ -2,7 +2,7 @@
 #include "HumanSegmenter.h"
 #include "Config.h"
 #include "LeftTorseRightRefiner.h"
-
+#include "LeftTorseRightSimpleRefiner.h"
 
 HumanSegmenter::~HumanSegmenter(void)
 {
@@ -262,7 +262,7 @@ void HumanSegmenter::refineSegment()
 
 void HumanSegmenter::refineHands()
 {
-	LeftTorseRightRefiner_ refiner = std::make_shared<LeftTorseRightRefiner>(
+	LeftTorseRightRefiner_ refiner = std::make_shared<LeftTorseRightSimpleRefiner>(
 		shared_from_this(),
 		mLeftHand,
 		mTorso,
@@ -279,3 +279,13 @@ void HumanSegmenter::refineLegs()
 
 }
 
+void HumanSegmenter::filterNoise( std::vector<bool>& isNoise )
+{
+	MeshSegmenter::filterNoise(isNoise);
+	size_t levelSetCount = getLevelSetCount();
+	for(size_t i = 0; i < levelSetCount; i++){
+		if(getLevelSet(i)->getCount() > 3){
+			isNoise[i] = true;
+		}
+	}
+}

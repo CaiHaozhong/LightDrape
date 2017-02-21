@@ -16,9 +16,10 @@ S_PTR(LevelNode);
  */
 class LeftTorseRightRefiner
 {
-private:
+protected:
 	Region_ mLeft, mTorse, mRight;
 	MeshSegmenter_ mMeshSegmenter;
+private:
 	static const int IN_LEFT = 0;
 	static const int IN_RIGHT = 1;
 	static const int IN_TORSE = 2;
@@ -27,7 +28,7 @@ public:
 	~LeftTorseRightRefiner(void);
 	LeftTorseRightRefiner(MeshSegmenter_ meshSegmenter, Region_ left, Region_ torse, Region_ right);
 
-	void refine();
+	virtual void refine();
 
 private:
 
@@ -43,9 +44,6 @@ private:
 	/* 将Vertices中的点加入到HashSet中 */
 	void addVerticesToHashSet(std::unordered_set<size_t>& ret, std::vector<size_t>& vertices );
 
-	/* 从Region a中减去处于Region b中的顶点 */
-	void regionSub(Region_ a, Region_ b);
-
 	/* 确定一个顶点该位于哪个集合里 */
 	int decideLocation(std::unordered_set<size_t>& leftSet, 
 		std::unordered_set<size_t>& rightSet, 
@@ -54,5 +52,9 @@ private:
 
 	/* 将一个Circle从头插入到一个Region中 */
 	void insertCircleToRegion(Region_ region, LevelCircle_ circle);
+
+protected:
+	/* 从Region a中减去处于Region b中的顶点 */
+	void regionSub(Region_ a, Region_ b);
 };
 S_PTR(LeftTorseRightRefiner);

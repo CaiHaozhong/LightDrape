@@ -11,3 +11,4 @@ libs/
 dlls/
 data/
 ipch/
+*.obj

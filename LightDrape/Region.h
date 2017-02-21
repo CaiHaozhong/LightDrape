@@ -109,7 +109,7 @@ public:
 	 */
 	void expand();
 
-	void dump(std::string name);
+	void dumpSkeleton(std::string name);
 
 	RegionSkeleton_ getRegionSkeleton() const;
 

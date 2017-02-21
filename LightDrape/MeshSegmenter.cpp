@@ -27,7 +27,7 @@ void MeshSegmenter::init( WatertightMesh_ mesh )
 	decideGranularity();
 	PRINTLN("End compute Geodesic...");
 	PRINTLN("Begin computeLevelSet...");
-	computeLevelSet();
+	computeLevelSet(true);
 	PRINTLN("End computeLevelSet...");
 }
 
@@ -232,7 +232,7 @@ void MeshSegmenter::filterNoise( std::vector<bool>& isNoise )
 {
 	isNoise.resize(mLevelSets.size(), false);
 	size_t len = mLevelSets.size();
-	int threshold = 4; // 连续个数小于等于threshold的都算噪音
+	int threshold = 12; // 连续个数小于等于threshold的都算噪音
 	int val = mLevelSets[0]->getCount();
 	int accu = 1;
 	int start = 0;

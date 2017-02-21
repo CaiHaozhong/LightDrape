@@ -139,7 +139,7 @@ void Region::expandVertices()
 	}
 }
 
-void Region::dump( std::string name )
+void Region::dumpSkeleton( std::string name )
 {
 #ifdef _DEBUG_
 	if(mMesh == nullptr) return;
@@ -253,7 +253,7 @@ size_t Region::addCircle( LevelCircle_ circle )
 		auto& nodes = circle->levelNodes;
 		for(auto it = nodes.begin(); it != nodes.end(); it++){
 			this->addVertex((*it)->start_vertex);
-			this->addVertex((*it)->getNearestVertex(mMesh));
+			this->addVertex((*it)->getToVertexIndex(mMesh));
 		}
 		mLevelCircles.push_back(circle);
 	}
@@ -360,7 +360,7 @@ void RegionSkeleton::getVerticesFromCircle( LevelCircle_ circle, std::vector<siz
 	auto& nodes = circle->levelNodes;
 	for(auto it = nodes.begin(); it != nodes.end(); it++){
 		ret.push_back((*it)->start_vertex);
-		ret.push_back((*it)->getNearestVertex(mesh));
+		ret.push_back((*it)->getToVertexIndex(mesh));
 	}
 }
 

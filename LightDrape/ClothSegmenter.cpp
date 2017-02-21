@@ -2,6 +2,7 @@
 #include "ClothSegmenter.h"
 #include "Config.h"
 #include "LeftTorseRightRefiner.h"
+#include "LeftTorseRightSimpleRefiner.h"
 
 ClothSegmenter::~ClothSegmenter(void)
 {
@@ -156,7 +157,7 @@ void ClothSegmenter::onBeginSegmentHook()
 
 void ClothSegmenter::refineSegment()
 {
-	LeftTorseRightRefiner_ refiner = std::make_shared<LeftTorseRightRefiner>(
+	LeftTorseRightRefiner_ refiner = std::make_shared<LeftTorseRightSimpleRefiner>(
 		shared_from_this(),
 		mLeftSleeve,
 		mTorso,

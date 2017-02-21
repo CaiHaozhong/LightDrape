@@ -2,6 +2,7 @@
 #include "SimpleSkeletonFitter.h"
 #include "LevelSetSkeletonFitter.h"
 #include "RegionSkeletonFitter.h"
+#include "BodyFitter.h"
 
 ClothSegment::~ClothSegment(void)
 {
@@ -36,10 +37,10 @@ void ClothSegment::addRegion( int part, Region_ region )
 RegionFitter_ ClothSegment::getRegionFitter( int bodyPart )
 {
 	if(bodyPart == Segment::BODY_LEFT_HAND || bodyPart == Segment::BODY_RIGHT_HAND){
-		return std::make_shared<RegionSkeletonFitter>(getMatch(bodyPart));
+		return std::make_shared<SimpleSkeletonFitter>(getMatch(bodyPart));
 	}
 	else if(bodyPart == Segment::BODY_TORSE){
-		return std::make_shared<RegionSkeletonFitter>(getMatch(bodyPart));
+		return std::make_shared<BodyFitter>(getMatch(bodyPart));
 	}
 	return nullptr;
 }

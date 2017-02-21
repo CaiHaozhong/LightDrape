@@ -46,6 +46,8 @@ protected:
 	/* Override */
 	void refineSegment();
 
+	void filterNoise(std::vector<bool>& isNoise);
+
 private:
 	void initHumanSegmenter(WatertightMesh_ mesh);
 

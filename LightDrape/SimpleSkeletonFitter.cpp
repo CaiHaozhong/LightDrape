@@ -71,6 +71,7 @@ std::string SimpleSkeletonFitter::getName(){
 void SimpleSkeletonFitter::getSortedSkeleton( Region_ region, std::vector<size_t>& sortedSkeNodes,
 							  MultiNextNodeHandler_ multiNextNodeHandler)
 {
+	region->getMesh()->dumpSkeleton(region->getMesh()->getName());
 	Skeleton_ skeleton = region->getSkeleton();
 	auto skeletonNodes = region->getSkeNodes();
 	size_t cur = region->getStart();
@@ -127,6 +128,8 @@ void SimpleSkeletonFitter::fitSkeleton(std::vector< std::pair<size_t, Vec3d> >& 
 	double humLen = 0;
 	size_t humCurIndex = 0;
 	double cachedLen = 0;
+	Vec3d lastTrans;
+	std::pair<Vec3d, double> lastRotate;
 	for(size_t i = 1; i < garOrderedSkes.size(); i++){
 		size_t curSke = garOrderedSkes[i];
 		garLen += garSkeleton->nodeEuclideanDis(garOrderedSkes[i-1], curSke);		
@@ -143,7 +146,8 @@ void SimpleSkeletonFitter::fitSkeleton(std::vector< std::pair<size_t, Vec3d> >& 
 		Vec3d hp1 = humSkeleton->nodeAt(humOrderSkes[humCurIndex-1])->point;
 		Vec3d hp2 = humSkeleton->nodeAt(humOrderSkes[humCurIndex])->point;
 		Vec3d transVec = hp2 + (hp1-hp2) * (humLen-garLen)/cachedLen;
-		garSkeTrans.push_back(std::make_pair(curSke, transVec - garSkeleton->nodeAt(curSke)->point));
+		lastTrans = transVec - garSkeleton->nodeAt(curSke)->point;
+		garSkeTrans.push_back(std::make_pair(curSke, lastTrans));
 
 		/* ¼ÆËã¹Ç÷ÀÐý×ªÁ¿ */
 		Vec3d humanVec = hp2-hp1;
@@ -155,7 +159,8 @@ void SimpleSkeletonFitter::fitSkeleton(std::vector< std::pair<size_t, Vec3d> >& 
 		}
 		Vec3d axis = humanVec % garVec;
 		double angle = -acos((humanVec|garVec)/(humanVec.length()*garVec.length()));
-		garSkeRotate.push_back(std::make_pair(curSke, std::make_pair(axis, angle)));
+		lastRotate = std::make_pair(axis, angle);
+		garSkeRotate.push_back(std::make_pair(curSke, lastRotate));
 	}
 
 }
