@@ -42,16 +42,16 @@ void LeftTorseRightSimpleRefiner::computeBoundedXZ( Region_ region,
 	std::vector<size_t>& vers = region->getRegionSkeleton()->getNode(0)->vers;
 	Mesh_ mesh = region->getMesh();
 
-	std::string path = "../data/testSeg/ClothSeg/";
-	char back[8];
-	sprintf(back, "ps.cg");
-	std::ofstream out = std::ofstream(path + mesh->getName() + back);
-	out << "# D:3 NV:" << vers.size() << " NE:" << 0 << "\n";
-	for(auto it = vers.begin(); it != vers.end(); it++){
-			auto& p = mesh->point(Mesh::VertexHandle(*it)).values_;
-			out << "v " << p[0] << " " << p[1] << " " << p[2] << "\n";
-	}
-	out.close();
+// 	std::string path = "../data/testSeg/ClothSeg/";
+// 	char back[8];
+// 	sprintf(back, "ps.cg");
+// 	std::ofstream out = std::ofstream(path + mesh->getName() + back);
+// 	out << "# D:3 NV:" << vers.size() << " NE:" << 0 << "\n";
+// 	for(auto it = vers.begin(); it != vers.end(); it++){
+// 			auto& p = mesh->point(Mesh::VertexHandle(*it)).values_;
+// 			out << "v " << p[0] << " " << p[1] << " " << p[2] << "\n";
+// 	}
+// 	out.close();
 	for(auto it = vers.begin(); it != vers.end(); it++){
 		double* p = mesh->point(Mesh::VertexHandle(*it)).values_;
 		if(p[0] < minX)

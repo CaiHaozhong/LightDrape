@@ -49,8 +49,8 @@ void GarmentFitter::fit( Human_ human )
 	size_t count = humanRegions.size();
 	for(size_t i = 0; i < count; i++){
 		int bodyPart = humanRegions[i].first;
-// 		if(bodyPart == Segment::BODY_TORSE)
-// 			continue;
+		if(bodyPart == Segment::BODY_TORSE/* || bodyPart == Segment::BODY_LEFT_HAND*/)
+			continue;
 		Region_ bodyRegion = humanRegions[i].second;
 		RegionFitter_ fitter = garSeg->getRegionFitter(bodyPart);
 		if(fitter != nullptr){

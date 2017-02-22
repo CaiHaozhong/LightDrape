@@ -3,6 +3,7 @@
 
 MeshSkeletonization::MeshSkeletonization(void)
 {
+	m_quality_speed_tradeoff = 0.1;
 }
 
 
@@ -31,6 +32,7 @@ void MeshSkeletonization::skeletonize( WatertightMesh_ mesh )
 	});
 
 	Skeletonization mcs = Skeletonization(triangle_mesh);
+	mcs.set_quality_speed_tradeoff(m_quality_speed_tradeoff);
 	mcs.contract_until_convergence();
 	Skeletonization::Skeleton cgalSkeleton;
 	mcs.convert_to_skeleton(cgalSkeleton);
@@ -76,4 +78,9 @@ Skeleton_ MeshSkeletonization::makeSkeleton( CGALSkeleton& cgalSkeleton )
 		ret->addEdge(edge);			
 	}
 	return ret;
+}
+
+void MeshSkeletonization::set_quality_speed_tradeoff( double val )
+{
+	m_quality_speed_tradeoff = val;
 }

@@ -56,7 +56,7 @@ void Mesher::initWithRegion( Region_ region )
 	mRetMesh = smartNew(Mesh);
 	Mesh_ regionMesh = region->getMesh();
 	for(size_t i = 0; i < denseCount; i++){
-		Vec3d& point = regionMesh->point(Mesh::VertexHandle(	mDenseMapSparse[i]));
+		Vec3d& point = regionMesh->point(Mesh::VertexHandle(mDenseMapSparse[i]));
 		mRetMesh->add_vertex(point);
 	}
 	for(Mesh::FaceIter f_it = regionMesh->faces_begin();
@@ -76,4 +76,9 @@ void Mesher::initWithRegion( Region_ region )
 				mRetMesh->add_face(face);
 			}
 	}
+}
+
+Mesh_ Mesher::getMesh()
+{
+	return mRetMesh;
 }

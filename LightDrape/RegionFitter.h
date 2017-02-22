@@ -27,6 +27,7 @@ public:
 	virtual VertexAlter_ fit(Region_ humanRegion) = 0;
 
 	virtual std::string getName() = 0;
+
 	void setGarmentRegion(Region_ garmentRegion);
 
 protected:

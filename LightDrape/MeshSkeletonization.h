@@ -23,8 +23,14 @@ public:
 	MeshSkeletonization(void);
 	~MeshSkeletonization(void);
 	virtual void skeletonize(WatertightMesh_ mesh);
+
+	/* 设置收敛速度和质量的平衡点
+	 * 该值越大，骨骼越处于网格的中心，但收敛速度会降低
+	 * 默认为0.1 */
+	void set_quality_speed_tradeoff(double val);
 private:
 	/* 将CgalSkeleton转成Skeleton */
 	Skeleton_ makeSkeleton( CGALSkeleton& cgalSkeleton );
+	double m_quality_speed_tradeoff;
 };
 S_PTR(MeshSkeletonization);
