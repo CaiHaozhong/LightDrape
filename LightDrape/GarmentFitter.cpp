@@ -49,8 +49,11 @@ void GarmentFitter::fit( Human_ human )
 	size_t count = humanRegions.size();
 	for(size_t i = 0; i < count; i++){
 		int bodyPart = humanRegions[i].first;
+
+		/* 衣服已经被Translate了，衣身没有必要适配人体了 */
 		if(bodyPart == Segment::BODY_TORSE/* || bodyPart == Segment::BODY_LEFT_HAND*/)
 			continue;
+
 		Region_ bodyRegion = humanRegions[i].second;
 		RegionFitter_ fitter = garSeg->getRegionFitter(bodyPart);
 		if(fitter != nullptr){
@@ -97,6 +100,10 @@ void GarmentFitter::translateGarment()
 				regionSkeleton->getNode(i)->center += transVec;
 			}
 	}
+
+
+	/* 重新计算AABB */
+	mGarment->requestRecomputeAABB();
 }
 
 void GarmentFitter::setGarment( Garment_ garment )

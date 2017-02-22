@@ -4,6 +4,7 @@
 #include "Cloth.h"
 #include "MeshTransformer.h"
 #include "Config.h"
+#include "HumanFeature.h"
 int main(){
 	Config_ config = Config::getInstance();
 	/* Human */
@@ -16,6 +17,9 @@ int main(){
 		hRawmesh->requestAABB();
 	}	
 	Human_ human = std::make_shared<Human>(hRawmesh);
+	HumanFeature_ feature = smartNew(HumanFeature);
+	feature->fromMakeHumanMeasureFile(config->humanInPath + human->getName() + ".par");
+	human->setFeature(feature);
 
 	MeshTransformerFactory_ meshTransformerFactory = smartNew(AxisYTransFactory);
 	MeshTransformer_ transformer = meshTransformerFactory->createTransfomer(config->humanMeshDiretion);
@@ -42,7 +46,7 @@ int main(){
 	human->dress(garment);
 	
 	/* Output */
-	bool suc = OpenMesh::IO::write_mesh(*garment, config->clothOutPath+config->clothInFileName);
+	bool suc = OpenMesh::IO::write_mesh(*(garment->getOriginalMesh()), config->clothOutPath+config->clothInFileName);
 	if(suc){
 		PRINTLN("write succsss!");
 	}

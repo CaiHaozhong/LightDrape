@@ -212,3 +212,14 @@ int WatertightMesh::getWatertightVertex( size_t originVertex )
 	}
 	return mOriginMapWatertight[originVertex];
 }
+
+void WatertightMesh::alterOriginalMesh()
+{
+	for(auto it = mOriginalMesh->vertices_begin(); 
+		it != mOriginalMesh->vertices_end(); it++){
+			size_t originalV = it->idx();
+			size_t waterV = getWatertightVertex(originalV);
+			Vec3d& op = mOriginalMesh->point(*it);
+			op = this->point(Mesh::VertexHandle(waterV));
+	}
+}

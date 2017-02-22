@@ -26,8 +26,8 @@ VertexAlter_ FullSkeletonFitter::fit( Region_ humanRegion )
 	RegionSkeletonizer_ regionSkeletonizer = smartNew(RegionSkeletonizer);
 	char name[20];
 	sprintf(name, "%d", fitI++);
-	mGarmentSkeleton = regionSkeletonizer->skeletonize(mGarmentRegion, std::string("sleeve")+name);
-	mHumanSkeleton = regionSkeletonizer->skeletonize(humanRegion, std::string("hand")+name);
+	mGarmentSkeleton = regionSkeletonizer->skeletonize(mGarmentRegion, mGarmentRegion->getMesh()->getName() + std::string("sleeve")+name);
+	mHumanSkeleton = regionSkeletonizer->skeletonize(humanRegion, mHumanRegion->getMesh()->getName() + std::string("hand")+name);
 	addSkeletonNodesToSet(mGarmentSkeleton, mGarSkeNodes);
 	addSkeletonNodesToSet(mHumanSkeleton, mHumanSkeNodes);
 	dumpRegionSkeletonLink(mGarmentSkeleton, mGarmentRegion, "leftSleeve");

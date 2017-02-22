@@ -2,6 +2,8 @@
 #include "Region.h"
 #include "Vec3d.h"
 #include "VertexAlter.h"
+#include "WatertightMesh.h"
+#include "Human.h"
 
 
 BodyFitter::BodyFitter(void)
@@ -21,11 +23,19 @@ BodyFitter::~BodyFitter(void)
 VertexAlter_ BodyFitter::fit( Region_ humanRegion )
 {
 	VertexAlter_ ret = smartNew(VertexAlter);
-	double gx, gz, hx, hz;
-	computeAverageXZ(humanRegion, hx, hz);
-	computeAverageXZ(mGarmentRegion, gx, gz);
+	double garCenterX, garCenterZ, humCenterX, humCenterZ;
+	double garTopY, humTopY;
+	computeAverageXZ(humanRegion, humCenterX, humCenterZ);
+	computeAverageXZ(mGarmentRegion, garCenterX, garCenterZ);
+	garTopY = mGarmentRegion->getMesh()->getMax().values_[1];
+	Human_ humanMesh = (std::dynamic_pointer_cast<Human>(humanRegion->getMesh()));
+	if(humanMesh == nullptr){
+		PRINTLN("In BodyFitter::fit, the mesh of humanRegion is not a Human");
+		return ret;
+	}	
+	humTopY = humanMesh->getShoulderHeight();
 	auto& vers = mGarmentRegion->getVertices();
-	Vec3d delta(hx-gx, 0, hz-gz);
+	Vec3d delta(humCenterX-garCenterX, humTopY-garTopY, humCenterZ-garCenterZ);
 	for(auto it = vers.begin(); it != vers.end(); it++){
 		ret->add(*it, delta);
 	}
