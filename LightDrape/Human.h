@@ -15,7 +15,7 @@ public:
 
 	Vec3d getAlignPoint();
 	
-	void dress(Garment_ garment);
+	void dress(Mesh_ garment);
 
 	HumanFeature_ getFeature() const;
 

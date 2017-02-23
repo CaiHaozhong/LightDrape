@@ -15,7 +15,7 @@ WatertightMesh::WatertightMesh( Mesh_ mesh ) :Mesh(*mesh)
 	holeInfo.getHoles();
 	PRINT("holes Count: ");
 	PRINTLN(holeInfo.holes()->size());
-	holeInfo.fillAllHoles();	
+	holeInfo.fillAllHoles();
 	initProperty();
 	computeMap();
 }

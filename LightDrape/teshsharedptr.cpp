@@ -9,12 +9,20 @@ int main(){
 	Config_ config = Config::getInstance();
 	/* Human */
 	Mesh_ hRawmesh = smartNew(Mesh);
+	hRawmesh->request_vertex_normals();
+	OpenMesh::IO::Options opt;
 	hRawmesh->setName(config->humanInFileName.substr(0,config->humanInFileName.size()-4));
-	bool readSuc = OpenMesh::IO::read_mesh(*hRawmesh, config->humanInPath + config->humanInFileName);
+	bool readSuc = OpenMesh::IO::read_mesh(*hRawmesh, config->humanInPath + config->humanInFileName, opt);
 	if(readSuc){
-		hRawmesh->request_vertex_normals();
-		hRawmesh->request_face_normals();	
-		hRawmesh->requestAABB();
+		if ( !opt.check( OpenMesh::IO::Options::VertexNormal ) )
+		{
+			// we need face normals to update the vertex normals
+			hRawmesh->request_face_normals();
+			// let the mesh update the normals
+			hRawmesh->update_normals();
+			// dispose the face normals, as we don't need them anymore
+			hRawmesh->release_face_normals();
+		}
 	}	
 	Human_ human = std::make_shared<Human>(hRawmesh);
 	HumanFeature_ feature = smartNew(HumanFeature);
@@ -29,7 +37,7 @@ int main(){
 	}
 
 	/* Output */
-	OpenMesh::IO::write_mesh(*human, config->clothOutPath+config->humanInFileName);
+	//OpenMesh::IO::write_mesh(*human, config->clothOutPath+config->humanInFileName);
 
 	/* Garment */
 	Mesh_ gRawmesh = smartNew(Mesh);
@@ -43,10 +51,10 @@ int main(){
 	Garment_ garment = std::make_shared<Cloth>(gRawmesh);
 
 	/* Dress */
-	human->dress(garment);
+	human->dress(gRawmesh);
 	
 	/* Output */
-	bool suc = OpenMesh::IO::write_mesh(*(garment->getOriginalMesh()), config->clothOutPath+config->clothInFileName);
+	bool suc = OpenMesh::IO::write_mesh(*(gRawmesh), config->clothOutPath+config->clothInFileName);
 	if(suc){
 		PRINTLN("write succsss!");
 	}

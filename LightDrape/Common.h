@@ -9,6 +9,7 @@
 #ifdef _DEBUG_
 #define PRINT(str) std::cout << str
 #define PRINTLN(str) std::cout << str << std::endl
+#define PRINT_ERROR(str) std::cout << "Error: " << str << std::endl;
 #else
 #define PRINT(str)
 #define PRINTLN(str)
