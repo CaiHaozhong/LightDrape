@@ -24,7 +24,7 @@ size_t Human::getGeodesicSource()
 	return WatertightMesh::getGeodesicSource();
 }
 
-void Human::dress( Mesh_ garment )
+void Human::dress( Garment_ garment )
 {
 // 	/* 先各自进行骨骼提取 */
 // 	MeshSkeletonization_ skeletonizer = smartNew(MeshSkeletonizationCached);
@@ -56,18 +56,19 @@ void Human::dress( Mesh_ garment )
 // 	/* 修改原始网格 */
 // 	garment->alterOriginalMesh();
 
-	/* 穿透调整 */
-	PenetrationResolver_ penetrationResolver = smartNew(PenetrationResolver);
-	penetrationResolver->setGarmentMesh(garment);
-	penetrationResolver->setHumanMesh(getOriginalMesh());
-	bool isSuc = penetrationResolver->resolve();
-	if(isSuc){
-		PRINTLN("Resolve Penetration successfully.");
-	}
-	else{
-		PRINTLN("Resolve Penetration fail.");
-	}
+// 	/* 穿透调整 */
+// 	PenetrationResolver_ penetrationResolver = smartNew(PenetrationResolver);
+// 	penetrationResolver->setGarmentMesh(garment);
+// 	penetrationResolver->setHumanMesh(getOriginalMesh());
+// 	bool isSuc = penetrationResolver->resolve();
+// 	if(isSuc){
+// 		PRINTLN("Resolve Penetration successfully.");
+// 	}
+// 	else{
+// 		PRINTLN("Resolve Penetration fail.");
+// 	}
 
+	
 }
 
 Vec3d Human::getAlignPoint()

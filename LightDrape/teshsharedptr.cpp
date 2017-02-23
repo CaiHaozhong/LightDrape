@@ -41,20 +41,27 @@ int main(){
 
 	/* Garment */
 	Mesh_ gRawmesh = smartNew(Mesh);
+	gRawmesh->request_vertex_normals();
 	gRawmesh->setName(config->clothInFileName.substr(0,config->clothInFileName.size()-4));
-	readSuc = OpenMesh::IO::read_mesh(*gRawmesh, config->clothInPath + config->clothInFileName);
+	readSuc = OpenMesh::IO::read_mesh(*gRawmesh, config->clothInPath + config->clothInFileName, opt);
 	if(readSuc){
-		gRawmesh->request_vertex_normals();
-		gRawmesh->request_face_normals();	
-		gRawmesh->requestAABB();
+		if ( !opt.check( OpenMesh::IO::Options::VertexNormal ) )
+		{
+			// we need face normals to update the vertex normals
+			gRawmesh->request_face_normals();
+			// let the mesh update the normals
+			gRawmesh->update_normals();
+			// dispose the face normals, as we don't need them anymore
+			gRawmesh->release_face_normals();
+		}
 	}	
 	Garment_ garment = std::make_shared<Cloth>(gRawmesh);
 
 	/* Dress */
-	human->dress(gRawmesh);
+	human->dress(garment);
 	
 	/* Output */
-	bool suc = OpenMesh::IO::write_mesh(*(gRawmesh), config->clothOutPath+config->clothInFileName);
+	bool suc = OpenMesh::IO::write_mesh(*(garment->getOriginalMesh()), config->clothOutPath+config->clothInFileName);
 	if(suc){
 		PRINTLN("write succsss!");
 	}
