@@ -8,7 +8,8 @@
 #include "UglyDeformer.h"
 #include "HumanFeature.h"
 #include "GarmentPenetrationResolver.h"
-
+#include "GarmentPhysicalSimulator.h"
+#include "FrameToOBJFileWriter.h"
 Human::~Human(void)
 {
 }
@@ -56,19 +57,23 @@ void Human::dress( Garment_ garment )
 // 	/* 修改原始网格 */
 // 	garment->alterOriginalMesh();
 
-	/* 穿透调整 */
-	GarmentPenetrationResolver_ penetrationResolver = smartNew(GarmentPenetrationResolver);
-	penetrationResolver->setGarment(garment->getOriginalMesh());
-	penetrationResolver->setHuman(this->getOriginalMesh());
-	bool isSuc = penetrationResolver->resolve();
-	if(isSuc){
-		PRINTLN("Resolve Penetration successfully.");
-	}
-	else{
-		PRINTLN("Resolve Penetration fail.");
-	}
+// 	/* 穿透调整 */
+// 	GarmentPenetrationResolver_ penetrationResolver = smartNew(GarmentPenetrationResolver);
+// 	penetrationResolver->setGarment(garment->getOriginalMesh());
+// 	penetrationResolver->setHuman(this->getOriginalMesh());
+// 	bool isSuc = penetrationResolver->resolve();
+// 	if(isSuc){
+// 		PRINTLN("Resolve Penetration successfully.");
+// 	}
+// 	else{
+// 		PRINTLN("Resolve Penetration fail.");
+// 	}
 
-	
+	/* 物理模拟 */
+	GarmentPhysicalSimulator_ simulator = smartNew(GarmentPhysicalSimulator);
+	simulator->initWithGarmentAndHuman(garment->getOriginalMesh(), this->getOriginalMesh());
+	simulator->addGarmentSimulationCallBack(std::make_shared<FrameToOBJFileWriter>(garment->getOriginalMesh()));
+	simulator->simulate();
 }
 
 Vec3d Human::getAlignPoint()

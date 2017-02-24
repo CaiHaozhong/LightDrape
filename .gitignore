@@ -12,3 +12,5 @@ dlls/
 data/
 ipch/
 *.obj
+*.aps
+*.rc

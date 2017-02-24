@@ -27,7 +27,7 @@ void PenetrationResolver::setRigidMesh( Mesh_ rigid )
 }
 
 /* Ax = b, x is transpose of (x0 ... xn y0 ... yn z0 ... zn) */
-bool PenetrationResolver::resolve(std::vector<Vec3d>& points)
+bool PenetrationResolver::resolve(std::vector<Vec3d>& points, std::vector<size_t>& penetrationVers)
 {
 	if(mRigidMesh == nullptr){
 		PRINT_ERROR("In PenetrationResolver::resolve, mRigidMesh is null");
@@ -40,7 +40,14 @@ bool PenetrationResolver::resolve(std::vector<Vec3d>& points)
 	//memset(penetrationTest, 0, garVerCount);
 	std::vector<int> nearestHumanVertex;
 	computeNNSHumanVertex(nearestHumanVertex, points);
-	computePenetrationVertices(nearestHumanVertex, penetrationTest, points);
+	bool hasPenetrate = computePenetrationVertices(nearestHumanVertex, penetrationTest, points);
+	if(hasPenetrate == false) 
+		return false;
+	for(size_t i = 0; i < pointCount; i++){
+		if(penetrationTest[i]){
+			penetrationVers.push_back(i);
+		}
+	}
 	/** 构造左矩阵和右向量 **/
 	for(int i = 0; i < pointCount; i++){
 		auto curVertex = points[i].values_;
@@ -114,11 +121,12 @@ bool PenetrationResolver::resolve(std::vector<Vec3d>& points)
 			p.values_[1] = ret[index+pointCount];
 			p.values_[2] = ret[index+pointCount*2];
 			index += 1;
-		}
-		return true;
+		}		
 	}
-	else
-		return false;
+	else{
+		PRINT_ERROR("In PenetrationResolver::resolve, SparseLinearEquationSolver().solve return false");		
+	}
+	return true;
 }
 
 void PenetrationResolver::computeNNSHumanVertex( std::vector<int>& nearestHumanVertex, std::vector<Vec3d>& points  )
@@ -155,14 +163,15 @@ void PenetrationResolver::computeNNSHumanVertex( std::vector<int>& nearestHumanV
 // 	out.close();
 }
 
-void PenetrationResolver::computePenetrationVertices( const std::vector<int>& nearestHumanVertex, 
+bool PenetrationResolver::computePenetrationVertices( const std::vector<int>& nearestHumanVertex, 
 													 std::vector<bool>& penetrationTest, std::vector<Vec3d>& points  )
 {
+	bool ret = false;
 	size_t pointCount = points.size();
 	penetrationTest.resize(pointCount, false);
 	if(mRigidMesh == nullptr){
 		PRINT_ERROR("In PenetrationResolver::computePenetrationVertices, mRigidMesh is null");
-		return;
+		return false;
 	}
 	for(size_t i = 0; i < pointCount; i++){
 		Vec3d& garVer = points[i];
@@ -174,9 +183,12 @@ void PenetrationResolver::computePenetrationVertices( const std::vector<int>& ne
 		const Vec3d& humanVer = mRigidMesh->point(Mesh::VertexHandle(humIndex));
 		const Vec3d& humNormal = mRigidMesh->normal(Mesh::VertexHandle(humIndex));
 		double dotProduct = (garVer-humanVer)|humNormal;
-		if(dotProduct < 0)
+		if(dotProduct < 0){
 			penetrationTest[i] = true;
+			ret = true;
+		}
 	}
+	return ret;
 
 // 	std::vector<size_t> isPene;
 // 	for(size_t i = 0; i < mGarment->n_vertices(); i++){

@@ -36,8 +36,10 @@ public:
 	/* 进行穿透调整
 	 * 参数：顶点数据
 	 * 其连接关系由setAdjList(std::vector<std::vector<size_t> >&)给出
+	 * penetration：返回解决穿透之前，有穿透的顶点
+	 * 返回值：如果有穿透，则返回false，否则返回true
 	 */
-	bool resolve(std::vector<Vec3d>& points);
+	bool resolve(std::vector<Vec3d>& points, std::vector<size_t>& penetrationVers = std::vector<size_t>());
 
 	/* 设置服装与人体皮肤的距离， 单位为cm，默认为0.5cm */
 	void setAllowDis(double eps);
@@ -48,8 +50,10 @@ private:
 	void computeNNSHumanVertex(std::vector<int>& nnsHumanVertex, std::vector<Vec3d>& points );
 
 	/* 计算得到与人体有穿透的衣服网格顶点，保存在布尔数组penetrationTest中
-	 * penetrationTest 的大小等于衣服顶点个数，且数组元素初始化为0 */
-	void computePenetrationVertices(const std::vector<int>& nearestHumanVertex, std::vector<bool>& penetrationTest, std::vector<Vec3d>& points );
+	 * penetrationTest 的大小等于衣服顶点个数，且数组元素初始化为0
+	 * 返回值：如果没有穿透的顶点，则返回false，否则返回true
+	 */
+	bool computePenetrationVertices(const std::vector<int>& nearestHumanVertex, std::vector<bool>& penetrationTest, std::vector<Vec3d>& points );
 
 };
 S_PTR(PenetrationResolver);

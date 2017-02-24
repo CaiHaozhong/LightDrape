@@ -7,10 +7,15 @@ S_PTR(Mesh);
 /* 质点所受的分力 */
 class ComponentForce
 {
+protected:
+	Mesh_ mMesh;
 public:
 	ComponentForce(void);
 	~ComponentForce(void);
-	virtual Vec3d compute(size_t i, const Mesh_ mesh, const std::vector<Vec3d>& curPositions,
+	ComponentForce(Mesh_ mesh);
+	Mesh_ setMesh() const;
+	void getMesh(Mesh_ val);
+	virtual Vec3d compute(size_t i, const std::vector<Vec3d>& curPositions,
 		const std::vector<Vec3d>& curVelocities, const std::vector<double> pointMass) = 0;
 };
 S_PTR(ComponentForce);
@@ -20,10 +25,9 @@ class GravityForce : public ComponentForce{
 private:
 	Vec3d g;
 public:
-	GravityForce(){
-		g = Vec3d(0, 9.8, 0);
-	}
-	Vec3d compute(size_t i, const Mesh_ mesh, const std::vector<Vec3d>& curPositions,
+	GravityForce(Mesh_ mesh);
+	GravityForce();
+	Vec3d compute(size_t i, const std::vector<Vec3d>& curPositions,
 		const std::vector<Vec3d>& curVelocities, const std::vector<double> pointMass);
 
 };
@@ -36,20 +40,15 @@ class StretchForce : public ComponentForce{
 private:
 	double k;
 public:
-	StretchForce(){
-		k = 75;
-	}
+	StretchForce(Mesh_ mesh);
+	StretchForce();
 	/* k为劲度系数，单位是牛顿/米，默认是75 */
-	StretchForce(double k){
-		this->k = k;
-	}
+	StretchForce(double k);
 
 	/* k为劲度系数，单位是牛顿/米，默认是75 */
-	void setStiffness(double k){
-		this->k = k;
-	}
+	void setStiffness(double k);
 
-	Vec3d compute(size_t index, const Mesh_ mesh, const std::vector<Vec3d>& curPositions,
+	Vec3d compute(size_t index, const std::vector<Vec3d>& curPositions,
 		const std::vector<Vec3d>& curVelocities, const std::vector<double> pointMass);
 };
 S_PTR(StretchForce);

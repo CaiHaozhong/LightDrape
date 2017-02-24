@@ -60,15 +60,15 @@ int main(){
 	/* Dress */
 	human->dress(garment);
 	
-	/* Output */
-	bool suc = OpenMesh::IO::write_mesh(*(garment->getOriginalMesh()), config->clothOutPath+config->clothInFileName);
-	if(suc){
-		PRINTLN("write succsss!");
-	}
-	else{
-		PRINTLN("write fail!");
-	}
-	
+// 	/* Output */
+// 	bool suc = OpenMesh::IO::write_mesh(*(garment->getOriginalMesh()), config->clothOutPath+config->clothInFileName);
+// 	if(suc){
+// 		PRINTLN("write succsss!");
+// 	}
+// 	else{
+// 		PRINTLN("write fail!");
+// 	}
+// 	
 	getchar();
 
 	return 0;
