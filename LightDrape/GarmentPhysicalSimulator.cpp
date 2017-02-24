@@ -33,8 +33,6 @@ void GarmentPhysicalSimulator::initWithGarmentAndHuman( Mesh_ garment, Mesh_ hum
 	mGarment = garment;
 	mHuman = human;
 	mPenetrationResolver = smartNew(PenetrationResolver);
-	mPenetrationResolver->setGarmentMesh(mGarment);
-	mPenetrationResolver->setHumanMesh(mHuman);
 	mSimulationFramePool = smartNew(SimulationFramePool);
 	setIntegrateStep(0.01);
 	initPointProperty();

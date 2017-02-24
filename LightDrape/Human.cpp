@@ -7,7 +7,7 @@
 #include "LaplacianLocalDeformer.h"
 #include "UglyDeformer.h"
 #include "HumanFeature.h"
-#include "PenetrationResolver.h"
+#include "GarmentPenetrationResolver.h"
 
 Human::~Human(void)
 {
@@ -56,17 +56,17 @@ void Human::dress( Garment_ garment )
 // 	/* 修改原始网格 */
 // 	garment->alterOriginalMesh();
 
-// 	/* 穿透调整 */
-// 	PenetrationResolver_ penetrationResolver = smartNew(PenetrationResolver);
-// 	penetrationResolver->setGarmentMesh(garment);
-// 	penetrationResolver->setHumanMesh(getOriginalMesh());
-// 	bool isSuc = penetrationResolver->resolve();
-// 	if(isSuc){
-// 		PRINTLN("Resolve Penetration successfully.");
-// 	}
-// 	else{
-// 		PRINTLN("Resolve Penetration fail.");
-// 	}
+	/* 穿透调整 */
+	GarmentPenetrationResolver_ penetrationResolver = smartNew(GarmentPenetrationResolver);
+	penetrationResolver->setGarment(garment->getOriginalMesh());
+	penetrationResolver->setHuman(this->getOriginalMesh());
+	bool isSuc = penetrationResolver->resolve();
+	if(isSuc){
+		PRINTLN("Resolve Penetration successfully.");
+	}
+	else{
+		PRINTLN("Resolve Penetration fail.");
+	}
 
 	
 }
