@@ -23,11 +23,12 @@ int main(){
 			// dispose the face normals, as we don't need them anymore
 			hRawmesh->release_face_normals();
 		}
+		hRawmesh->requestAABB();
 	}	
 	Human_ human = std::make_shared<Human>(hRawmesh);
-	HumanFeature_ feature = smartNew(HumanFeature);
-	feature->fromMakeHumanMeasureFile(config->humanInPath + human->getName() + ".par");
-	human->setFeature(feature);
+// 	HumanFeature_ feature = smartNew(HumanFeature);
+// 	feature->fromMakeHumanMeasureFile(config->humanInPath + human->getName() + ".par");
+// 	human->setFeature(feature);
 
 	MeshTransformerFactory_ meshTransformerFactory = smartNew(AxisYTransFactory);
 	MeshTransformer_ transformer = meshTransformerFactory->createTransfomer(config->humanMeshDiretion);
@@ -54,6 +55,7 @@ int main(){
 			// dispose the face normals, as we don't need them anymore
 			gRawmesh->release_face_normals();
 		}
+		gRawmesh->requestAABB();
 	}	
 	Garment_ garment = std::make_shared<Cloth>(gRawmesh);
 
@@ -69,7 +71,16 @@ int main(){
 // 		PRINTLN("write fail!");
 // 	}
 // 	
-	getchar();
+
+// 	for(auto it = hRawmesh->vertices_begin(); it != hRawmesh->vertices_end(); it++){
+// 		hRawmesh->point(*it) /= 10.0;
+// 	}
+// 	OpenMesh::IO::write_mesh(*(hRawmesh), config->humanInPath+hRawmesh->getName()+"_decimetre.obj");
+// 	for(auto it = gRawmesh->vertices_begin(); it != gRawmesh->vertices_end(); it++){
+// 		gRawmesh->point(*it) /= 10.0;
+// 	}
+// 	OpenMesh::IO::write_mesh(*(gRawmesh), config->clothInPath+gRawmesh->getName()+"_decimetre.obj");
+ 	getchar();
 
 	return 0;
 }

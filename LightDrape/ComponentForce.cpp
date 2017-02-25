@@ -26,9 +26,16 @@ void ComponentForce::getMesh( Mesh_ val )
 	mMesh = val;
 }
 
-Vec3d GravityForce::compute( size_t i, const std::vector<Vec3d>& curPositions, const std::vector<Vec3d>& curVelocities, const std::vector<double> pointMass )
+void GravityForce::compute(
+	const std::vector<Vec3d>& curPositions,
+	const std::vector<Vec3d>& curVelocities,
+	const std::vector<double>& pointMass,
+	std::vector<Vec3d>& forces)
 {
-	return g * pointMass[i];
+	size_t pointCount = forces.size();
+	for(size_t i = 0; i < pointCount; i++){
+		forces[i] += g;
+	}
 }
 
 GravityForce::GravityForce( Mesh_ mesh ) : ComponentForce(mesh)
@@ -38,30 +45,52 @@ GravityForce::GravityForce( Mesh_ mesh ) : ComponentForce(mesh)
 
 GravityForce::GravityForce()
 {
-	g = Vec3d(0, -9.8, 0);
+	g = Vec3d(0, -0.00981, 0);
 }
-Vec3d StretchForce::compute( size_t index, const std::vector<Vec3d>& curPositions, const std::vector<Vec3d>& curVelocities, const std::vector<double> pointMass )
+void StretchForce::compute(
+	const std::vector<Vec3d>& curPositions,
+	const std::vector<Vec3d>& curVelocities,
+	const std::vector<double>& pointMass,
+	std::vector<Vec3d>& forces)
 {
-	std::vector<size_t> neibours;
-	for(Mesh::VertexVertexIter vv_it = mMesh->vv_begin(Mesh::VertexHandle(index));
-		vv_it.is_valid(); vv_it++){
-			neibours.push_back(vv_it->idx());
+// 	std::vector<size_t> neibours;
+// 	for(Mesh::VertexVertexIter vv_it = mMesh->vv_begin(Mesh::VertexHandle(index));
+// 		vv_it.is_valid(); vv_it++){
+// 			neibours.push_back(vv_it->idx());
+// 	}
+// 	Vec3d ret(0, 0, 0);
+// 	for(size_t n = 0 ; n < neibours.size(); n++){
+// 		size_t nei = neibours[n];				
+// 		Vec3d curVec = curPositions[nei] - curPositions[index];
+// 		double curLen = curVec.length();
+// 		double restLen = (mMesh->point(Mesh::VertexHandle(index))
+// 			- mMesh->point(Mesh::VertexHandle(nei))).length();
+// 		ret += curVec.normalize_cond() * (curLen - restLen) * k;
+// 	}
+//	std::cout << "StretchVec:" << ret.values_[0] << " " << ret.values_[1] << " " << ret.values_[2] << "\n";
+/*	return ret;*/
+	//add spring forces
+	for(size_t i = 0; i < mSprings.size(); i++) {
+		Vec3d p1 = curPositions[mSprings[i].p1];
+		Vec3d p2 = curPositions[mSprings[i].p2];
+		Vec3d v1 = curVelocities[mSprings[i].p1];
+		Vec3d v2 = curVelocities[mSprings[i].p2];
+		Vec3d deltaP = p1-p2;
+		Vec3d deltaV = v1-v2;
+		float dist = deltaP.length();
+
+		float leftTerm = -mSprings[i].Ks * (dist-mSprings[i].rest_length);
+		float rightTerm = mSprings[i].Kd * (deltaV|deltaP/dist);
+		Vec3d springForce = deltaP.normalize_cond() * (leftTerm + rightTerm);
+		forces[mSprings[i].p1] += springForce;
+		forces[mSprings[i].p2] -= springForce;
 	}
-	Vec3d ret(0, 0, 0);
-	for(size_t n = 0 ; n < neibours.size(); n++){
-		size_t nei = neibours[n];				
-		Vec3d curVec = curPositions[nei] - curPositions[index];
-		double curLen = curVec.length();
-		double restLen = (mMesh->point(Mesh::VertexHandle(index))
-			- mMesh->point(Mesh::VertexHandle(nei))).length();
-		ret += curVec.normalize_cond() * (curLen - restLen) * k;
-	}
-	return ret;
+
 }
 
 StretchForce::StretchForce()
 {
-	k = 10000;
+	k = 0.5;
 }
 
 StretchForce::StretchForce( double k )
@@ -71,10 +100,53 @@ StretchForce::StretchForce( double k )
 
 StretchForce::StretchForce( Mesh_ mesh ) : ComponentForce(mesh)
 {
-
+	k = 0.5;
+	initSpring(mesh);
 }
 
 void StretchForce::setStiffness( double k )
 {
 	this->k = k;
 }
+
+void StretchForce::initSpring( Mesh_ mesh )
+{
+	mSprings.reserve(mesh->n_edges());
+	for(auto e_it = mesh->edges_begin(); e_it != mesh->edges_end(); e_it++){
+		Spring spring;
+		Mesh::HalfedgeHandle he = mesh->halfedge_handle(*e_it, 0);
+		spring.p1 = mesh->from_vertex_handle(he).idx();
+		spring.p2 = mesh->to_vertex_handle(he).idx();
+		spring.Ks = 1.5;
+		spring.Kd = -0.75;
+		spring.rest_length = (mesh->point(Mesh::VertexHandle(spring.p1)) - mesh->point(Mesh::VertexHandle(spring.p2))).length();
+		mSprings.push_back(spring);
+	}
+}
+
+DampForce::DampForce(void)
+{
+	mDamping = -0.0125;
+}
+
+DampForce::DampForce( double damping )
+{
+	mDamping = damping;
+}
+
+
+DampForce::~DampForce(void)
+{
+}
+
+void DampForce::compute( const std::vector<Vec3d>& curPositions,
+						const std::vector<Vec3d>& curVelocities,
+						const std::vector<double>& pointMass,
+						std::vector<Vec3d>& forces )
+{
+	size_t pointCount = forces.size();
+	for(size_t i = 0; i < pointCount; i++){
+		forces[i] += curVelocities[i] * mDamping;
+	}
+}
+

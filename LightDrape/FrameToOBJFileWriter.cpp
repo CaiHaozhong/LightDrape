@@ -4,27 +4,29 @@
 #include "MeshFramePool.h"
 #include "Mesh.h"
 
-
-FrameToOBJFileWriter::FrameToOBJFileWriter(Mesh_ mesh)
-{
-	mMesh = std::make_shared<Mesh>(*mesh);
-	mCurFrame = 0;
+FrameToOBJFileWriter::FrameToOBJFileWriter()
+{	
+	mFrameCount = 0;
 }
-
 
 FrameToOBJFileWriter::~FrameToOBJFileWriter(void)
 {
+	out.close();	
 }
 
 void FrameToOBJFileWriter::onSimulateBegin()
 {
 	PRINTLN("Begin Simulation!");
+	out.open("../data/frames/frame.fr");
 }
 
 void FrameToOBJFileWriter::onFrame( MeshFrame_ frame )
 {
-	PRINT("New Frame! ");
-	writeFrameToFile(frame, mCurFrame++);
+	std::cout << mFrameCount << " ";
+	bool flag = false;
+/*	if(flag)*/
+	writeFrameToFile(frame);
+	mFrameCount++;
 }
 
 void FrameToOBJFileWriter::onSimulateEnd( MeshFramePool_ meshFramePool )
@@ -38,18 +40,13 @@ void FrameToOBJFileWriter::onSimulateEnd( MeshFramePool_ meshFramePool )
 //	PRINTLN("End Frames Wirting!");
 }
 
-void FrameToOBJFileWriter::writeFrameToFile( MeshFrame_ frame, size_t i )
-{
-	char name[10];
-	sprintf(name, "%d.obj", i);
-	std::string outFileName = std::string("../data/frames/") + name;
+void FrameToOBJFileWriter::writeFrameToFile( MeshFrame_ frame)
+{	
 	const std::vector<Vec3d>& vers = frame->getVertices();
-	for(size_t i = 0; i < vers.size(); i++){
-		Vec3d& v = mMesh->point(Mesh::VertexHandle(i));
-		v = vers[i];
-	}
-	bool suc = OpenMesh::IO::write_mesh(*mMesh, outFileName);
-	if(!suc){
-		PRINT_ERROR("In rameToOBJFileWriter::writeFrameToFile, write fail.");
+	size_t count = vers.size();
+	for(size_t i = 0; i < count; i++){
+		const auto& v = vers[i].values_;
+		out << v[0] << " " << v[1] << " " << v[2] << " ";
 	}
 }
+

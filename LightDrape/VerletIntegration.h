@@ -29,8 +29,8 @@ public:
 	 */
 	std::pair<Vec3d, Vec3d> integrate2(const Vec3d& x_t, const Vec3d& v_t, const Vec3d& f_t, const double mass, double dt);
 
-
-	std::pair<Vec3d, Vec3d> integrate(size_t i, const std::vector<Vec3d>& curPositions,
-		const std::vector<Vec3d>& curVelocities, const std::vector<double>& pointMass,
-		const std::vector<ComponentForce_> forces, double dt);
+// 
+// 	std::pair<Vec3d, Vec3d> integrate(size_t i, const std::vector<Vec3d>& curPositions,
+// 		const std::vector<Vec3d>& curVelocities, const std::vector<double>& pointMass,
+// 		const std::vector<ComponentForce_> forces, double dt);
 };

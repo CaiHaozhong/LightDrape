@@ -51,10 +51,10 @@ void GarmentPhysicalSimulator::initWithGarmentAndHuman( Mesh_ garment, Mesh_ hum
 	mPenetrationResolver->setAdjList(garAdjList);
 	mMeshFramePool = smartNew(MeshFramePool);
 	mMeshFramePool->storeFrame(garment);
-	setIntegrateStep(0.0001);
+	setIntegrateStep(0.0008);
 	mAccumulateTimeInterFrame = 0;
 	mCurTime = 0;
-	mSimulateLen = 5;
+	mSimulateLen = 2000;
 	initPointProperty();
 	initForce();
 }
@@ -67,7 +67,7 @@ void GarmentPhysicalSimulator::initPointProperty()
 	/* 初始速度为0 */
 	mCurVelocities.resize(mPointCount, Vec3d(0, 0, 0));	
 	/* 初始质量为1 */
-	mPointMass.resize(mPointCount, 1);
+	mPointMass.resize(mPointCount, 0.5);
 
 	/* 设置初始位置 */
 	for(Mesh::VertexIter it = mGarment->vertices_begin(); it != mGarment->vertices_end(); it++){
@@ -79,6 +79,7 @@ void GarmentPhysicalSimulator::initForce()
 {
 	mForces.push_back(smartNew(GravityForce));
 	mForces.push_back(std::make_shared<StretchForce>(mGarment));
+	mForces.push_back(std::make_shared<DampForce>());
 }
 
 void GarmentPhysicalSimulator::addForce( ComponentForce_ force )
@@ -97,8 +98,8 @@ void GarmentPhysicalSimulator::simulate()
 		mAccumulateTimeInterFrame += m_dt;
 		mCurTime += m_dt;
 		/* m_dt时间步长后的状态 */
-		std::vector<Vec3d> nextPositions(mPointCount);
-		std::vector<Vec3d> nextVelocities(mPointCount);
+// 		std::vector<Vec3d> nextPositions(mPointCount);
+// 		std::vector<Vec3d> nextVelocities(mPointCount);
 
 // 		/* 当前每个质点所受的合力 */
 // 		std::vector<Vec3d> curTotalForces(mPointCount);
@@ -126,26 +127,49 @@ void GarmentPhysicalSimulator::simulate()
 // 		}
 
 		/* 计算m_dt时间步长后每个质点的位置和速度 */
+// 		for(size_t i = 0; i < mPointCount; i++){
+// 			std::pair<Vec3d, Vec3d> nextPosVelo = mIntegration->integrate(
+// 				i, mCurPositions, mCurVelocities, mPointMass, mForces, m_dt);
+// 
+// 			nextPositions[i] = nextPosVelo.first;
+// 			nextVelocities[i] = nextPosVelo.second;
+// 		}
+
+// 		Vec3d buffer[50];
+// 		for(size_t k = 0; k < 50; k++){
+// 			buffer[k] = mCurPositions[k];
+// 		}
+
+		/* 更新m_dt时间步长后每个质点的位置和速度 */
+		mIntegration->integrate(mCurPositions, mCurVelocities, mPointMass, mGarment, mForces, m_dt);
+
+// 		for(size_t k = 0; k < 50; k++){
+// 			mCurPositions[k] = buffer[k];
+// 		}
+		
+
+// 		/* 解决衣服与人体的穿透 */
+//   		std::vector<size_t> penetrationVers;	
+// 		mPenetrationResolver->resolve(mCurPositions, penetrationVers);
+// 		for(size_t i = 0; i < penetrationVers.size(); i++){
+// 			mCurVelocities[i] = Vec3d(0, 0, 0);
+// 		}
+// 		while(mPenetrationResolver->resolve(mCurPositions, penetrationVers)){}
+
+		
+
 		for(size_t i = 0; i < mPointCount; i++){
-			std::pair<Vec3d, Vec3d> nextPosVelo = mIntegration->integrate(
-				i, mCurPositions, mCurVelocities, mPointMass, mForces, m_dt);
-
-			nextPositions[i] = nextPosVelo.first;
-			nextVelocities[i] = nextPosVelo.second;
+			Vec3d curP = mCurPositions[i];
+			Vec3d d = curP - Vec3d(0.5, 11, 0.6);
+			double dis = d.length();
+			if(dis < 1.0){
+				mCurPositions[i] += d.normalize_cond() * (1 - dis);
+				mCurVelocities[i] = Vec3d(0,0,0);
+			}
 		}
-
-		/* 解决衣服与人体的穿透 */
-		std::vector<size_t> penetrationVers;	
-		mPenetrationResolver->resolve(nextPositions, penetrationVers);
-		for(size_t i = 0; i < penetrationVers.size(); i++){
-			mCurVelocities[i] = - mCurVelocities[i];
-		}
-		while(mPenetrationResolver->resolve(nextPositions, penetrationVers)){}
-
-
 		/* 存储m_dt时间步长后的状态 */
-		mCurPositions = nextPositions;
-		mCurVelocities = nextVelocities;
+// 		mCurPositions = nextPositions;
+// 		mCurVelocities = nextVelocities;
 
 		/* 得到了一帧 */
 		if(mAccumulateTimeInterFrame >= 1.0/mMeshFramePool->getFPS()){

@@ -1,15 +1,16 @@
 #pragma once
 #include "garmentsimulationcallback.h"
+#include <fstream>
 class Mesh;
 S_PTR(Mesh);
 class FrameToOBJFileWriter :
 	public GarmentSimulationCallBack
 {
 private:
-	Mesh_ mMesh;
-	size_t mCurFrame;
+	std::ofstream out;
+	size_t mFrameCount;
 public:
-	FrameToOBJFileWriter(Mesh_ mesh);
+	FrameToOBJFileWriter();
 	~FrameToOBJFileWriter(void);
 
 	/* ¿ªÊ¼Ä£Äâ */
@@ -23,6 +24,6 @@ public:
 
 
 private:
-	void writeFrameToFile(MeshFrame_ frame, size_t i);
+	void writeFrameToFile(MeshFrame_ frame);
 };
 S_PTR(FrameToOBJFileWriter);

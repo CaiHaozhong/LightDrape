@@ -27,9 +27,13 @@ public:
 	 */
 	virtual std::pair<Vec3d, Vec3d> integrate2(const Vec3d& x_t, const Vec3d& v_t, const Vec3d& f_t, const double mass, double dt) = 0;
 
-	virtual std::pair<Vec3d, Vec3d> integrate(size_t i, const std::vector<Vec3d>& curPositions,
-		const std::vector<Vec3d>& curVelocities, const std::vector<double>& pointMass, 
-		const std::vector<ComponentForce_> forces, double dt) = 0;
+	virtual void integrate(
+		std::vector<Vec3d>& curPositions,
+		std::vector<Vec3d>& curVelocities, 
+		const std::vector<double>& pointMass, 
+		const Mesh_ mesh,
+		const std::vector<ComponentForce_>& forces, 
+		double dt) = 0;
 };
 S_PTR(Integration);
 

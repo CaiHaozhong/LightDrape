@@ -15,8 +15,11 @@ public:
 	ComponentForce(Mesh_ mesh);
 	Mesh_ setMesh() const;
 	void getMesh(Mesh_ val);
-	virtual Vec3d compute(size_t i, const std::vector<Vec3d>& curPositions,
-		const std::vector<Vec3d>& curVelocities, const std::vector<double> pointMass) = 0;
+	virtual void compute(
+		const std::vector<Vec3d>& curPositions,
+		const std::vector<Vec3d>& curVelocities,
+		const std::vector<double>& pointMass,
+		std::vector<Vec3d>& forces) = 0;
 };
 S_PTR(ComponentForce);
 
@@ -27,8 +30,11 @@ private:
 public:
 	GravityForce(Mesh_ mesh);
 	GravityForce();
-	Vec3d compute(size_t i, const std::vector<Vec3d>& curPositions,
-		const std::vector<Vec3d>& curVelocities, const std::vector<double> pointMass);
+	void compute(
+		const std::vector<Vec3d>& curPositions,
+		const std::vector<Vec3d>& curVelocities,
+		const std::vector<double>& pointMass,
+		std::vector<Vec3d>& forces);
 
 };
 S_PTR(GravityForce);
@@ -37,18 +43,47 @@ S_PTR(GravityForce);
  * 胡可定律为 F = k * deltaLen;
  */
 class StretchForce : public ComponentForce{
+public:
+	struct Spring{
+		size_t p1, p2;
+		double rest_length;
+		double Ks, Kd;
+	};
 private:
 	double k;
+	std::vector<Spring> mSprings;
 public:
 	StretchForce(Mesh_ mesh);
 	StretchForce();
 	/* k为劲度系数，单位是牛顿/米，默认是75 */
 	StretchForce(double k);
 
+	void initSpring(Mesh_ mesh);
+
 	/* k为劲度系数，单位是牛顿/米，默认是75 */
 	void setStiffness(double k);
 
-	Vec3d compute(size_t index, const std::vector<Vec3d>& curPositions,
-		const std::vector<Vec3d>& curVelocities, const std::vector<double> pointMass);
+	void compute(
+		const std::vector<Vec3d>& curPositions,
+		const std::vector<Vec3d>& curVelocities,
+		const std::vector<double>& pointMass,
+		std::vector<Vec3d>& forces);
 };
 S_PTR(StretchForce);
+
+class DampForce :
+	public ComponentForce
+{
+public:
+	DampForce(void);
+	~DampForce(void);
+	DampForce(double damping);
+	void compute(
+		const std::vector<Vec3d>& curPositions,
+		const std::vector<Vec3d>& curVelocities,
+		const std::vector<double>& pointMass,
+		std::vector<Vec3d>& forces);
+private:
+	double mDamping;
+};
+S_PTR(DampForce);
