@@ -23,8 +23,6 @@ void FrameToOBJFileWriter::onSimulateBegin()
 void FrameToOBJFileWriter::onFrame( MeshFrame_ frame )
 {
 	std::cout << mFrameCount << " ";
-	bool flag = false;
-/*	if(flag)*/
 	writeFrameToFile(frame);
 	mFrameCount++;
 }
@@ -46,7 +44,7 @@ void FrameToOBJFileWriter::writeFrameToFile( MeshFrame_ frame)
 	size_t count = vers.size();
 	for(size_t i = 0; i < count; i++){
 		const auto& v = vers[i].values_;
-		out << v[0] << " " << v[1] << " " << v[2] << " ";
+		out << v[0] << " " << v[1] << " " << v[2] << "\n";
 	}
 }
 

@@ -71,7 +71,7 @@ void Human::dress( Garment_ garment )
 
 	/* ÎïÀíÄ£Äâ */
 	GarmentPhysicalSimulator_ simulator = smartNew(GarmentPhysicalSimulator);
-	simulator->initWithGarmentAndHuman(garment, this->getOriginalMesh());
+	simulator->initWithGarmentAndHuman(garment->getOriginalMesh(), this->getOriginalMesh());
 	simulator->addGarmentSimulationCallBack(std::make_shared<FrameToOBJFileWriter>());
 	simulator->simulate();
 }

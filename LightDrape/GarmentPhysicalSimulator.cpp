@@ -7,11 +7,13 @@
 #include "SimpleIntegration.h"
 #include "GarmentSimulationCallBack.h"
 #include "VerletIntegration.h"
-
+#include "KNNSHelper.h"
+#include <unordered_set>
+#include "AABBTree.h"
 GarmentPhysicalSimulator::GarmentPhysicalSimulator(void)
 {
 	mIntegration = nullptr;
-	mPenetrationResolver = nullptr;
+/*	mPenetrationResolver = nullptr;*/
 	mMeshFramePool = nullptr;
 }
 
@@ -34,29 +36,46 @@ void GarmentPhysicalSimulator::initWithGarmentAndHuman( Mesh_ garment, Mesh_ hum
 {
 	mGarment = garment;
 	mHuman = human;
-//	mIntegration = std::make_shared<VerletIntegration>(garment->n_vertices());
 	mIntegration = std::make_shared<SimpleIntegration>();
-	mPenetrationResolver = smartNew(PenetrationResolver);
-	mPenetrationResolver->setRigidMesh(human);
-	mPenetrationResolver->setAllowDis(0.5);
-	std::vector< std::vector<size_t> > garAdjList;
-	int cur = 0;
-	garAdjList.resize(garment->n_vertices(), std::vector<size_t>());
-	for(Mesh::VertexIter it = garment->vertices_begin(); it != garment->vertices_end(); it++){
-		for(Mesh::ConstVertexVertexIter vvIt = garment->cvv_begin(*it); vvIt.is_valid(); vvIt++){
-			garAdjList[cur].push_back(vvIt->idx());
-		}
-		cur += 1;
-	}
-	mPenetrationResolver->setAdjList(garAdjList);
+// 	mPenetrationResolver = smartNew(PenetrationResolver);
+// 	mPenetrationResolver->setRigidMesh(human);
+// 	mPenetrationResolver->setAllowDis(0.5);
+// 	std::vector< std::vector<size_t> > garAdjList;
+// 	int cur = 0;
+// 	garAdjList.resize(garment->n_vertices(), std::vector<size_t>());
+// 	for(Mesh::VertexIter it = garment->vertices_begin(); it != garment->vertices_end(); it++){
+// 		for(Mesh::ConstVertexVertexIter vvIt = garment->cvv_begin(*it); vvIt.is_valid(); vvIt++){
+// 			garAdjList[cur].push_back(vvIt->idx());
+// 		}
+// 		cur += 1;
+// 	}
+// 	mPenetrationResolver->setAdjList(garAdjList);
+//	mHumanCollisionModel = std::make_shared<COLDET::CollisionModel3DImpl>(true);
+// 	for(auto it = mHuman->faces_begin(); it != mHuman->faces_end(); it++){
+// 		float v[3][3];
+// 		int cur = 0;
+// 		for(auto f_v = mHuman->fv_begin(*it); f_v.is_valid(); f_v++){
+// 			const Vec3d& p = mHuman->point(*f_v);
+// 			v[cur][0] = (float)(p.values_[0]);
+// 			v[cur][1] = (float)(p.values_[1]);
+// 			v[cur][2] = (float)(p.values_[2]);
+// 			cur += 1;
+// 		}
+// 		mHumanCollisionModel->addTriangle(v[0], v[1], v[2]);
+// 	}
+// 	mHumanCollisionModel->finalize();
+	mAABBTree = smartNew(AABBTree);
+	mAABBTree->initWithMesh(human);
+
 	mMeshFramePool = smartNew(MeshFramePool);
 	mMeshFramePool->storeFrame(garment);
-	setIntegrateStep(0.0008);
+	setIntegrateStep(0.008);
 	mAccumulateTimeInterFrame = 0;
 	mCurTime = 0;
 	mSimulateLen = 2000;
 	initPointProperty();
 	initForce();
+//	computeCollisionParts();
 }
 
 void GarmentPhysicalSimulator::initPointProperty()
@@ -158,13 +177,44 @@ void GarmentPhysicalSimulator::simulate()
 
 		
 
+// 		for(size_t i = 0; i < mPointCount; i++){
+// 			Vec3d curP = mCurPositions[i];
+// 			Vec3d d = curP - Vec3d(0.5, 11, 0.6);
+// 			double dis = d.length();
+// 			if(dis < 1.0){
+// 				mCurPositions[i] += d.normalize_cond() * (1 - dis);
+// 				mCurVelocities[i] = Vec3d(0,0,0);
+// 			}
+// 		}		
+// 		for(size_t i = 0; i < mPointCount; i++){
+// 			Vec3d& p = mCurPositions[i];
+// 			Vec3d& v = mCurVelocities[i];
+// 			double* d = (p - v).values_;
+// 			float origin[3] = {(float)(p.values_[0]), (float)(p.values_[1]), (float)(p.values_[2])};
+// 			float dir[3] = {(float)(d[0]), (float)(d[1]), (float)(d[2])};
+// 			float cop[3];
+// 			CollisionModel3D_ collision = mCollisionPartOnHuman[i];
+// 			if(collision->rayCollision(origin, dir)){
+// 				collision->getCollisionPoint(cop, false);
+// 				Vec3d collisionPoint(cop[0], cop[1], cop[2]);
+// 				if((collisionPoint - p).length() < 0.1){
+// 					p = collisionPoint;
+// 					v = -v;
+// 				}
+// 			}
+// 		}
+
 		for(size_t i = 0; i < mPointCount; i++){
-			Vec3d curP = mCurPositions[i];
-			Vec3d d = curP - Vec3d(0.5, 11, 0.6);
-			double dis = d.length();
-			if(dis < 1.0){
-				mCurPositions[i] += d.normalize_cond() * (1 - dis);
-				mCurVelocities[i] = Vec3d(0,0,0);
+			Vec3d& p = mCurPositions[i];
+			Vec3d& v = mCurVelocities[i];
+			Vec3d q = p + (-v).normalize_cond() * 0.1;
+			LineSegment seg(Point(p.values_[0],p.values_[1],p.values_[2]),
+				Point(q.values_[0],q.values_[1],q.values_[2]));
+			Vec3d intersectionPoint;
+			if(mAABBTree->fastIntersectionTest(seg)){
+				mAABBTree->intersection(seg, intersectionPoint);
+				p = intersectionPoint;
+				v = Vec3d(0, 0, 0);
 			}
 		}
 		/* 存储m_dt时间步长后的状态 */
@@ -216,3 +266,51 @@ void GarmentPhysicalSimulator::onEnd( MeshFramePool_ meshFramePool )
 		(*it)->onSimulateEnd(meshFramePool);
 	}
 }
+
+// void GarmentPhysicalSimulator::computeCollisionParts()
+// {
+// 	if(mGarment == nullptr){
+// 		return;
+// 	}
+// 	std::cout << "computeCollisionParts: ";
+// 	std::vector<Vec3d> pointCloud;
+// 	pointCloud.reserve(mHuman->n_vertices());
+// 	for(auto it = mHuman->vertices_begin(); it != mHuman->vertices_end(); it++){
+// 		pointCloud.push_back(mHuman->point(*it));
+// 	}
+// 	KNNSHelper kNNS(pointCloud);
+// 	std::vector<KNNSHelper::Result> results;
+// 	for(auto it = mGarment->vertices_begin(); it != mGarment->vertices_end(); it++){		
+// 		Vec3d& query = mGarment->point(*it);
+// 		CollisionModel3D_ collision = std::make_shared<COLDET::CollisionModel3DImpl>(true);
+// 		mCollisionPartOnHuman.push_back(collision);
+// 		std::vector<Tri> triangles;
+// 		kNNS.kNeighborSearch(query, 5, results);
+// 		std::unordered_set<size_t> hasFaceAdd;
+// 		for(size_t i = 0; i < results.size(); i++){
+// 			size_t nearestVer = results[i].index;
+// 			for(auto vf = mHuman->vf_begin(Mesh::VertexHandle(nearestVer)); vf.is_valid(); vf++){
+// 				if(hasFaceAdd.find(vf->idx()) != hasFaceAdd.end())
+// 					continue;
+// 				hasFaceAdd.insert(vf->idx());
+// 				Tri tri;
+// 				int cur = 0;
+// 				for(auto fv = mHuman->fv_begin(*vf); fv.is_valid(); fv++){
+// 					const Vec3d& p = mHuman->point(*fv);
+// 					tri.v[cur][0] = (float)(p.values_[0]);
+// 					tri.v[cur][1] = (float)(p.values_[1]);
+// 					tri.v[cur][2] = (float)(p.values_[2]);
+// 					cur += 1;
+// 				}
+// 				triangles.push_back(tri);				
+// 			}
+// 		}
+// 		collision->setTriangleNumber(triangles.size());
+// 		for(size_t i =0 ;i < triangles.size(); i++){
+// 			Tri& tri = triangles[i];
+// 			collision->addTriangle(tri.v[0], tri.v[1], tri.v[2]);
+// 		}		
+// 		collision->finalize();
+// 		std::cout << it->idx() << " ";
+// 	}
+// }

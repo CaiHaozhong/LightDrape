@@ -16,6 +16,14 @@ class ComponentForce;
 S_PTR(ComponentForce);
 class GarmentSimulationCallBack;
 S_PTR(GarmentSimulationCallBack);
+class CollisionModel3D;
+S_PTR(CollisionModel3D);
+class AABBTree;
+S_PTR(AABBTree);
+struct Tri{
+	float v[3][3];
+};
+S_PTR(Tri);
 /* 物理模拟主流程 */
 class GarmentPhysicalSimulator
 {
@@ -57,14 +65,22 @@ private:
 	void onBegin();
 	void onFrame(MeshFrame_ frame);
 	void onEnd(MeshFramePool_ meshFramePool);
+
+	void computeCollisionParts();
 private:
 	Mesh_ mGarment;
 
 	Mesh_ mHuman;
 
 	Integration_ mIntegration;
+// 
+// 	PenetrationResolver_ mPenetrationResolver;
 
-	PenetrationResolver_ mPenetrationResolver;
+// 	CollisionModel3D_ mHumanCollisionModel;
+// 
+// 	std::vector<CollisionModel3D_> mCollisionPartOnHuman;
+
+	AABBTree_ mAABBTree;
 
 	MeshFramePool_ mMeshFramePool;
 
