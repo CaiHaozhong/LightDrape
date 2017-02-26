@@ -6,15 +6,6 @@
 #include "Config.h"
 #include "HumanFeature.h"
 #include "Visualizer.h"
-void fun(void)
-{
-	for(int i = 0; i < 1000; ++i)
-	{
-		std::cout << "hello world" << std::endl;
-		//线程休眠，chrono是c++11的时间相关库。
-		std::this_thread::sleep_for(std::chrono::seconds(1));
-	}
-}
 int main(int argc, char** argv){
 	Config_ config = Config::getInstance();
 	/* Human */
@@ -69,11 +60,16 @@ int main(int argc, char** argv){
 	}	
 	Garment_ garment = std::make_shared<Cloth>(gRawmesh);
 
-	Visualizer_ visualizer = smartNew(Visualizer);
-	visualizer->show(argc, argv);
+/* -------------------------------------- End load Mesh ----------------------------------------*/
 
-	/* Dress */
+	Visualizer_ visualizer = smartNew(Visualizer);
+	visualizer->setHumanMesh(human->getOriginalMesh());
+	visualizer->setGarmentMesh(garment->getOriginalMesh());
+
+	human->addGarmentSimulationCallBack(visualizer);	
 	human->dress(garment);
+
+	visualizer->show(argc, argv);
 // 	/* Output */
 // 	bool suc = OpenMesh::IO::write_mesh(*(garment->getOriginalMesh()), config->clothOutPath+config->clothInFileName);
 // 	if(suc){

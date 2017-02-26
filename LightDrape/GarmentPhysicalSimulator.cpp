@@ -69,7 +69,7 @@ void GarmentPhysicalSimulator::initWithGarmentAndHuman( Mesh_ garment, Mesh_ hum
 
 	mMeshFramePool = smartNew(MeshFramePool);
 	mMeshFramePool->storeFrame(garment);
-	setIntegrateStep(0.008);
+	setIntegrateStep(1.0/60);
 	mAccumulateTimeInterFrame = 0;
 	mCurTime = 0;
 	mSimulateLen = 2000;

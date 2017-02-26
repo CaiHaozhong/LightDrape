@@ -10,6 +10,7 @@
 #include "GarmentPenetrationResolver.h"
 #include "GarmentPhysicalSimulator.h"
 #include "FrameToOBJFileWriter.h"
+#include <thread>
 Human::~Human(void)
 {
 }
@@ -17,6 +18,7 @@ Human::~Human(void)
 Human::Human( Mesh_ mesh ) :WatertightMesh(mesh)
 {
 	mFeature = nullptr;
+	mSimulator = smartNew(GarmentPhysicalSimulator);
 }
 
 size_t Human::getGeodesicSource()
@@ -68,12 +70,8 @@ void Human::dress( Garment_ garment )
 // 	else{
 // 		PRINTLN("Resolve Penetration fail.");
 // 	}
-
-	/* 物理模拟 */
-	GarmentPhysicalSimulator_ simulator = smartNew(GarmentPhysicalSimulator);
-	simulator->initWithGarmentAndHuman(garment->getOriginalMesh(), this->getOriginalMesh());
-	simulator->addGarmentSimulationCallBack(std::make_shared<FrameToOBJFileWriter>());
-	simulator->simulate();
+	std::thread t(&Human::doSimulate, this, garment);
+	t.detach();
 }
 
 Vec3d Human::getAlignPoint()
@@ -170,4 +168,16 @@ double Human::getLegLength()
 		return mFeature->legLength;
 	}
 	return 0;
+}
+
+void Human::doSimulate(Garment_ garment)
+{
+	/* 物理模拟 */
+	mSimulator->initWithGarmentAndHuman(garment->getOriginalMesh(), this->getOriginalMesh());
+	mSimulator->simulate();	
+}
+
+void Human::addGarmentSimulationCallBack( GarmentSimulationCallBack_ callBack )
+{
+	mSimulator->addGarmentSimulationCallBack(callBack);
 }

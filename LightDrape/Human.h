@@ -4,6 +4,10 @@
 #include "Garment.h"
 class HumanFeature;
 S_PTR(HumanFeature);
+class GarmentSimulationCallBack;
+S_PTR(GarmentSimulationCallBack);
+class GarmentPhysicalSimulator;
+S_PTR(GarmentPhysicalSimulator);
 class Human :
 	public WatertightMesh, public std::enable_shared_from_this<Human>
 {
@@ -26,7 +30,12 @@ public:
 	double getShoulderHeight();
 
 	double getLegLength();
+
+	void doSimulate(Garment_ garment);
+
+	void addGarmentSimulationCallBack(GarmentSimulationCallBack_ callBack);
 private:
 	HumanFeature_ mFeature;
+	GarmentPhysicalSimulator_ mSimulator;
 };
 S_PTR(Human);
