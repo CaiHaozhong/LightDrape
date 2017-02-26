@@ -53,22 +53,6 @@ void StretchForce::compute(
 	const std::vector<double>& pointMass,
 	std::vector<Vec3d>& forces)
 {
-// 	std::vector<size_t> neibours;
-// 	for(Mesh::VertexVertexIter vv_it = mMesh->vv_begin(Mesh::VertexHandle(index));
-// 		vv_it.is_valid(); vv_it++){
-// 			neibours.push_back(vv_it->idx());
-// 	}
-// 	Vec3d ret(0, 0, 0);
-// 	for(size_t n = 0 ; n < neibours.size(); n++){
-// 		size_t nei = neibours[n];				
-// 		Vec3d curVec = curPositions[nei] - curPositions[index];
-// 		double curLen = curVec.length();
-// 		double restLen = (mMesh->point(Mesh::VertexHandle(index))
-// 			- mMesh->point(Mesh::VertexHandle(nei))).length();
-// 		ret += curVec.normalize_cond() * (curLen - restLen) * k;
-// 	}
-//	std::cout << "StretchVec:" << ret.values_[0] << " " << ret.values_[1] << " " << ret.values_[2] << "\n";
-/*	return ret;*/
 	//add spring forces
 	for(size_t i = 0; i < mSprings.size(); i++) {
 		Vec3d p1 = curPositions[mSprings[i].p1];
