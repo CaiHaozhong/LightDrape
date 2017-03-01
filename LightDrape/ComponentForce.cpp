@@ -1,5 +1,6 @@
 #include "ComponentForce.h"
 #include "Mesh.h"
+#include "Config.h"
 
 ComponentForce::ComponentForce(void)
 {
@@ -45,7 +46,7 @@ GravityForce::GravityForce( Mesh_ mesh ) : ComponentForce(mesh)
 
 GravityForce::GravityForce()
 {
-	g = Vec3d(0, -0.0981, 0);
+	g = Vec3d(0, Config::getInstance()->gravity, 0);
 }
 void StretchForce::compute(
 	const std::vector<Vec3d>& curPositions,
@@ -74,17 +75,17 @@ void StretchForce::compute(
 
 StretchForce::StretchForce()
 {
-	k = 0.5;
+	/*k = 0.5;*/
 }
 
 StretchForce::StretchForce( double k )
 {
-	this->k = k;
+	/*this->k = k;*/
 }
 
 StretchForce::StretchForce( Mesh_ mesh ) : ComponentForce(mesh)
 {
-	k = 0.5;
+	/*k = 0.5;*/
 	initSpring(mesh);
 }
 
@@ -96,13 +97,14 @@ void StretchForce::setStiffness( double k )
 void StretchForce::initSpring( Mesh_ mesh )
 {
 	mSprings.reserve(mesh->n_edges());
+	Config_ config = Config::getInstance();
 	for(auto e_it = mesh->edges_begin(); e_it != mesh->edges_end(); e_it++){
 		Spring spring;
 		Mesh::HalfedgeHandle he = mesh->halfedge_handle(*e_it, 0);
 		spring.p1 = mesh->from_vertex_handle(he).idx();
 		spring.p2 = mesh->to_vertex_handle(he).idx();
-		spring.Ks = 15;
-		spring.Kd = -7.5;
+		spring.Ks = config->struct_spring_ks;
+		spring.Kd = config->struct_spring_kd;
 		spring.rest_length = (mesh->point(Mesh::VertexHandle(spring.p1)) - mesh->point(Mesh::VertexHandle(spring.p2))).length();
 		mSprings.push_back(spring);
 	}
@@ -110,7 +112,7 @@ void StretchForce::initSpring( Mesh_ mesh )
 
 DampForce::DampForce(void)
 {
-	mDamping = -0.0125;
+	mDamping = Config::getInstance()->damping_force;
 }
 
 DampForce::DampForce( double damping )
@@ -155,12 +157,26 @@ void BendForce::compute( const std::vector<Vec3d>& curPositions,
 		double cos_theta = (n1 | n2) / (n1.length() * n2.length());
 		if(cos_theta < -1.0) cos_theta = -1.0;
 		else if(cos_theta > 1.0) cos_theta = 1.0;
-		double curAngle = mPi - acos(cos_theta);
 
-		float leftTerm = spring.Ks * (curAngle-spring.rest_angle);
-		float rightTerm = 0;//mSprings[i].Kd * (deltaV|deltaP/dist);
-		forces[spring.fp1] += n1.normalize_cond() * leftTerm;
-		forces[spring.fp2] += n2.normalize_cond() * leftTerm;
+		double curAngle = 0;
+		
+		Vec3d f1e = fp1_vec - ep1_vec;
+		if( (n2 | f1e ) < 0 ){
+			curAngle = mPi + acos(cos_theta);
+		}
+		else
+			curAngle = mPi - acos(cos_theta);
+
+		double leftTerm = spring.Ks * (curAngle-spring.rest_angle);
+		n1.normalize_cond();
+		n2.normalize_cond();
+		forces[spring.fp1] += n1 * leftTerm;
+		forces[spring.fp2] += n2 * leftTerm;
+
+
+		/* Damping forces */
+		forces[spring.fp1] += n1 * (curVelocities[spring.fp1] | n1) * spring.Kd;
+		forces[spring.fp2] += n2 * (curVelocities[spring.fp2] | n2) * spring.Kd;
 	}
 }
 
@@ -179,6 +195,7 @@ void BendForce::initSpring( Mesh_ mesh )
 {
 	mSprings.reserve(mesh->n_edges());
 	int cur = 0;
+	Config_ config = Config::getInstance();
 	for(auto e_it = mesh->edges_begin(); e_it != mesh->edges_end(); e_it++){
 		if(cur == 131)
 			std::cout << "haha";
@@ -209,8 +226,8 @@ void BendForce::initSpring( Mesh_ mesh )
 			}
 		}
 
-		spring.Ks = 1.5;
-		spring.Kd = -7.5;
+		spring.Ks = config->bend_spring_ks;
+		spring.Kd = config->bend_spring_kd;
 
 		const Vec3d& ep1_vec = mesh->point(Mesh::VertexHandle(spring.ep1));
 		const Vec3d& ep2_vec = mesh->point(Mesh::VertexHandle(spring.ep2));
@@ -229,13 +246,18 @@ void BendForce::initSpring( Mesh_ mesh )
 		double cos_theta = (n1 | n2) / (n1.length() * n2.length());
 		if (cos_theta < -1.0) cos_theta = -1.0 ;
 		else if (cos_theta > 1.0) cos_theta = 1.0 ;
-		spring.rest_angle = mPi - acos(cos_theta);
-
-		/* 调整两个面的向量的方向 */
 		Vec3d f1e = fp1_vec - ep1_vec;
 		if( (n2 | f1e ) < 0 ){
-			std::swap(spring.ep1, spring.ep2);
+			spring.rest_angle = mPi + acos(cos_theta);
 		}
+		else
+			spring.rest_angle = mPi - acos(cos_theta);
+
+		/* 调整两个面的向量的方向 */
+// 		Vec3d f1e = fp1_vec - ep1_vec;
+// 		if( (n2 | f1e ) < 0 ){
+// 			std::swap(spring.ep1, spring.ep2);
+// 		}
 
 		mSprings.push_back(spring);
 		cur++;

@@ -11,6 +11,7 @@
 #include <unordered_set>
 #include "AABBTree.h"
 #include "Quaternion.h"
+#include "Config.h"
 GarmentPhysicalSimulator::GarmentPhysicalSimulator(void)
 {
 	mIntegration = nullptr;
@@ -70,10 +71,11 @@ void GarmentPhysicalSimulator::initWithGarmentAndHuman( Mesh_ garment, Mesh_ hum
 
 	mMeshFramePool = smartNew(MeshFramePool);
 	mMeshFramePool->storeFrame(garment);
-	setIntegrateStep(1 / 60.0);
+	Config_ conf = Config::getInstance();
+	setIntegrateStep(conf->step);
 	mAccumulateTimeInterFrame = 0;
 	mCurTime = 0;
-	mSimulateLen = 20;
+	mSimulateLen = conf->simulateLen;
 	initPointProperty();
 	initForce();
 //	computeCollisionParts();
@@ -87,7 +89,7 @@ void GarmentPhysicalSimulator::initPointProperty()
 	/* 初始速度为0 */
 	mCurVelocities.resize(mPointCount, Vec3d(0, 0, 0));	
 	/* 初始质量为1 */
-	mPointMass.resize(mPointCount, 0.5);
+	mPointMass.resize(mPointCount, Config::getInstance()->mass);
 
 	/* 设置初始位置 */
 	for(Mesh::VertexIter it = mGarment->vertices_begin(); it != mGarment->vertices_end(); it++){
@@ -225,6 +227,16 @@ void GarmentPhysicalSimulator::simulate()
 						faceVers[_v++] = mHuman->point(*fv);
 				}
 				Vec3d faceNormal = (faceVers[0] - faceVers[1]) % (faceVers[1] - faceVers[2]);
+
+// 				Vec3d faceNormal(0, 0, 0);
+// 				for(Mesh::FaceVertexIter fv = mHuman->fv_begin(Mesh::FaceHandle(intersectTriangleIndex));
+// 					fv.is_valid(); fv++){
+// 						faceNormal += mHuman->normal(*fv);
+// 				}
+// 				faceNormal /= 3.0;
+
+				if( (faceNormal | v) > 0)
+					continue;
 
 // 				if(((intersectionPoint - p) | faceNormal) < 0 )
 // 					continue;
