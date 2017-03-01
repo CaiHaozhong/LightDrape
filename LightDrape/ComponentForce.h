@@ -87,3 +87,27 @@ private:
 	double mDamping;
 };
 S_PTR(DampForce);
+
+class BendForce :
+	public ComponentForce{
+public:
+	struct FaceAngleSpring{
+		size_t ep1, ep2; // 共边的两个点
+		size_t fp1, fp2; // 不共边的两个点
+		double rest_angle;
+		double Ks, Kd;
+	};
+private:
+	std::vector<FaceAngleSpring> mSprings;	
+	double mPi;
+public:
+	BendForce();
+	BendForce(Mesh_ mesh);
+	void initSpring(Mesh_ mesh);
+	void compute(
+		const std::vector<Vec3d>& curPositions,
+		const std::vector<Vec3d>& curVelocities,
+		const std::vector<double>& pointMass,
+		std::vector<Vec3d>& forces);
+};
+S_PTR(BendForce);

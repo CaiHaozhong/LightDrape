@@ -10,6 +10,7 @@
 #include "KNNSHelper.h"
 #include <unordered_set>
 #include "AABBTree.h"
+#include "Quaternion.h"
 GarmentPhysicalSimulator::GarmentPhysicalSimulator(void)
 {
 	mIntegration = nullptr;
@@ -69,10 +70,10 @@ void GarmentPhysicalSimulator::initWithGarmentAndHuman( Mesh_ garment, Mesh_ hum
 
 	mMeshFramePool = smartNew(MeshFramePool);
 	mMeshFramePool->storeFrame(garment);
-	setIntegrateStep(1.0/60);
+	setIntegrateStep(1 / 60.0);
 	mAccumulateTimeInterFrame = 0;
 	mCurTime = 0;
-	mSimulateLen = 2000;
+	mSimulateLen = 20;
 	initPointProperty();
 	initForce();
 //	computeCollisionParts();
@@ -99,6 +100,7 @@ void GarmentPhysicalSimulator::initForce()
 	mForces.push_back(smartNew(GravityForce));
 	mForces.push_back(std::make_shared<StretchForce>(mGarment));
 	mForces.push_back(std::make_shared<DampForce>());
+	mForces.push_back(std::make_shared<BendForce>(mGarment));
 }
 
 void GarmentPhysicalSimulator::addForce( ComponentForce_ force )
@@ -207,14 +209,33 @@ void GarmentPhysicalSimulator::simulate()
 		for(size_t i = 0; i < mPointCount; i++){
 			Vec3d& p = mCurPositions[i];
 			Vec3d& v = mCurVelocities[i];
-			Vec3d q = p + (-v).normalize_cond() * 0.1;
+			Vec3d temp = v;
+			Vec3d q = p + (-temp).normalize_cond() * 0.05;
 			LineSegment seg(Point(p.values_[0],p.values_[1],p.values_[2]),
 				Point(q.values_[0],q.values_[1],q.values_[2]));
 			Vec3d intersectionPoint;
+			size_t intersectTriangleIndex;
 			if(mAABBTree->fastIntersectionTest(seg)){
-				mAABBTree->intersection(seg, intersectionPoint);
+				mAABBTree->intersection(seg, intersectionPoint,intersectTriangleIndex);				
+				
+				Vec3d faceVers[3];
+				int _v = 0;
+				for(Mesh::FaceVertexIter fv = mHuman->fv_begin(Mesh::FaceHandle(intersectTriangleIndex));
+					fv.is_valid(); fv++){
+						faceVers[_v++] = mHuman->point(*fv);
+				}
+				Vec3d faceNormal = (faceVers[0] - faceVers[1]) % (faceVers[1] - faceVers[2]);
+
+// 				if(((intersectionPoint - p) | faceNormal) < 0 )
+// 					continue;
+
+				Vec3d newV = -v;
+				Vec3d axis = newV % faceNormal;
+				double angle = -2* acos( (newV|faceNormal) / (newV.length()*faceNormal.length()));				
+				Quaternion q(axis, angle);
+				q.rotate(newV);
 				p = intersectionPoint;
-				v = Vec3d(0, 0, 0);
+				v = newV;
 			}
 		}
 		/* 存储m_dt时间步长后的状态 */

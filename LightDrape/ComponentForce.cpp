@@ -1,5 +1,5 @@
 #include "ComponentForce.h"
-#include <Mesh.h>
+#include "Mesh.h"
 
 ComponentForce::ComponentForce(void)
 {
@@ -45,7 +45,7 @@ GravityForce::GravityForce( Mesh_ mesh ) : ComponentForce(mesh)
 
 GravityForce::GravityForce()
 {
-	g = Vec3d(0, -0.00981, 0);
+	g = Vec3d(0, -0.0981, 0);
 }
 void StretchForce::compute(
 	const std::vector<Vec3d>& curPositions,
@@ -101,8 +101,8 @@ void StretchForce::initSpring( Mesh_ mesh )
 		Mesh::HalfedgeHandle he = mesh->halfedge_handle(*e_it, 0);
 		spring.p1 = mesh->from_vertex_handle(he).idx();
 		spring.p2 = mesh->to_vertex_handle(he).idx();
-		spring.Ks = 1.5;
-		spring.Kd = -0.75;
+		spring.Ks = 15;
+		spring.Kd = -7.5;
 		spring.rest_length = (mesh->point(Mesh::VertexHandle(spring.p1)) - mesh->point(Mesh::VertexHandle(spring.p2))).length();
 		mSprings.push_back(spring);
 	}
@@ -134,3 +134,110 @@ void DampForce::compute( const std::vector<Vec3d>& curPositions,
 	}
 }
 
+
+void BendForce::compute( const std::vector<Vec3d>& curPositions, 
+						const std::vector<Vec3d>& curVelocities, 
+						const std::vector<double>& pointMass, 
+						std::vector<Vec3d>& forces )
+{
+	size_t sprintCount = mSprings.size();
+	for(size_t i = 0; i < sprintCount; i++){
+		FaceAngleSpring& spring = mSprings[i];
+		const Vec3d& ep1_vec = curPositions[spring.ep1];
+		const Vec3d& ep2_vec = curPositions[spring.ep2];
+
+		const Vec3d& fp1_vec = curPositions[spring.fp1];
+		const Vec3d& fp2_vec = curPositions[spring.fp2];
+
+		Vec3d n1 = (ep1_vec - fp1_vec) % (ep2_vec - fp1_vec);
+		Vec3d n2 = (ep2_vec - fp2_vec) % (ep1_vec - fp2_vec);
+
+		double cos_theta = (n1 | n2) / (n1.length() * n2.length());
+		if(cos_theta < -1.0) cos_theta = -1.0;
+		else if(cos_theta > 1.0) cos_theta = 1.0;
+		double curAngle = mPi - acos(cos_theta);
+
+		float leftTerm = spring.Ks * (curAngle-spring.rest_angle);
+		float rightTerm = 0;//mSprings[i].Kd * (deltaV|deltaP/dist);
+		forces[spring.fp1] += n1.normalize_cond() * leftTerm;
+		forces[spring.fp2] += n2.normalize_cond() * leftTerm;
+	}
+}
+
+BendForce::BendForce( Mesh_ mesh ) : ComponentForce(mesh)
+{
+	mPi = 3.1415926;
+	initSpring(mesh);	
+}
+
+BendForce::BendForce()
+{
+	mPi = 3.1415926;
+}
+
+void BendForce::initSpring( Mesh_ mesh )
+{
+	mSprings.reserve(mesh->n_edges());
+	int cur = 0;
+	for(auto e_it = mesh->edges_begin(); e_it != mesh->edges_end(); e_it++){
+		if(cur == 131)
+			std::cout << "haha";
+		FaceAngleSpring spring;
+		Mesh::HalfedgeHandle he1 = mesh->halfedge_handle(*e_it, 0);
+		Mesh::HalfedgeHandle he2 = mesh->halfedge_handle(*e_it, 1);
+		Mesh::FaceHandle f1 = mesh->face_handle(he1);
+		Mesh::FaceHandle f2 = mesh->face_handle(he2);
+
+		/* 边界边 */
+		if(mesh->is_valid_handle(f1) == false || mesh->is_valid_handle(f2) == false)
+			continue;
+
+		spring.ep1 = mesh->from_vertex_handle(he1).idx();
+		spring.ep2 = mesh->from_vertex_handle(he2).idx();
+
+		for(auto fv_it = mesh->fv_begin(f1); fv_it.is_valid(); fv_it++){
+			if(fv_it->idx() != spring.ep1 && fv_it->idx() != spring.ep2){
+				spring.fp1 = fv_it->idx();
+				break;
+			}
+		}
+
+		for(auto fv_it = mesh->fv_begin(f2); fv_it.is_valid(); fv_it++){
+			if(fv_it->idx() != spring.ep1 && fv_it->idx() != spring.ep2){
+				spring.fp2 = fv_it->idx();
+				break;
+			}
+		}
+
+		spring.Ks = 1.5;
+		spring.Kd = -7.5;
+
+		const Vec3d& ep1_vec = mesh->point(Mesh::VertexHandle(spring.ep1));
+		const Vec3d& ep2_vec = mesh->point(Mesh::VertexHandle(spring.ep2));
+
+		const Vec3d& fp1_vec = mesh->point(Mesh::VertexHandle(spring.fp1));
+		const Vec3d& fp2_vec = mesh->point(Mesh::VertexHandle(spring.fp2));
+
+		Vec3d n1 = (ep1_vec - fp1_vec) % (ep2_vec - fp1_vec);
+		Vec3d n2 = (ep2_vec - fp2_vec) % (ep1_vec - fp2_vec);
+		double n1len = n1.length();
+		double n2len = n2.length();
+		double dot = (n1 | n2);
+		double n1n2 = (n1.length() * n2.length());
+		double the = (n1 | n2) / (n1.length() * n2.length());
+		double aco = acos((n1 | n2) / (n1.length() * n2.length()));
+		double cos_theta = (n1 | n2) / (n1.length() * n2.length());
+		if (cos_theta < -1.0) cos_theta = -1.0 ;
+		else if (cos_theta > 1.0) cos_theta = 1.0 ;
+		spring.rest_angle = mPi - acos(cos_theta);
+
+		/* 调整两个面的向量的方向 */
+		Vec3d f1e = fp1_vec - ep1_vec;
+		if( (n2 | f1e ) < 0 ){
+			std::swap(spring.ep1, spring.ep2);
+		}
+
+		mSprings.push_back(spring);
+		cur++;
+	}
+}

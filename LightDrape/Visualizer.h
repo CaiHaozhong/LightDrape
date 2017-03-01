@@ -38,6 +38,9 @@ private:
 	float mDist;
 	static const int GRID_SIZE = 10;
 
+	int oldX, oldY;
+	int state;
+	int selected_index;
 
 	int mViewport[4];
 	double mMVMatrix[16];
@@ -48,14 +51,35 @@ private:
 	Mesh_ mHumanMesh;
 	Mesh_ mGarmentMesh;
 
+	size_t mShowHuman, mShowGarment;
+
 	SafeQueue_ mFrames;
 
 	MeshFrame_ mCurFrame;
+
+	MeshFramePool_ mMeshFramePool;
+
+	size_t mCurFrameIndex;
+
+	enum{
+		VBO_VERTEX,
+		VBO_NORMAL,
+		VBO_INDEX,
+		VBO_SIZE
+	};
+	unsigned int mHumanVBO[VBO_SIZE];
+	unsigned int mGarmentVBO[VBO_SIZE];
 private:
+
+	Visualizer(void);
 
 	static void OnReshape(int nw, int nh);
 
 	static void OnRender();
+
+	static void OnMouseDown(int button, int s, int x, int y);
+
+	static void OnMouseMove(int x, int y);
 
 	void DrawGrid();
 
@@ -64,12 +88,16 @@ private:
 	void setLight();
 
 	static void tick(int val);
-public:
-	Visualizer(void);
+
+	void prepare( Mesh& _mesh, unsigned int* _vbo);
+
+public:	
 
 	~Visualizer(void);
 
 	void show(int argc, char** argv);	
+
+	static Visualizer_ getInstance();
 
 	void setHumanMesh(Mesh_ mesh);
 	

@@ -15,7 +15,7 @@ AABBTree::~AABBTree(void)
 
 void AABBTree::initWithMesh( Mesh_ mesh )
 {
-	std::list<Triangle>* triangles = new std::list<Triangle>;
+	std::vector<Triangle>* triangles = new std::vector<Triangle>;
 	for(auto it = mesh->faces_begin(); it != mesh->faces_end(); it++){
 		Point points[3];
 		int cur = 0;
@@ -26,16 +26,19 @@ void AABBTree::initWithMesh( Mesh_ mesh )
 		}
 		triangles->push_back(Triangle(points[0], points[1], points[2]));
 	}
+	mTriangleBegin = triangles->begin();
 	mTree = new Tree(triangles->begin(),triangles->end());
 }
 
-bool AABBTree::intersection( LineSegment& seg, Vec3d& ret )
+bool AABBTree::intersection( LineSegment& seg, Vec3d& ret, size_t& intersectTriangleIndex )
 {
 	Segment_intersection intersection = mTree->any_intersection(seg);
 	if(intersection)
 	{
 		// gets intersection object
 		const Point* p = boost::get<Point>(&(intersection->first));	
+		Iterator id = intersection->second;
+		intersectTriangleIndex = id - mTriangleBegin;
 		if(p){
 			ret = Vec3d(p->x(), p->y(), p->z());
 			//std::cout << "intersection object is a point " << *p << std::endl;

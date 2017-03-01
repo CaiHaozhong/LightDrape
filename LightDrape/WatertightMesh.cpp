@@ -11,11 +11,11 @@ WatertightMesh::WatertightMesh( Mesh_ mesh ) :Mesh(*mesh)
 	mOriginalMesh = mesh;
 	mVertexPropertySKN = nullptr;
 	mVertexPropertyGeoDis = nullptr;
-	HoleInfo holeInfo(this);
-	holeInfo.getHoles();
-	PRINT("holes Count: ");
-	PRINTLN(holeInfo.holes()->size());
-	holeInfo.fillAllHoles();
+// 	HoleInfo holeInfo(this);
+// 	holeInfo.getHoles();
+// 	PRINT("holes Count: ");
+// 	PRINTLN(holeInfo.holes()->size());
+// 	holeInfo.fillAllHoles();
 	initProperty();
 	computeMap();
 }

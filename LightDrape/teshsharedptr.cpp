@@ -6,12 +6,17 @@
 #include "Config.h"
 #include "HumanFeature.h"
 #include "Visualizer.h"
+#include <QApplication>
+#include "QGLViewerWidget.h"
+#include "MeshWidget.h"
+#include <QMainWindow>
 int main(int argc, char** argv){
 	Config_ config = Config::getInstance();
 	/* Human */
 	Mesh_ hRawmesh = smartNew(Mesh);
 	hRawmesh->request_vertex_normals();
 	OpenMesh::IO::Options opt;
+//	opt += OpenMesh::IO::Options::VertexNormal;
 	hRawmesh->setName(config->humanInFileName.substr(0,config->humanInFileName.size()-4));
 	bool readSuc = OpenMesh::IO::read_mesh(*hRawmesh, config->humanInPath + config->humanInFileName, opt);
 	if(readSuc){
@@ -62,14 +67,27 @@ int main(int argc, char** argv){
 
 /* -------------------------------------- End load Mesh ----------------------------------------*/
 
-	Visualizer_ visualizer = smartNew(Visualizer);
-	visualizer->setHumanMesh(human->getOriginalMesh());
-	visualizer->setGarmentMesh(garment->getOriginalMesh());
 
-	human->addGarmentSimulationCallBack(visualizer);	
-	human->dress(garment);
+	QApplication app(argc,argv);
+	glutInit(&argc,argv);
+	QMainWindow mainWin;	
+	MeshWidget* glWidget = new MeshWidget;
+	glWidget->setHuman(human);
+	glWidget->setGarment(garment);
+	mainWin.setCentralWidget(glWidget);
+	mainWin.resize(640,480);
+	mainWin.show();
 
-	visualizer->show(argc, argv);
+	return app.exec();
+
+// 	Visualizer_ visualizer = Visualizer::getInstance();
+// 	visualizer->setHumanMesh(human->getOriginalMesh());
+// 	visualizer->setGarmentMesh(garment->getOriginalMesh());
+// 
+// 	human->addGarmentSimulationCallBack(visualizer);	
+// 	human->dress(garment);
+// 
+// 	visualizer->show(argc, argv);
 // 	/* Output */
 // 	bool suc = OpenMesh::IO::write_mesh(*(garment->getOriginalMesh()), config->clothOutPath+config->clothInFileName);
 // 	if(suc){
