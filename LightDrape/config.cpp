@@ -28,7 +28,12 @@ void Config::init( char* file )
 			configIn >> humanInFileName;
 		}
 		else if(type == "cloth_in_file"){
-			configIn >> clothInFileName;
+			size_t count;
+			configIn >> count;
+			clothInFileNames.resize(count);
+			for(size_t i = 0; i < count; i++){
+				configIn >> clothInFileNames[i];
+			}			
 		}
 		else if(type == "cloth_out_path"){
 			configIn >> clothOutPath;
@@ -76,8 +81,8 @@ Config_ Config::getInstance()
 {
 	if(mInstance == nullptr){
 		mInstance = std::shared_ptr<Config>(new Config());
-		mInstance->init("E:\\Project\\LightDrape\\data\\config");
-		//mInstance->init("D:\\Develop\\project\\LightDrape\\C++\\data\\config");
+		//mInstance->init("E:\\Project\\LightDrape\\data\\config");
+		mInstance->init("D:\\Develop\\project\\LightDrape\\C++\\data\\config");
 	}
 	return mInstance;
 }

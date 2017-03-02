@@ -1,5 +1,6 @@
 #pragma once
 #include <string>
+#include <vector>
 #include <fstream>
 #include "Common.h"
 class Config;
@@ -13,7 +14,7 @@ public:
 	std::string humanInPath;	
 	std::string clothInPath;
 	std::string humanInFileName;
-	std::string clothInFileName;
+	std::vector<std::string> clothInFileNames;
 	std::string clothOutPath;
 	std::string humanMeshDiretion;
 	std::string humanSegOutPath;
