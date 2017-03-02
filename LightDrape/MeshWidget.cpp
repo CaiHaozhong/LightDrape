@@ -38,7 +38,6 @@ void MeshWidget::draw_scene( const std::string& _draw_mode )
 	glDrawElements(GL_TRIANGLES, mHuman.lock()->getOriginalMesh()->n_faces() * 3, GL_UNSIGNED_INT, 0);
 
 /* --------------------------- Draw Garment ----------------------------------*/
-
 	/* 指定顶点数据的offset */
 	glBindBuffer(GL_ARRAY_BUFFER,mGarmentVBO[VBO_VERTEX]);
 	glVertexPointer(3,GL_DOUBLE,0,0);

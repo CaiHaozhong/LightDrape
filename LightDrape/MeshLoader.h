@@ -11,6 +11,7 @@ class Garment;
 S_PTR(Garment);
 class Mesh;
 S_PTR(Mesh);
+/* 用于加载人体模型和衣服模型, 异步进行，提供回调，回调方法在QT主线程中执行 */
 class MeshLoader : public QObject
 {
 public:
