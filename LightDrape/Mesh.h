@@ -15,6 +15,8 @@ struct MyTrait : public OpenMesh::DefaultTraits{
   /* 将原本的Vec3f改为Vec3d */
   typedef Vec3d  Normal;
 
+  typedef OpenMesh::Vec2d  TexCoord2D;
+
 };
 typedef OpenMesh::TriMesh_ArrayKernelT<MyTrait> _Mesh;
 

@@ -30,6 +30,8 @@ private:
 
 	void prepare(Mesh& mesh, GLuint* _vbo);
 
+	void prepareGLSL(){}
+
 	void initGlew();
 
 	/* Override */
@@ -49,13 +51,18 @@ private:
 	enum{
 		VBO_VERTEX,
 		VBO_NORMAL,
+		VBO_TEXCOORD,
 		VBO_INDEX,
 		VBO_SIZE
 	};
 	GLuint mHumanVBO[VBO_SIZE];
 	GLuint mGarmentVBO[VBO_SIZE];
+	GLuint mTexture;
+	GLuint mPrograme;
+	GLuint mVAO;
 	MeshFramePool_ mMeshFramePool;
 	int mTimerID;
 	int mCurFrameIndex;
+	
 };
 S_PTR(MeshWidget);

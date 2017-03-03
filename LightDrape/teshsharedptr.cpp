@@ -13,6 +13,9 @@
 #include "MeshLoader.h"
 #include <QThread>
 class MyCallBack : public MeshLoader::MeshLoaderListener{
+private:
+	Human_ mHuman;
+	Garment_ mGarment;
 public:
 	/* 开始加载所有模型 */
 	void onBeginLoad(){
@@ -31,16 +34,25 @@ public:
 
 	/* 人体模型加载结束 */
 	void onEndLoadHuman(Human_ human){
+		mHuman = human;
 		std::cout << "onEndLoadHuman" << std::endl;
 	};
 
 	/* 第i个衣服模型加载结束 */
 	void onEndLoadGarment(int i, Garment_ gar){
+		mGarment = gar;
 		std::cout << "onEndLoadGarment" << std::endl;
 	};
 
 	/* 所有模型加载完毕 */
 	void onEndLoad(){
+		QMainWindow* mainWin = new QMainWindow;	
+		MeshWidget* glWidget = new MeshWidget;
+		glWidget->setHuman(mHuman);
+		glWidget->setGarment(mGarment);
+		mainWin->setCentralWidget(glWidget);
+		mainWin->resize(640,480);
+		mainWin->show();
 		std::cout << "onEndLoad" << std::endl;
 	};
 };
@@ -100,6 +112,7 @@ int main(int argc, char** argv){
 // 	Garment_ garment = std::make_shared<Cloth>(gRawmesh);
 
 	QApplication app(argc,argv);
+	glutInit(&argc,argv);
 	MeshLoader_ mLoader = smartNew(MeshLoader);
 	mLoader->addMeshLoaderListener(smartNew(MyCallBack));
 	mLoader->asynload();	
@@ -112,8 +125,6 @@ int main(int argc, char** argv){
 // 	glutInit(&argc,argv);
 // 	QMainWindow mainWin;	
 // 	MeshWidget* glWidget = new MeshWidget;
-// 	glWidget->setHuman(human);
-// 	glWidget->setGarment(garment);
 // 	mainWin.setCentralWidget(glWidget);
 // 	mainWin.resize(640,480);
 // 	mainWin.show();

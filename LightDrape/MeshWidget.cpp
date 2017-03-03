@@ -6,6 +6,8 @@
 #include "Garment.h"
 #include "MeshFramePool.h"
 #include "FrameToOBJFileWriter.h"
+#include <QImage>
+#include "MeshMaterial.h"
 using namespace std;
 
 MeshWidget::MeshWidget(void)
@@ -25,32 +27,45 @@ void MeshWidget::draw_scene( const std::string& _draw_mode )
 	glShadeModel(GL_SMOOTH);
 
 /* --------------------------- Draw Human ----------------------------------*/
-	/* 指定顶点数据的offset */
-	glBindBuffer(GL_ARRAY_BUFFER,mHumanVBO[VBO_VERTEX]);
-	glVertexPointer(3,GL_DOUBLE,0,0);
-
-	/* 指定法向量的offset */
-	glBindBuffer(GL_ARRAY_BUFFER, mHumanVBO[VBO_NORMAL]);
-	glNormalPointer(GL_DOUBLE,0, 0);
-
-	/* 绘制 */
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mHumanVBO[VBO_INDEX]);
-	glDrawElements(GL_TRIANGLES, mHuman.lock()->getOriginalMesh()->n_faces() * 3, GL_UNSIGNED_INT, 0);
+// 	/* 顶点数据 */
+// 	glBindBuffer(GL_ARRAY_BUFFER,mHumanVBO[VBO_VERTEX]);
+// 	glEnableClientState(GL_VERTEX_ARRAY);	
+// 	glVertexPointer(3,GL_DOUBLE,0,0);
+// 
+// 	/* 法向量 */
+// 	glBindBuffer(GL_ARRAY_BUFFER, mHumanVBO[VBO_NORMAL]);
+// 	glEnableClientState(GL_NORMAL_ARRAY);
+// 	glNormalPointer(GL_DOUBLE,0, 0);
+// 
+// 	/* 下标 */
+// 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mHumanVBO[VBO_INDEX]);
+// 	glDrawElements(GL_TRIANGLES, mHuman.lock()->getOriginalMesh()->n_faces() * 3, GL_UNSIGNED_INT, 0);
 
 /* --------------------------- Draw Garment ----------------------------------*/
-	/* 指定顶点数据的offset */
-	glBindBuffer(GL_ARRAY_BUFFER,mGarmentVBO[VBO_VERTEX]);
+	/* 顶点数据 */
+	glBindBuffer(GL_ARRAY_BUFFER, mGarmentVBO[VBO_VERTEX]);
+	glEnableClientState(GL_VERTEX_ARRAY);
 	glVertexPointer(3,GL_DOUBLE,0,0);
 
-	/* 指定法向量的offset */
+	/* 法向量 */
 	glBindBuffer(GL_ARRAY_BUFFER, mGarmentVBO[VBO_NORMAL]);
+	glEnableClientState(GL_NORMAL_ARRAY);
 	glNormalPointer(GL_DOUBLE,0, 0);
 
-	
+	glClientActiveTexture(GL_TEXTURE0);
+	glBindBuffer(GL_ARRAY_BUFFER, mGarmentVBO[VBO_TEXCOORD]);
+	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+	glTexCoordPointer(2, GL_DOUBLE, 0, 0);
+	glEnable(GL_TEXTURE_2D);
+	glBindTexture(GL_TEXTURE_2D, mTexture);
 
-	/* 绘制 */
+	check_gl_error();
+	/* 下标 */
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mGarmentVBO[VBO_INDEX]);
 	glDrawElements(GL_TRIANGLES, mGarment->getOriginalMesh()->n_faces() * 3, GL_UNSIGNED_INT, 0);
+	check_gl_error();
+	glDisableClientState(GL_VERTEX_ARRAY);
+	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 }
 
 void MeshWidget::prepare( Mesh& _mesh , GLuint* _vbo)
@@ -64,30 +79,60 @@ void MeshWidget::prepare( Mesh& _mesh , GLuint* _vbo)
 			indices_array[vi++] = face_v_it->idx();
 		}
 		assert(t == 3, "not triangle face");
-	});		
+	});	
 
+	/* Texture Coord */
+	vi = 0;
+	Mesh::TexCoord2D* texcoords = new Mesh::TexCoord2D[_mesh.n_vertices()];
+	for(auto it = _mesh.vertices_begin(); it != _mesh.vertices_end(); it++){
+		Mesh::TexCoord2D t = _mesh.texcoord2D(*it);
+		texcoords[vi] = t;
+	}
 	check_gl_error();
 	/* 生成三个VBO对象 */
 	glGenBuffers(VBO_SIZE,_vbo);
-	check_gl_error();
+
 	/* 将顶点数据拷贝到顶点VBO中 */
 	glBindBuffer(GL_ARRAY_BUFFER,_vbo[VBO_VERTEX]);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(double) * 3 * _mesh.n_vertices() * 1 , _mesh.points(), GL_DYNAMIC_DRAW);
-	glEnableClientState(GL_VERTEX_ARRAY);		
-//	glVertexPointer(3,GL_FLOAT,0,0);
-	check_gl_error();
+	glBufferData(GL_ARRAY_BUFFER, sizeof(double) * 3 * _mesh.n_vertices(), _mesh.points(), GL_DYNAMIC_DRAW);
+
 	/* 将法线数据拷贝到法线VBO中 */
 	glBindBuffer(GL_ARRAY_BUFFER, _vbo[VBO_NORMAL]);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(double) * 3 * _mesh.n_vertices() * 1 , _mesh.vertex_normals(), GL_DYNAMIC_DRAW);
-	glEnableClientState(GL_NORMAL_ARRAY);
-//	glNormalPointer(GL_FLOAT,0, 0);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(double) * 3 * _mesh.n_vertices(), _mesh.vertex_normals(), GL_DYNAMIC_DRAW);	
+
+	glBindBuffer(GL_ARRAY_BUFFER, _vbo[VBO_TEXCOORD]);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(double) * 2 * _mesh.n_vertices(), texcoords[0].values_, GL_STREAM_DRAW);
 	check_gl_error();
 	/* 将索引数据拷贝到索引的VBO中，而索引如何与顶点和法线关联起来，
 	   靠的是glVertexPointer和glNormalPointer，在绘制的时候指定就好 */
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _vbo[VBO_INDEX]);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER,sizeof(GLuint) * 3 * _mesh.n_faces(),indices_array,GL_STATIC_DRAW);
-	delete [] indices_array;
+
+	/* Texture data */
+	glGenTextures(1, &mTexture);
+	glBindTexture(GL_TEXTURE_2D, mTexture);
+	QImage tex, buf;
+	MeshMaterial_ material = _mesh.getMeshMaterial();
+	bool suc = buf.load(material->map_Ka.c_str());
+	tex = this->convertToGLFormat(buf);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, tex.width(), tex.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE, tex.bits());
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+	glBindTexture(GL_TEXTURE_2D, 0);
 	check_gl_error();
+
+// 	OpenMesh::MPropHandleT< std::map< int, std::string > > texture;
+// 	bool succ = _mesh.get_property_handle(texture, "TextureMapping");
+// 
+// 	for(auto it = _mesh.vertices_begin(); it != _mesh.vertices_end(); it++){
+// 		Mesh::TexCoord2D t = _mesh.texcoord2D(*it);
+// 		double t0 = t.values_[0];
+// 		double t1 = t.values_[1];
+// 	}
+	delete [] indices_array;
+	delete [] texcoords;
+
+	check_gl_error();	
 }
 
 void MeshWidget::initGlew()
@@ -104,15 +149,15 @@ void MeshWidget::initGlew()
 void MeshWidget::onEndInitializeGL()
 {
 	initGlew();	
-	Human_ humanSp = mHuman.lock();
-	Vec3d center = (humanSp->getMax() + humanSp->getMin()) * 0.5;
-	double radius = (humanSp->getMax() - humanSp->getMin()).length() * 0.5;
+//	Human_ humanSp = mHuman.lock();
+	Vec3d center = (mGarment->getMax() + mGarment->getMin()) * 0.5;
+	double radius = (mGarment->getMax() - mGarment->getMin()).length() * 0.5;
 	set_scene_pos(center, radius);
-	prepare(*(humanSp->getOriginalMesh()), mHumanVBO);	
-	prepare(*(mGarment->getOriginalMesh()), mGarmentVBO);
-	humanSp->addGarmentSimulationCallBack(std::shared_ptr<MeshWidget>(this));
-	humanSp->dress(mGarment);
-	mTimerID = this->startTimer(4);
+//	prepare(*(humanSp->getOriginalMesh()), mHumanVBO);	
+ 	prepare(*(mGarment->getOriginalMesh()), mGarmentVBO);
+// 	humanSp->addGarmentSimulationCallBack(std::shared_ptr<MeshWidget>(this));
+// 	humanSp->dress(mGarment);
+// 	mTimerID = this->startTimer(4);
 }
 
 void MeshWidget::setHuman( Human_ human )

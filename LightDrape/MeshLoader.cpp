@@ -22,7 +22,7 @@ void MeshLoader::load()
 {
 	mMsgQueue->push(std::make_shared<Message>(BEGIN_LOAD));
 
-	loadHuman();
+//	loadHuman();
 
 	loadGarments();
 
@@ -57,8 +57,11 @@ Mesh_ MeshLoader::loadMesh(std::string path, std::string name)
 {
 	Mesh_ ret = smartNew(Mesh);
 	ret->request_vertex_normals();
+	ret->request_vertex_texcoords2D();
+	ret->request_face_texture_index();
 	OpenMesh::IO::Options opt;
 	opt += OpenMesh::IO::Options::VertexNormal;
+	opt += OpenMesh::IO::Options::VertexTexCoord;
 	bool readSuc = OpenMesh::IO::read_mesh(*ret, path+name, opt);
 	if(readSuc){
 		if ( !opt.check( OpenMesh::IO::Options::VertexNormal ) )
@@ -76,6 +79,7 @@ Mesh_ MeshLoader::loadMesh(std::string path, std::string name)
 		if(mtl != nullptr){
 			ret->setMeshMaterial(mtl);
 		}
+		bool ht = ret->has_vertex_texcoords2D();
 	}	
 	else{
 		std::string err = "fail to read ";

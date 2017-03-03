@@ -140,13 +140,13 @@ private slots:
 protected: // inherited
 
   // initialize OpenGL states (triggered by Qt)
-  void initializeGL();
+  virtual void initializeGL();
 
   // draw the scene (triggered by Qt)
-  void paintGL();
+  virtual void paintGL();
 
   // handle resize events (triggered by Qt)
-  void resizeGL( int w, int h );
+  virtual void resizeGL( int w, int h );
 
 protected:
 	/* Hook By CaiHaozhong */
