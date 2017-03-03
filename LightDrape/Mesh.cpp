@@ -1,5 +1,6 @@
 #include "Mesh.h"
 #include "VertexAlter.h"
+#include "MeshMaterial.h"
 
 Mesh::Mesh() :_Mesh(){
 	mHasRequestAABB = false;
@@ -109,3 +110,7 @@ double Mesh::getAverageEdgeLength()
 	mEdgeAverageLength = mEdgeAverageLength / this->n_edges();
 	return mEdgeAverageLength;
 }
+
+MeshMaterial_ Mesh::getMeshMaterial() const { return mMeshMaterial; }
+
+void Mesh::setMeshMaterial(MeshMaterial_ val) { mMeshMaterial = val; }

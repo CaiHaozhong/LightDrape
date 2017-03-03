@@ -5,6 +5,7 @@
 #include "Human.h"
 #include "Garment.h"
 #include "HumanFeature.h"
+#include "MeshMaterial.h"
 
 
 MeshLoader::MeshLoader(void)
@@ -33,8 +34,7 @@ void MeshLoader::loadHuman()
 	mMsgQueue->push(std::make_shared<Message>(BEGIN_LOAD_HUMAN));
 
 	Config_ conf = Config::getInstance();
-	Mesh_ raw = loadMesh(conf->humanInPath + conf->humanInFileName);
-	raw->setName(conf->humanInFileName.substr(0,conf->humanInFileName.size()-4));
+	Mesh_ raw = loadMesh(conf->humanInPath, conf->humanInFileName);
 	Human_ human = std::make_shared<Human>(raw);
 
 	HumanFeature_ feature = smartNew(HumanFeature);
@@ -53,13 +53,13 @@ void MeshLoader::asynload()
 	t.detach();
 }
 
-Mesh_ MeshLoader::loadMesh( std::string file )
+Mesh_ MeshLoader::loadMesh(std::string path, std::string name)
 {
 	Mesh_ ret = smartNew(Mesh);
 	ret->request_vertex_normals();
 	OpenMesh::IO::Options opt;
 	opt += OpenMesh::IO::Options::VertexNormal;
-	bool readSuc = OpenMesh::IO::read_mesh(*ret, file, opt);
+	bool readSuc = OpenMesh::IO::read_mesh(*ret, path+name, opt);
 	if(readSuc){
 		if ( !opt.check( OpenMesh::IO::Options::VertexNormal ) )
 		{
@@ -71,10 +71,15 @@ Mesh_ MeshLoader::loadMesh( std::string file )
 			ret->release_face_normals();
 		}
 		ret->requestAABB();
+		ret->setName(name.substr(0, name.size()-4));
+		MeshMaterial_ mtl = MeshMaterial::fromMakeHumanMeasureFile(path + ret->getName()+".mtl");
+		if(mtl != nullptr){
+			ret->setMeshMaterial(mtl);
+		}
 	}	
 	else{
 		std::string err = "fail to read ";
-		PRINTLN(err+file);
+		PRINTLN(err+path+name);
 	}
 	return ret;
 }
@@ -95,8 +100,7 @@ void MeshLoader::loadGarments()
 		mMsgQueue->push(msg);
 
 		std::string garFile = conf->clothInFileNames[g];
-		Mesh_ raw = loadMesh(conf->clothInPath + garFile);
-		raw->setName(garFile.substr(0, garFile.size() - 4));
+		Mesh_ raw = loadMesh(conf->clothInPath, garFile);
 		Garment_ garment = std::make_shared<Garment>(raw);
 
 		msg = std::make_shared<Message>(END_LOAD_GARMENT);

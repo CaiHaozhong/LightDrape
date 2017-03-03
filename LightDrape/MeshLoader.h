@@ -94,7 +94,7 @@ private:
 
 	void loadGarments();
 
-	Mesh_ loadMesh(std::string file);
+	Mesh_ loadMesh(std::string path, std::string name);
 };
 S_PTR(MeshLoader);
 

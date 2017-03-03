@@ -6,6 +6,8 @@
 #include "Common.h"
 class VertexAlter;
 S_PTR(VertexAlter);
+class MeshMaterial;
+S_PTR(MeshMaterial);
 struct MyTrait : public OpenMesh::DefaultTraits{
   /* 将原本的Vec3f改为Vec3d */
   typedef Vec3d  Point;
@@ -320,6 +322,9 @@ public:
 
 	VertexAlter_ getVertexAlter() const { return mVertexAlter; }
 
+	MeshMaterial_ getMeshMaterial() const;
+
+	void setMeshMaterial(MeshMaterial_ val);
 private:
 	bool mHasRequestAABB;
 
@@ -332,5 +337,7 @@ private:
 	VertexAlter_ mVertexAlter;	
 
 	double mEdgeAverageLength;
+
+	MeshMaterial_ mMeshMaterial;	
 };
 S_PTR(Mesh);

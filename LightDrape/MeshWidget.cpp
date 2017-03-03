@@ -46,6 +46,8 @@ void MeshWidget::draw_scene( const std::string& _draw_mode )
 	glBindBuffer(GL_ARRAY_BUFFER, mGarmentVBO[VBO_NORMAL]);
 	glNormalPointer(GL_DOUBLE,0, 0);
 
+	
+
 	/* »æÖÆ */
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mGarmentVBO[VBO_INDEX]);
 	glDrawElements(GL_TRIANGLES, mGarment->getOriginalMesh()->n_faces() * 3, GL_UNSIGNED_INT, 0);
