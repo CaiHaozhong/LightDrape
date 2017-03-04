@@ -8,12 +8,14 @@
 #include "FrameToOBJFileWriter.h"
 #include <QImage>
 #include "MeshMaterial.h"
+#include "shaderprogram.h"
 using namespace std;
 
 MeshWidget::MeshWidget(void)
 {
 	mMeshFramePool = nullptr;
 	mCurFrameIndex = 0;
+	mShaderProgram = smartNew(ShaderProgram);
 }
 
 
@@ -108,6 +110,8 @@ void MeshWidget::prepare( Mesh& _mesh , GLuint* _vbo)
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _vbo[VBO_INDEX]);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER,sizeof(GLuint) * 3 * _mesh.n_faces(),indices_array,GL_STATIC_DRAW);
 
+
+
 	/* Texture data */
 	glGenTextures(1, &mTexture);
 	glBindTexture(GL_TEXTURE_2D, mTexture);
@@ -121,14 +125,6 @@ void MeshWidget::prepare( Mesh& _mesh , GLuint* _vbo)
 	glBindTexture(GL_TEXTURE_2D, 0);
 	check_gl_error();
 
-// 	OpenMesh::MPropHandleT< std::map< int, std::string > > texture;
-// 	bool succ = _mesh.get_property_handle(texture, "TextureMapping");
-// 
-// 	for(auto it = _mesh.vertices_begin(); it != _mesh.vertices_end(); it++){
-// 		Mesh::TexCoord2D t = _mesh.texcoord2D(*it);
-// 		double t0 = t.values_[0];
-// 		double t1 = t.values_[1];
-// 	}
 	delete [] indices_array;
 	delete [] texcoords;
 
@@ -148,13 +144,15 @@ void MeshWidget::initGlew()
 
 void MeshWidget::onEndInitializeGL()
 {
-	initGlew();	
+	initGlew();
+	prepareGLSL();
+	sendDataToGPU();
 //	Human_ humanSp = mHuman.lock();
 	Vec3d center = (mGarment->getMax() + mGarment->getMin()) * 0.5;
 	double radius = (mGarment->getMax() - mGarment->getMin()).length() * 0.5;
 	set_scene_pos(center, radius);
 //	prepare(*(humanSp->getOriginalMesh()), mHumanVBO);	
- 	prepare(*(mGarment->getOriginalMesh()), mGarmentVBO);
+// 	prepare(*(mGarment->getOriginalMesh()), mGarmentVBO);
 // 	humanSp->addGarmentSimulationCallBack(std::shared_ptr<MeshWidget>(this));
 // 	humanSp->dress(mGarment);
 // 	mTimerID = this->startTimer(4);
@@ -207,4 +205,122 @@ void MeshWidget::timerEvent( QTimerEvent *event )
 		glBufferData(GL_ARRAY_BUFFER, sizeof(double) * 3 * garMesh->n_vertices() * 1 , garMesh->vertex_normals(), GL_DYNAMIC_DRAW);
 		update();
 	}
+}
+void MeshWidget::prepareGLSL()
+{
+	std::string ver_shader_file = "shader/vertex-shader.txt";
+	std::string fra_shader_file = "shader/fragment-shader.txt";
+// 
+// 	/* Read Vertex Shader */
+// 	std::ifstream f;
+// 	f.open(ver_shader_file.c_str(), std::ios::in | std::ios::binary);
+// 	if(!f.is_open()){
+// 		throw std::runtime_error(std::string("Failed to open file: ") + ver_shader_file);
+// 	}
+// 
+// 	//read whole file into stringstream buffer
+// 	std::stringstream buffer;
+// 	buffer << f.rdbuf();
+// 
+// 	std::string vertex_shader_code = buffer.str();
+// 	f.close();
+// /*	std::cout << vertex_shader_code << std::endl;*/
+// 
+// 	/* Read Fragment Shader */
+// 	f.open(fra_shader_file.c_str(), std::ios::in | std::ios::binary);
+// 	if(!f.is_open()){
+// 		throw std::runtime_error(std::string("Failed to open file: ") + fra_shader_file);
+// 	}
+// 
+// 	//read whole file into stringstream buffer
+// 	std::stringstream buffer2;
+// 	buffer2 << f.rdbuf();
+// 	std::string fragment_shader_code = buffer2.str();
+// 	f.close();
+// /*	std::cout << fragment_shader_code << std::endl;*/
+// 
+// 
+// 	GLuint vs = glCreateShader(GL_VERTEX_SHADER);
+// 	GLuint fs = glCreateShader(GL_FRAGMENT_SHADER);
+// 	const char* vsource = vertex_shader_code.c_str();
+// 	const char* fsource = fragment_shader_code.c_str();
+// 	glShaderSource(vs, 1, &vsource, NULL);  
+// 	glShaderSource(fs, 1, &fsource, NULL);  
+// 	glCompileShader(vs);  
+// 	glCompileShader(fs);
+// 	mPrograme = glCreateProgram(); 
+// 	glAttachShader(mPrograme, vs);  
+// 	glAttachShader(mPrograme, fs);  
+// 
+// 	glLinkProgram(mPrograme); 
+//	glUseProgram(mPrograme);
+	mShaderProgram->compileShaderFromFile(ver_shader_file.c_str(), GLSLShader::VERTEX);
+	mShaderProgram->log();
+	mShaderProgram->compileShaderFromFile(fra_shader_file.c_str(), GLSLShader::FRAGMENT);
+	mShaderProgram->log();
+	mShaderProgram->link();
+	mShaderProgram->log();
+	mShaderProgram->use();
+	mShaderProgram->log();
+}
+
+void MeshWidget::paintGL()
+{
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	mShaderProgram->setUniform("ModelViewMatrix", modelview_matrix_);
+	mShaderProgram->setUniform("ProjectionMatrix", projection_matrix_);
+	//draw_scene(std::string());
+	glBindVertexArray(mVAO);	
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mEBO);
+	glDrawElements(GL_TRIANGLES, mGarment->getOriginalMesh()->n_faces() * 3, GL_UNSIGNED_INT, 0);
+	glBindVertexArray(0);
+}
+
+void MeshWidget::sendDataToGPU()
+{
+	Mesh_ mesh = mGarment->getOriginalMesh();
+	size_t verSize = mesh->n_vertices();
+	double * vertices = new double[verSize * 2 * 3];
+	int cur = 0;
+	for(auto it = mesh->vertices_begin(); it != mesh->vertices_end(); it++){
+		const double* p = mesh->point(*it).values_;
+		const double* n = mesh->normal(*it).values_;		
+		for(int i = 0; i < 3; i++)
+			vertices[cur++] = p[i];
+		for(int i = 0; i < 3; i++)
+			vertices[cur++] = n[i];
+	}
+	glGenVertexArrays(1, &mVAO);
+	glBindVertexArray(mVAO);
+
+	glGenBuffers(1, &mVBO);
+	glBindBuffer(GL_ARRAY_BUFFER, mVBO);
+	glBufferData(GL_ARRAY_BUFFER, 6 * sizeof(double) * verSize, vertices, GL_DYNAMIC_DRAW);
+// 	glBufferSubData(GL_ARRAY_BUFFER, 0, 3 * sizeof(double) * verSize, mesh->points());
+// 	glBufferSubData(GL_ARRAY_BUFFER, 3 * sizeof(double) * verSize, 3 * sizeof(double) * verSize, mesh->vertex_normals());
+
+	int vi = 0;
+	GLuint* indices_array  = new GLuint[mesh->n_faces() * 3];
+	std::for_each(mesh->faces_begin(), mesh->faces_end(), [&](const Mesh::FaceHandle f_it){
+		int t = 0;
+		for (auto face_v_it = mesh->cfv_iter(f_it); face_v_it.is_valid(); ++face_v_it){
+			t++;
+			indices_array[vi++] = face_v_it->idx();
+		}
+		assert(t == 3, "not triangle face");
+	});	
+
+	glGenBuffers(1, &mEBO);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mEBO);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint) * 3 * mesh->n_faces(), indices_array, GL_STATIC_DRAW);
+
+	// Position attribute
+	glVertexAttribPointer(0, 3, GL_DOUBLE, GL_FALSE, 3 * sizeof(GLdouble), (GLvoid*)0);
+	glEnableVertexAttribArray(0);
+	// Normal attribute
+	glVertexAttribPointer(1, 3, GL_DOUBLE, GL_FALSE, 3 * sizeof(GLdouble), (GLvoid*)(3 * sizeof(GLdouble)));
+	glEnableVertexAttribArray(1);
+
+	glBindVertexArray(0);
+	delete [] vertices;
 }

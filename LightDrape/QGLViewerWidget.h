@@ -164,6 +164,10 @@ protected:
   virtual void keyPressEvent( QKeyEvent* );
   // translate the scene and update modelview matrix
   void translate(const OpenMesh::Vec3f& _trans);
+
+protected:
+	GLdouble    projection_matrix_[16],
+		modelview_matrix_[16];
 private:
    
   // updates projection matrix
@@ -177,8 +181,6 @@ private:
   OpenMesh::Vec3f  center_;
   float            radius_;
 	      
-  GLdouble    projection_matrix_[16],
-              modelview_matrix_[16];
 
 
   // popup menu for draw mode selection
