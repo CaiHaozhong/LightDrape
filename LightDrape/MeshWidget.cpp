@@ -9,7 +9,9 @@
 #include <QImage>
 #include "MeshMaterial.h"
 #include "shaderprogram.h"
+#include "VisibleMesh.h"
 using namespace std;
+#define BUFFER_OFFSET(bytes) ((GLubyte*)NULL + bytes)
 
 MeshWidget::MeshWidget(void)
 {
@@ -27,7 +29,10 @@ void MeshWidget::draw_scene( const std::string& _draw_mode )
 {
 	glEnable(GL_LIGHTING);
 	glShadeModel(GL_SMOOTH);
-
+	for(size_t i = 0; i < mVisbleMeshes.size(); i++){
+		mVisbleMeshes[i]->draw();
+	}
+	return;
 /* --------------------------- Draw Human ----------------------------------*/
 // 	/* 顶点数据 */
 // 	glBindBuffer(GL_ARRAY_BUFFER,mHumanVBO[VBO_VERTEX]);
@@ -45,28 +50,33 @@ void MeshWidget::draw_scene( const std::string& _draw_mode )
 
 /* --------------------------- Draw Garment ----------------------------------*/
 	/* 顶点数据 */
-	glBindBuffer(GL_ARRAY_BUFFER, mGarmentVBO[VBO_VERTEX]);
+// 	glBindBuffer(GL_ARRAY_BUFFER, mGarmentVBO[VBO_VERTEX]);
+// 	glEnableClientState(GL_VERTEX_ARRAY);
+// 	glVertexPointer(3,GL_DOUBLE,0,0);
+// 
+// 	/* 法向量 */
+// 	glBindBuffer(GL_ARRAY_BUFFER, mGarmentVBO[VBO_NORMAL]);
+// 	glEnableClientState(GL_NORMAL_ARRAY);
+// 	glNormalPointer(GL_DOUBLE,0, 0);
+// 
+// 	glClientActiveTexture(GL_TEXTURE0);
+// 	glBindBuffer(GL_ARRAY_BUFFER, mGarmentVBO[VBO_TEXCOORD]);
+// 	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+// 	glTexCoordPointer(2, GL_DOUBLE, 0, 0);
+// 	glEnable(GL_TEXTURE_2D);
+// 	glBindTexture(GL_TEXTURE_2D, mTexture);
+// 
+// 	check_gl_error();
 	glEnableClientState(GL_VERTEX_ARRAY);
-	glVertexPointer(3,GL_DOUBLE,0,0);
-
-	/* 法向量 */
-	glBindBuffer(GL_ARRAY_BUFFER, mGarmentVBO[VBO_NORMAL]);
 	glEnableClientState(GL_NORMAL_ARRAY);
-	glNormalPointer(GL_DOUBLE,0, 0);
-
-	glClientActiveTexture(GL_TEXTURE0);
-	glBindBuffer(GL_ARRAY_BUFFER, mGarmentVBO[VBO_TEXCOORD]);
 	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-	glTexCoordPointer(2, GL_DOUBLE, 0, 0);
-	glEnable(GL_TEXTURE_2D);
 	glBindTexture(GL_TEXTURE_2D, mTexture);
-
-	check_gl_error();
 	/* 下标 */
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mGarmentVBO[VBO_INDEX]);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mEBO);
 	glDrawElements(GL_TRIANGLES, mGarment->getOriginalMesh()->n_faces() * 3, GL_UNSIGNED_INT, 0);
 	check_gl_error();
 	glDisableClientState(GL_VERTEX_ARRAY);
+	glDisableClientState(GL_NORMAL_ARRAY);
 	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 }
 
@@ -80,7 +90,7 @@ void MeshWidget::prepare( Mesh& _mesh , GLuint* _vbo)
 			t++;
 			indices_array[vi++] = face_v_it->idx();
 		}
-		assert(t == 3, "not triangle face");
+		assert(t == 3); //not triangle face
 	});	
 
 	/* Texture Coord */
@@ -147,25 +157,25 @@ void MeshWidget::onEndInitializeGL()
 	initGlew();
 	//prepareGLSL();
 	sendDataToGPU();
-//	Human_ humanSp = mHuman.lock();
+	Human_ humanSp = mHuman.lock();
 	Vec3d center = (mGarment->getMax() + mGarment->getMin()) * 0.5;
 	double radius = (mGarment->getMax() - mGarment->getMin()).length() * 0.5;
 	set_scene_pos(center, radius);
 //	prepare(*(humanSp->getOriginalMesh()), mHumanVBO);	
 // 	prepare(*(mGarment->getOriginalMesh()), mGarmentVBO);
-// 	humanSp->addGarmentSimulationCallBack(std::shared_ptr<MeshWidget>(this));
-// 	humanSp->dress(mGarment);
-// 	mTimerID = this->startTimer(4);
+ 	humanSp->addGarmentSimulationCallBack(std::shared_ptr<MeshWidget>(this));
+ 	humanSp->dress(mGarment);
+ 	mTimerID = this->startTimer(4);
 }
 
 void MeshWidget::setHuman( Human_ human )
 {
-	mHuman = human;
+	mHuman = human;	
 }
 
 void MeshWidget::setGarment( Garment_ garment )
 {
-	mGarment = garment;
+	mGarment = garment;	
 }
 
 void MeshWidget::onSimulateBegin()
@@ -188,21 +198,22 @@ void MeshWidget::timerEvent( QTimerEvent *event )
 		size_t frameSize = mMeshFramePool->getFrameCount();
 		MeshFrame_ curFrame = mMeshFramePool->getFrame((mCurFrameIndex++)%frameSize);
 		Mesh_ garMesh = mGarment->getOriginalMesh();
-		std::vector<Vec3d>& vers = curFrame->getVertices();		
-		size_t verSize = vers.size();
-		size_t i = 0;
-		for(auto it = garMesh->vertices_begin(); it != garMesh->vertices_end(); it++){
-			Vec3d& p = garMesh->point(*it);
-			p = vers[i++];
-		}
-		garMesh->request_face_normals();
-		garMesh->update_normals();
-		garMesh->release_face_normals();
-		/* 指定顶点数据的offset */
-		glBindBuffer(GL_ARRAY_BUFFER,mGarmentVBO[VBO_VERTEX]);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(double) * 3 * garMesh->n_vertices() * 1 , garMesh->points(), GL_DYNAMIC_DRAW);
-		glBindBuffer(GL_ARRAY_BUFFER,mGarmentVBO[VBO_NORMAL]);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(double) * 3 * garMesh->n_vertices() * 1 , garMesh->vertex_normals(), GL_DYNAMIC_DRAW);
+		std::vector<Vec3d>& vers = curFrame->getVertices();
+		mVisibleGarment->updateVertices(vers);
+// 		size_t verSize = vers.size();
+// 		size_t i = 0;
+// 		for(auto it = garMesh->vertices_begin(); it != garMesh->vertices_end(); it++){
+// 			Vec3d& p = garMesh->point(*it);
+// 			p = vers[i++];
+// 		}
+// 		garMesh->request_face_normals();
+// 		garMesh->update_normals();
+// 		garMesh->release_face_normals();
+// 		/* 指定顶点数据的offset */
+// 		glBindBuffer(GL_ARRAY_BUFFER,mGarmentVBO[VBO_VERTEX]);
+// 		glBufferData(GL_ARRAY_BUFFER, sizeof(double) * 3 * garMesh->n_vertices() * 1 , garMesh->points(), GL_DYNAMIC_DRAW);
+// 		glBindBuffer(GL_ARRAY_BUFFER,mGarmentVBO[VBO_NORMAL]);
+// 		glBufferData(GL_ARRAY_BUFFER, sizeof(double) * 3 * garMesh->n_vertices() * 1 , garMesh->vertex_normals(), GL_DYNAMIC_DRAW);
 		update();
 	}
 }
@@ -282,6 +293,12 @@ void MeshWidget::paintGL()
 
 void MeshWidget::sendDataToGPU()
 {
+	mVisibleGarment = std::make_shared<VisibleMesh>(mGarment->getOriginalMesh());
+	//mVisibleHuman = std::make_shared<VisibleMesh>(mHuman.lock());
+	mVisbleMeshes.push_back(mVisibleGarment);
+	//mVisbleMeshes.push_back(mVisibleHuman);
+
+	return ;
 	Mesh_ mesh = mGarment->getOriginalMesh();
 	size_t verSize = mesh->n_vertices();
 	double * vertices = new double[verSize * 2 * 3];
@@ -297,13 +314,42 @@ void MeshWidget::sendDataToGPU()
 	//glGenVertexArrays(1, &mVAO);
 	//glBindVertexArray(mVAO);
 
+	/* Vertex and Normal */
 	glGenBuffers(1, &mVBO);
 	glBindBuffer(GL_ARRAY_BUFFER, mVBO);
 	glBufferData(GL_ARRAY_BUFFER, 6 * sizeof(double) * verSize, vertices, GL_DYNAMIC_DRAW);
+	glVertexPointer(3, GL_DOUBLE, 6 * sizeof(double), BUFFER_OFFSET(0));
+	glNormalPointer(GL_DOUBLE, 6 * sizeof(double), BUFFER_OFFSET(3 * sizeof(double)));	
 // 	glBufferSubData(GL_ARRAY_BUFFER, 0, 3 * sizeof(double) * verSize, mesh->points());
 // 	glBufferSubData(GL_ARRAY_BUFFER, 3 * sizeof(double) * verSize, 3 * sizeof(double) * verSize, mesh->vertex_normals());
-
+// 	
+	/* Texture Coord */
 	int vi = 0;
+	Mesh::TexCoord2D* texcoords = new Mesh::TexCoord2D[mesh->n_vertices()];
+	for(auto it = mesh->vertices_begin(); it != mesh->vertices_end(); it++){
+		Mesh::TexCoord2D t = mesh->texcoord2D(*it);
+		texcoords[vi++] = t;
+	}
+	glGenBuffers(1, &mTexVBO);
+	glBindBuffer(GL_ARRAY_BUFFER, mTexVBO);
+	glBufferData(GL_ARRAY_BUFFER, 2 * sizeof(double) * verSize, texcoords, GL_STATIC_DRAW);
+	glTexCoordPointer(2, GL_DOUBLE, 0, BUFFER_OFFSET(0));
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+	/* Texture data */
+	glEnable(GL_TEXTURE_2D);
+	glGenTextures(1, &mTexture);
+	glBindTexture(GL_TEXTURE_2D, mTexture);
+	QImage tex, buf;
+	MeshMaterial_ material = mesh->getMeshMaterial();
+	bool suc = buf.load(material->map_Ka.c_str());
+	tex = this->convertToGLFormat(buf);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, tex.width(), tex.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE, tex.bits());
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+	glBindTexture(GL_TEXTURE_2D, 0);
+
+	vi = 0;
 	GLuint* indices_array  = new GLuint[mesh->n_faces() * 3];
 	std::for_each(mesh->faces_begin(), mesh->faces_end(), [&](const Mesh::FaceHandle f_it){
 		int t = 0;
@@ -311,20 +357,22 @@ void MeshWidget::sendDataToGPU()
 			t++;
 			indices_array[vi++] = face_v_it->idx();
 		}
-		assert(t == 3, "not triangle face");
+		assert(t == 3); //not triangle face
 	});	
 
 	glGenBuffers(1, &mEBO);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mEBO);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint) * 3 * mesh->n_faces(), indices_array, GL_STATIC_DRAW);
-
-	// Position attribute
-	glVertexAttribPointer(0, 3, GL_DOUBLE, GL_FALSE, 3 * sizeof(GLdouble), (GLvoid*)0);
-	glEnableVertexAttribArray(0);
-	// Normal attribute
-	glVertexAttribPointer(1, 3, GL_DOUBLE, GL_FALSE, 3 * sizeof(GLdouble), (GLvoid*)(3 * sizeof(GLdouble)));
-	glEnableVertexAttribArray(1);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+// 	// Position attribute
+// 	glVertexAttribPointer(0, 3, GL_DOUBLE, GL_FALSE, 3 * sizeof(GLdouble), (GLvoid*)0);
+// 	glEnableVertexAttribArray(0);
+// 	// Normal attribute
+// 	glVertexAttribPointer(1, 3, GL_DOUBLE, GL_FALSE, 3 * sizeof(GLdouble), (GLvoid*)(3 * sizeof(GLdouble)));
+// 	glEnableVertexAttribArray(1);
 
 	//glBindVertexArray(0);
 	delete [] vertices;
+	delete [] indices_array;
+	delete [] texcoords;
 }

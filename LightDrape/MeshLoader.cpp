@@ -22,7 +22,7 @@ void MeshLoader::load()
 {
 	mMsgQueue->push(std::make_shared<Message>(BEGIN_LOAD));
 
-//	loadHuman();
+	loadHuman();
 
 	loadGarments();
 
@@ -79,7 +79,7 @@ Mesh_ MeshLoader::loadMesh(std::string path, std::string name)
 		if(mtl != nullptr){
 			ret->setMeshMaterial(mtl);
 		}
-		bool ht = ret->has_vertex_texcoords2D();
+//		bool ht = ret->has_vertex_texcoords2D();
 	}	
 	else{
 		std::string err = "fail to read ";
