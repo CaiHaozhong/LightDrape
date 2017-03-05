@@ -145,7 +145,7 @@ void MeshWidget::initGlew()
 void MeshWidget::onEndInitializeGL()
 {
 	initGlew();
-	prepareGLSL();
+	//prepareGLSL();
 	sendDataToGPU();
 //	Human_ humanSp = mHuman.lock();
 	Vec3d center = (mGarment->getMax() + mGarment->getMin()) * 0.5;
@@ -220,7 +220,8 @@ void MeshWidget::prepareGLSL()
 // 
 // 	//read whole file into stringstream buffer
 // 	std::stringstream buffer;
-// 	buffer << f.rdbuf();
+// 	buffer << f.rdbuf();
+
 // 
 // 	std::string vertex_shader_code = buffer.str();
 // 	f.close();
@@ -230,11 +231,13 @@ void MeshWidget::prepareGLSL()
 // 	f.open(fra_shader_file.c_str(), std::ios::in | std::ios::binary);
 // 	if(!f.is_open()){
 // 		throw std::runtime_error(std::string("Failed to open file: ") + fra_shader_file);
-// 	}
+// 	}
+
 // 
 // 	//read whole file into stringstream buffer
 // 	std::stringstream buffer2;
-// 	buffer2 << f.rdbuf();
+// 	buffer2 << f.rdbuf();
+
 // 	std::string fragment_shader_code = buffer2.str();
 // 	f.close();
 // /*	std::cout << fragment_shader_code << std::endl;*/
@@ -266,14 +269,15 @@ void MeshWidget::prepareGLSL()
 
 void MeshWidget::paintGL()
 {
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	mShaderProgram->setUniform("ModelViewMatrix", modelview_matrix_);
-	mShaderProgram->setUniform("ProjectionMatrix", projection_matrix_);
-	//draw_scene(std::string());
-	glBindVertexArray(mVAO);	
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mEBO);
-	glDrawElements(GL_TRIANGLES, mGarment->getOriginalMesh()->n_faces() * 3, GL_UNSIGNED_INT, 0);
-	glBindVertexArray(0);
+	QGLViewerWidget::paintGL();
+// 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+// 	mShaderProgram->setUniform("ModelViewMatrix", modelview_matrix_);
+// 	mShaderProgram->setUniform("ProjectionMatrix", projection_matrix_);
+// 	//draw_scene(std::string());
+// 	glBindVertexArray(mVAO);	
+// 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mEBO);
+// 	glDrawElements(GL_TRIANGLES, mGarment->getOriginalMesh()->n_faces() * 3, GL_UNSIGNED_INT, 0);
+// 	glBindVertexArray(0);
 }
 
 void MeshWidget::sendDataToGPU()
@@ -290,8 +294,8 @@ void MeshWidget::sendDataToGPU()
 		for(int i = 0; i < 3; i++)
 			vertices[cur++] = n[i];
 	}
-	glGenVertexArrays(1, &mVAO);
-	glBindVertexArray(mVAO);
+	//glGenVertexArrays(1, &mVAO);
+	//glBindVertexArray(mVAO);
 
 	glGenBuffers(1, &mVBO);
 	glBindBuffer(GL_ARRAY_BUFFER, mVBO);
@@ -321,6 +325,6 @@ void MeshWidget::sendDataToGPU()
 	glVertexAttribPointer(1, 3, GL_DOUBLE, GL_FALSE, 3 * sizeof(GLdouble), (GLvoid*)(3 * sizeof(GLdouble)));
 	glEnableVertexAttribArray(1);
 
-	glBindVertexArray(0);
+	//glBindVertexArray(0);
 	delete [] vertices;
 }
