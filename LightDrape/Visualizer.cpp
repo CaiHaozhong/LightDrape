@@ -363,7 +363,7 @@ void Visualizer::prepare( Mesh& _mesh, unsigned int* _vbo)
 			t++;
 			indices_array[vi++] = face_v_it->idx();
 		}
-		assert(t == 3, "not triangle face");
+		assert(t == 3); //not a triangle face
 	});		
 
 	check_gl_error();

@@ -35,10 +35,6 @@ private:
 
 	void sendDataToGPU();
 
-	void prepare(Mesh& mesh, GLuint* _vbo);
-
-	void prepareGLSL();
-
 	void initGlew();
 
 	/* Override */
@@ -57,20 +53,6 @@ private:
 	Garment_ mGarment;
 	VisibleMesh_ mVisibleHuman, mVisibleGarment;
 	std::vector<VisibleMesh_> mVisbleMeshes;
-	enum{
-		VBO_VERTEX,
-		VBO_NORMAL,
-		VBO_TEXCOORD,
-		VBO_INDEX,
-		VBO_SIZE
-	};
-	GLuint mHumanVBO[VBO_SIZE];
-	GLuint mGarmentVBO[VBO_SIZE];
-	GLuint mTexture;	
-	GLuint mVAO;
-	GLuint mVBO;
-	GLuint mEBO;
-	GLuint mTexVBO;
 	MeshFramePool_ mMeshFramePool;
 	int mTimerID;
 	int mCurFrameIndex;
