@@ -20,6 +20,8 @@ DoubleProperty_ GeodesicResolverCached::resolveGeo( WatertightMesh_ mesh )
 	}
 	else{
 		DoubleProperty_ ret = GeodesicResolver::resolveGeo(mesh);
+		//DoubleProperty_ ret = agd(mesh);
+		//DoubleProperty_ ret = hei(mesh);
 		cachedGeo(ret, mesh->n_vertices(), getGeoFileName(mesh));
 		PRINTLN("Cached geo success.");
 		return ret;
@@ -76,5 +78,43 @@ DoubleProperty_ GeodesicResolverCached::readCached( Mesh_ mesh, std::string file
 			mMinDis = dis;
 		}
 	}
+	return ret;
+}
+
+DoubleProperty_ GeodesicResolverCached::agd( WatertightMesh_ mesh )
+{
+	DoubleProperty_ ret = smartNew(DoubleProperty);
+	mesh->registerProperty(ret);
+	mesh->setVertexPropertyGeoDis(ret);
+	GeodesicAdapter geodesicAdapter(*mesh);
+	size_t cur = 0;
+	size_t vCount = mesh->n_vertices();
+	double percent = 0;
+	for(Mesh::VertexIter it = mesh->vertices_begin(); it != mesh->vertices_end(); it++){
+		cur += 1;
+		size_t s = (*it).idx();
+		ret->set(s, geodesicAdapter.averageGeodesicDisFromSource(s));
+		double curP = (double)cur / vCount * 100;
+		std::cout << cur << " ";
+		if(curP - percent >= 2){
+			std::cout << "Percent: " << curP << "%\n";
+			percent = curP;
+		}		
+	}
+	/*normalize(ret, vCount);*/
+	return ret;
+}
+
+DoubleProperty_ GeodesicResolverCached::hei( WatertightMesh_ mesh )
+{
+	DoubleProperty_ ret = smartNew(DoubleProperty);
+	mesh->registerProperty(ret);
+	mesh->setVertexPropertyGeoDis(ret);
+	size_t vCount = mesh->n_vertices();
+	for(Mesh::VertexIter it = mesh->vertices_begin(); it != mesh->vertices_end(); it++){		
+		size_t s = (*it).idx();
+		ret->set(s, mesh->point(*it).values_[1]);
+	}
+	/*normalize(ret, vCount);*/
 	return ret;
 }

@@ -6,6 +6,8 @@
 #include <unordered_set>
 class GeodesicResolver;
 S_PTR(GeodesicResolver);
+class MeshSegmentListener;
+S_PTR(MeshSegmentListener);
 class MeshSegmenter : public std::enable_shared_from_this<MeshSegmenter>
 {
 private:
@@ -14,9 +16,10 @@ private:
 	GeodesicResolver_ mGeodesicResolver;	
 	/* Level Set之间的间隔 */
 	double mGranularity;
-
+	
 protected:
 	Segment_ mSegment;
+	std::vector<MeshSegmentListener_> mListeners;
 public:
 	MeshSegmenter(void);
 	MeshSegmenter(WatertightMesh_ mesh);
@@ -36,6 +39,10 @@ public:
 	size_t getLevelSetIndex(LevelSet_ ls);
 
 	double getGranularity() const;
+
+	void addSegmentListener(MeshSegmentListener_ listener);
+
+	void addSegmentListener(const std::vector<MeshSegmentListener_>& listeners);
 private:
 	/* 根据网格边的长度决定Level Set的间隔 
 	 * 间隔为网格所有边的平均长度的一半

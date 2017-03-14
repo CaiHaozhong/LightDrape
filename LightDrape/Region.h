@@ -51,11 +51,17 @@ private:
 
 	/* 该Region的骨骼，由LevelCircle得到 */
 	RegionSkeleton_ mSkeleton;
+
+	/* 该Region的颜色 */
+	Vec3uc mColor;
 public:
 	Region(void);
 	~Region(void);
 
 	Region(WatertightMesh_ mesh);
+
+	void setColor(const Vec3uc& color);
+	Vec3uc getColor() const;
 
 	void setMesh(WatertightMesh_ mesh);
 	WatertightMesh_ getMesh();

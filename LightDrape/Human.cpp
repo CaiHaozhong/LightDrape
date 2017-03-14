@@ -10,6 +10,7 @@
 #include "GarmentPenetrationResolver.h"
 #include "GarmentPhysicalSimulator.h"
 #include "FrameToOBJFileWriter.h"
+#include "MeshSegmentListener.h"
 #include <thread>
 Human::~Human(void)
 {
@@ -24,32 +25,35 @@ Human::Human( Mesh_ mesh ) :WatertightMesh(mesh)
 size_t Human::getGeodesicSource()
 {
 	/* TO DO */
+	//return 12478;
 	return WatertightMesh::getGeodesicSource();
 }
 
 void Human::dress( Garment_ garment )
 {
 // 	/* 先各自进行骨骼提取 */
-// 	MeshSkeletonization_ skeletonizer = smartNew(MeshSkeletonizationCached);
-// 	PRINTLN("Skeletonize human...");
-// 	skeletonizer->skeletonize(shared_from_this());
-// 	PRINTLN("Skeletonize human end.");
-// 	PRINTLN("Skeletonize garment...");
-// 	skeletonizer->skeletonize(garment);
-// 	PRINTLN("Skeletonize garment end.");
-// 	this->dumpSkeleton(getName());
-// 	garment->dumpSkeleton(garment->getName());
-// 
-// 	/* 各自进行分割 */
-// 	MeshSegmenter_ humanSegmenter = std::make_shared<HumanSegmenter>(shared_from_this());
-// 	PRINTLN("Segment human...");
-// 	humanSegmenter->segment();
-// 	PRINTLN("Segment human end.");
-// 	MeshSegmenter_ clothSegmenter = std::make_shared<ClothSegmenter>(garment);
-// 	PRINTLN("Segment garment...");
-// 	clothSegmenter->segment();
-// 	PRINTLN("Segment garment end.");
-// 	
+	MeshSkeletonization_ skeletonizer = smartNew(MeshSkeletonizationCached);
+	PRINTLN("Skeletonize human...");
+	skeletonizer->skeletonize(shared_from_this());
+	PRINTLN("Skeletonize human end.");
+	PRINTLN("Skeletonize garment...");
+	skeletonizer->skeletonize(garment);
+	PRINTLN("Skeletonize garment end.");
+	this->dumpSkeleton(getName());
+	garment->dumpSkeleton(garment->getName());
+
+	/* 各自进行分割 */
+	MeshSegmenter_ humanSegmenter = std::make_shared<HumanSegmenter>(shared_from_this());
+	humanSegmenter->addSegmentListener(mMeshSegmentListeners);
+	PRINTLN("Segment human...");
+	humanSegmenter->segment();
+	PRINTLN("Segment human end.");
+	MeshSegmenter_ clothSegmenter = std::make_shared<ClothSegmenter>(garment);
+	clothSegmenter->addSegmentListener(mMeshSegmentListeners);
+	PRINTLN("Segment garment...");
+	clothSegmenter->segment();
+	PRINTLN("Segment garment end.");
+ 	
 // 	GarmentFitter_ fitter = std::make_shared<GarmentFitter>(garment);
 // 	fitter->setMeshDeformer(smartNew(LaplacianGlobalDeformer));
 // 	PRINTLN("Fitting garment...");
@@ -70,8 +74,8 @@ void Human::dress( Garment_ garment )
 // 	else{
 // 		PRINTLN("Resolve Penetration fail.");
 // 	}
-	std::thread t(&Human::doSimulate, this, garment);
-	t.detach();
+// 	std::thread t(&Human::doSimulate, this, garment);
+// 	t.detach();
 }
 
 Vec3d Human::getAlignPoint()
@@ -180,4 +184,9 @@ void Human::doSimulate(Garment_ garment)
 void Human::addGarmentSimulationCallBack( GarmentSimulationCallBack_ callBack )
 {
 	mSimulator->addGarmentSimulationCallBack(callBack);
+}
+
+void Human::addMeshSegmentListener( MeshSegmentListener_ listener )
+{
+	mMeshSegmentListeners.push_back(listener);
 }

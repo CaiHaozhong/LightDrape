@@ -61,7 +61,16 @@ void VisibleMesh::initWithMesh( Mesh_ mesh )
 	else{
 		glDeleteBuffers(1, &mVBOs[TEXCOORD]);
 	}
-
+	/* Color */
+	if(mMesh->has_vertex_colors()){
+		glBindBuffer(GL_ARRAY_BUFFER, mVBOs[COLOR]);
+		glBufferData(GL_ARRAY_BUFFER, 3 * sizeof(unsigned char) * mVerCount, mMesh->vertex_colors(), GL_STATIC_DRAW);
+		glColorPointer(3, GL_UNSIGNED_BYTE, 0, BUFFER_OFFSET(0));
+		glEnableClientState(GL_COLOR_ARRAY);
+	}
+	else{
+		glDeleteBuffers(1, &mVBOs[COLOR]);
+	}
 	/* Index */
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mVBOs[ELEMENTS]);
 	int vi = 0;
@@ -119,7 +128,11 @@ bool VisibleMesh::loadTexture()
 {		
 	QImage buf;
 	MeshMaterial_ material = mMesh->getMeshMaterial();
-	bool suc = buf.load(material->map_Ka.c_str());
+	std::string file = material->map_Ka;
+	bool suc = false;
+	if(file != ""){
+		suc = buf.load(material->map_Ka.c_str());
+	}	
 	if(!suc)
 		return false;
 	glGenTextures(1, &mTextureId);

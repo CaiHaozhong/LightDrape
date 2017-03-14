@@ -8,6 +8,8 @@ class GarmentSimulationCallBack;
 S_PTR(GarmentSimulationCallBack);
 class GarmentPhysicalSimulator;
 S_PTR(GarmentPhysicalSimulator);
+class MeshSegmentListener;
+S_PTR(MeshSegmentListener);
 class Human :
 	public WatertightMesh, public std::enable_shared_from_this<Human>
 {
@@ -34,8 +36,11 @@ public:
 	void doSimulate(Garment_ garment);
 
 	void addGarmentSimulationCallBack(GarmentSimulationCallBack_ callBack);
+
+	void addMeshSegmentListener(MeshSegmentListener_ listener);
 private:
 	HumanFeature_ mFeature;
 	GarmentPhysicalSimulator_ mSimulator;
+	std::vector<MeshSegmentListener_> mMeshSegmentListeners;
 };
 S_PTR(Human);
