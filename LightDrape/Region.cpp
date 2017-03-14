@@ -297,6 +297,16 @@ Vec3d Region::computeCenter( std::vector<size_t>& vers, Mesh_ mesh )
 	return ret / vers.size();
 }
 
+void Region::setColor( const Vec3uc& color )
+{
+	mColor = color;
+}
+
+Vec3uc Region::getColor() const
+{
+	return mColor;
+}
+
 
 void RegionSkeleton::push_front( LevelCircle_ lc )
 {

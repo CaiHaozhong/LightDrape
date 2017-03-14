@@ -196,7 +196,7 @@ QGLViewerWidget::initializeGL()
   glEnable( GL_DEPTH_TEST );
 
   // Material
-  setDefaultMaterial();
+  //setDefaultMaterial();
   
   // Lighting
   glLoadIdentity();

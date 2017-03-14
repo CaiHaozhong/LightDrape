@@ -12,6 +12,7 @@
 #include "GarmentPenetrationResolver.h"
 #include "GarmentPhysicalSimulator.h"
 #include "FrameToOBJFileWriter.h"
+#include "MeshSegmentListener.h"
 #include <thread>
 Human::~Human(void)
 {
@@ -26,6 +27,7 @@ Human::Human( Mesh_ mesh ) :WatertightMesh(mesh)
 size_t Human::getGeodesicSource()
 {
 	/* TO DO */
+	//return 12478;
 	return WatertightMesh::getGeodesicSource();
 }
 
@@ -45,22 +47,25 @@ void Human::dress( Garment_ garment )
 
 	/* 各自进行分割 */
 	MeshSegmenter_ humanSegmenter = std::make_shared<HumanSegmenter>(shared_from_this());
+	humanSegmenter->addSegmentListener(mMeshSegmentListeners);
 	PRINTLN("Segment human...");
 	humanSegmenter->segment();
 	PRINTLN("Segment human end.");
-	MeshSegmenter_ clothSegmenter = std::make_shared<TrousersSegmenter>(garment);
+	MeshSegmenter_ clothSegmenter = std::make_shared<ClothSegmenter>(garment);
+	clothSegmenter->addSegmentListener(mMeshSegmentListeners);
 	PRINTLN("Segment garment...");
 	clothSegmenter->segment();
 	PRINTLN("Segment garment end.");
-	
-	GarmentFitter_ fitter = std::make_shared<GarmentFitter>(garment);
-	fitter->setMeshDeformer(smartNew(LaplacianGlobalDeformer));
-	PRINTLN("Fitting garment...");
-	fitter->fit(shared_from_this());
-	PRINTLN("Fitting garment end.");
+ 	
+// 	GarmentFitter_ fitter = std::make_shared<GarmentFitter>(garment);
+// 	fitter->setMeshDeformer(smartNew(LaplacianGlobalDeformer));
+// 	PRINTLN("Fitting garment...");
+// 	fitter->fit(shared_from_this());
+// 	PRINTLN("Fitting garment end.");
+// 
+// 	/* 修改原始网格 */
+// 	garment->alterOriginalMesh();
 
-	/* 修改原始网格 */
-	garment->alterOriginalMesh();
 
 	/* 穿透调整 */
 // 	GarmentPenetrationResolver_ penetrationResolver = smartNew(GarmentPenetrationResolver);
@@ -183,4 +188,9 @@ void Human::doSimulate(Garment_ garment)
 void Human::addGarmentSimulationCallBack( GarmentSimulationCallBack_ callBack )
 {
 	mSimulator->addGarmentSimulationCallBack(callBack);
+}
+
+void Human::addMeshSegmentListener( MeshSegmentListener_ listener )
+{
+	mMeshSegmentListeners.push_back(listener);
 }

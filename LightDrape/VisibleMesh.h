@@ -12,6 +12,7 @@ private:
 		VERTEX,
 		NORMAL,
 		TEXCOORD,
+		COLOR,
 		ELEMENTS,
 		NUMS_OF_VBO
 	} MESH_VBO;

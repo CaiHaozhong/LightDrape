@@ -3,6 +3,7 @@
 #include "Config.h"
 #include "LeftTorseRightRefiner.h"
 #include "LeftTorseRightSimpleRefiner.h"
+#include "MeshSegmentListener.h"
 
 HumanSegmenter::~HumanSegmenter(void)
 {
@@ -35,6 +36,14 @@ void HumanSegmenter::onDifferentLevelSet( size_t seq, LevelSet_ levelSet )
 		handleTorso(levelSet);
 	}
 	else if(seq == 3){
+		if(levelSet->getCount() == 1){
+			handleTorso(levelSet);
+		}
+		else if(levelSet->getCount() == 2){
+			handleLegs(levelSet);
+		}		
+	}
+	else{
 		handleLegs(levelSet);
 	}
 	mCurLevelSet++;
@@ -60,6 +69,14 @@ Segment_ HumanSegmenter::createSegment()
 	seg->addRegionRaw(Segment::BODY_RIGHT_HAND, mRightHand);
 	seg->addRegionRaw(Segment::BODY_LEFT_LEG, mLeftLeg);
 	seg->addRegionRaw(Segment::BODY_RIGHT_LEG, mRightLeg);
+
+	mLeftHand->setColor(Vec3uc(200, 0, 0));
+	mRightHand->setColor(Vec3uc(0, 200, 0));
+	mLeftLeg->setColor(Vec3uc(200, 200, 0));
+	mRightLeg->setColor(Vec3uc(0, 200, 200));
+	mTorso->setColor(Vec3uc(100, 100, 100));
+	mHead->setColor(Vec3uc(100, 100, 100));
+
 	return seg;
 }
 
@@ -91,6 +108,10 @@ void HumanSegmenter::handleHead( LevelSet_ levelSet )
 
 void HumanSegmenter::handleTorso( LevelSet_ levelSet )
 {
+	if(levelSet->getCount() == 1){
+		mTorso->addCircle(levelSet->getCircle(0));
+		return;
+	}
 	if(levelSet->getCount() != 3){
 		PRINTLN("Human Segment Error: incorrect categories of torso");
 		return ;
@@ -224,7 +245,10 @@ double HumanSegmenter::maxRadius( LevelCircle_ lc )
 void HumanSegmenter::onFinishSegmentHook()
 {
 	PRINTLN("End HumanSegment");
-	
+	for(auto it = mListeners.begin(); it != mListeners.end(); it++){
+		(*it)->onEndCoarseSegment(mSegment);
+	}
+
 	/* Output Segments */
 	char* outSegNameHuman[] = {"leftHand","rightHand","leftLeg","rightLeg","head","torso"};
 	Config_ config = Config::getInstance();
@@ -262,7 +286,7 @@ void HumanSegmenter::refineSegment()
 
 void HumanSegmenter::refineHands()
 {
-	LeftTorseRightRefiner_ refiner = std::make_shared<LeftTorseRightSimpleRefiner>(
+	LeftTorseRightRefiner_ refiner = std::make_shared<LeftTorseRightRefiner>(
 		shared_from_this(),
 		mLeftHand,
 		mTorso,

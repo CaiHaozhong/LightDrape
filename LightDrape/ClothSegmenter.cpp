@@ -3,6 +3,7 @@
 #include "Config.h"
 #include "LeftTorseRightRefiner.h"
 #include "LeftTorseRightSimpleRefiner.h"
+#include "MeshSegmentListener.h"
 
 ClothSegmenter::~ClothSegmenter(void)
 {
@@ -112,6 +113,10 @@ Segment_ ClothSegmenter::createSegment()
 	mClothSegment->addRegion(ClothSegment::CLOTH_TORSO, mTorso);
 	mClothSegment->addRegion(ClothSegment::CLOTH_LEFT_SLEEVE, mLeftSleeve);
 	mClothSegment->addRegion(ClothSegment::CLOTH_RIGHT_SLEEVE, mRightSleeve);				
+
+	mLeftSleeve->setColor(Vec3uc(200, 0, 0));
+	mRightSleeve->setColor(Vec3uc(200, 200, 0));
+	mTorso->setColor(Vec3uc(200, 0, 200));
 	return mClothSegment;
 }
 
@@ -125,6 +130,9 @@ void ClothSegmenter::initClothSegmenter( WatertightMesh_ mesh )
 void ClothSegmenter::onFinishSegmentHook()
 {
 	PRINTLN("End HumanSegment");
+	for(auto it = mListeners.begin(); it != mListeners.end(); it++){
+		(*it)->onEndCoarseSegment(mSegment);
+	}
 
 	/* Output Segments */	
 	Config_ config = Config::getInstance();	
@@ -157,7 +165,7 @@ void ClothSegmenter::onBeginSegmentHook()
 
 void ClothSegmenter::refineSegment()
 {
-	LeftTorseRightRefiner_ refiner = std::make_shared<LeftTorseRightSimpleRefiner>(
+	LeftTorseRightRefiner_ refiner = std::make_shared<LeftTorseRightRefiner>(
 		shared_from_this(),
 		mLeftSleeve,
 		mTorso,

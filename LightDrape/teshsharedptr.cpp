@@ -2,7 +2,6 @@
 #include <iostream>
 #include "Human.h"
 #include "Cloth.h"
-#include "MeshTransformer.h"
 #include "Config.h"
 #include "HumanFeature.h"
 #include "Visualizer.h"
@@ -11,6 +10,7 @@
 #include "MeshWidget.h"
 #include <QMainWindow>
 #include "MeshLoader.h"
+#include "GeodesicResolverCached.h"
 #include <QThread>
 class MyCallBack : public MeshLoader::MeshLoaderListener{
 private:
@@ -34,14 +34,18 @@ public:
 
 	/* 人体模型加载结束 */
 	void onEndLoadHuman(Human_ human){
-		mHuman = human;
+		mHuman = human;		
 		std::cout << "onEndLoadHuman" << std::endl;
 	};
 
 	/* 第i个衣服模型加载结束 */
 	void onEndLoadGarment(int i, Garment_ gar){
 		mGarment = gar;
-		std::cout << "onEndLoadGarment" << std::endl;
+// 		std::cout << "Resolve " << i << std::endl;
+// 		GeodesicResolver_ resolver = smartNew(GeodesicResolverCached);
+// 		std::cout << "End Resolve " << i << std::endl;
+// 		resolver->resolveGeo(gar);
+		std::cout << "onEndLoadGarment" << i <<  std::endl;
 	};
 
 	/* 所有模型加载完毕 */

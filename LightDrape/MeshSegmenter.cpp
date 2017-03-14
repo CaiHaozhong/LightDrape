@@ -2,6 +2,7 @@
 #include "GeodesicResolver.h"
 #include "GeodesicResolverCached.h"
 #include "LevelSetCacher.h"
+#include "MeshSegmentListener.h"
 
 MeshSegmenter::MeshSegmenter(void)
 {
@@ -27,7 +28,7 @@ void MeshSegmenter::init( WatertightMesh_ mesh )
 	decideGranularity();
 	PRINTLN("End compute Geodesic...");
 	PRINTLN("Begin computeLevelSet...");
-	computeLevelSet(true);
+	computeLevelSet();
 	PRINTLN("End computeLevelSet...");
 }
 
@@ -218,6 +219,11 @@ void MeshSegmenter::onFinishCoarseSegment()
 // 		it != regions.end(); it++){
 // 			it->second->expand();
 // 	}
+	/* MeshSegmentListener */
+// 	for(auto it = mListeners.begin(); it != mListeners.end(); it++){
+// 		(*it)->onEndCoarseSegment(mSegment);
+// 	}
+
 }
 
 double MeshSegmenter::getMinDisFromEdge( Mesh::EdgeHandle edge )
@@ -314,3 +320,14 @@ size_t MeshSegmenter::getLevelSetIndex( LevelSet_ ls )
 	return (size_t)(ls->getHeight() / getGranularity() + 0.5) - 1; //+0.5是为了四舍五入
 }
 
+void MeshSegmenter::addSegmentListener( MeshSegmentListener_ listener )
+{
+	mListeners.push_back(listener);
+}
+
+void MeshSegmenter::addSegmentListener(const std::vector<MeshSegmentListener_>& listeners)
+{	
+	for(auto it = listeners.begin(); it != listeners.end(); it++){
+		mListeners.push_back(*it);
+	}
+}

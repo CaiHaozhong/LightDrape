@@ -11,15 +11,14 @@
 #include "MeshMaterial.h"
 #include "shaderprogram.h"
 #include "VisibleMesh.h"
-#include "Config.h"
+#include "Mesher.h"
 using namespace std;
 #define BUFFER_OFFSET(bytes) ((GLubyte*)NULL + bytes)
 
 MeshWidget::MeshWidget(void)
 {
 	mMeshFramePool = nullptr;
-	mCurFrameIndex = 0;
-	mShaderProgram = smartNew(ShaderProgram);
+	mCurFrameIndex = 0;	
 }
 
 
@@ -29,7 +28,7 @@ MeshWidget::~MeshWidget(void)
 
 void MeshWidget::draw_scene( const std::string& _draw_mode )
 {
-	glEnable(GL_LIGHTING);
+	//glEnable(GL_LIGHTING);
 	glShadeModel(GL_SMOOTH);
 	for(size_t i = 0; i < mVisbleMeshes.size(); i++){
 		mVisbleMeshes[i]->draw();
@@ -57,17 +56,18 @@ void MeshWidget::onEndInitializeGL()
 	double radius = (mGarment->getMax() - mGarment->getMin()).length() * 0.5;
 	set_scene_pos(center, radius);
  	humanSp->addGarmentSimulationCallBack(std::shared_ptr<MeshWidget>(this));
+	humanSp->addMeshSegmentListener(std::shared_ptr<MeshWidget>(this));
  	humanSp->dress(mGarment);
-	Config_ config = Config::getInstance();
-	/* Output */
-	bool suc = OpenMesh::IO::write_mesh(*(mGarment->getOriginalMesh()), config->clothOutPath+config->clothInFileNames[0]);
-	if(suc){
-		PRINTLN("write succsss!");
-	}
-	else{
-		PRINTLN("write fail!");
-	}
- 	mTimerID = this->startTimer(4);
+// 	Config_ config = Config::getInstance();
+// 	/* Output */
+// 	bool suc = OpenMesh::IO::write_mesh(*(mGarment->getOriginalMesh()), config->clothOutPath+config->clothInFileNames[0]);
+// 	if(suc){
+// 		PRINTLN("write succsss!");
+// 	}
+// 	else{
+// 		PRINTLN("write fail!");
+// 	}
+// 	mTimerID = this->startTimer(4);
 }
 
 void MeshWidget::setHuman( Human_ human )
@@ -113,8 +113,29 @@ void MeshWidget::paintGL()
 
 void MeshWidget::sendDataToGPU()
 {
-	mVisibleGarment = std::make_shared<VisibleMesh>(mGarment->getOriginalMesh());
-	mVisibleHuman = std::make_shared<VisibleMesh>(mHuman.lock());
-	mVisbleMeshes.push_back(mVisibleGarment);
-	mVisbleMeshes.push_back(mVisibleHuman);
+// 	mVisibleGarment = std::make_shared<VisibleMesh>(mGarment->getOriginalMesh());
+// 	mVisibleHuman = std::make_shared<VisibleMesh>(mHuman.lock());
+// 	mVisbleMeshes.push_back(mVisibleGarment);
+// 	mVisbleMeshes.push_back(mVisibleHuman);
+}
+
+void MeshWidget::onEndCoarseSegment( Segment_ seg )
+{
+	std::vector< std::pair<int, Region_> >& regions = seg->getRegionsRaw();
+	for(std::vector< std::pair<int, Region_> >::iterator it = regions.begin();
+		it != regions.end(); it++){
+			Region_ reg = it->second;
+			Mesher mesher(reg);
+			Mesh_ m = mesher.getMesh();
+			m->request_vertex_normals();
+			m->request_face_normals();
+			m->update_normals();
+			m->release_face_normals();
+			m->request_vertex_colors();
+			Vec3uc regColor = reg->getColor();
+			for(auto v_it = m->vertices_begin(); v_it != m->vertices_end(); v_it++){
+				m->set_color(*v_it, regColor);
+			}
+			mVisbleMeshes.push_back(std::make_shared<VisibleMesh>(m));
+	}
 }

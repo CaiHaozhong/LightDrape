@@ -1,5 +1,6 @@
 #pragma once
 #include "GarmentSimulationCallBack.h"
+#include "MeshSegmentListener.h"
 #include "Common.h"
 #include "qglviewerwidget.h"
 class Mesh;
@@ -7,15 +8,16 @@ class Human;
 class Garment;
 class MeshFramePool;
 class VisibleMesh;
-class ShaderProgram;
 S_PTR(Mesh);
 S_PTR(Human);
 S_PTR(Garment);
 S_PTR(MeshFramePool);
-S_PTR(ShaderProgram);
 S_PTR(VisibleMesh);
 class MeshWidget :
-	public QGLViewerWidget, public GarmentSimulationCallBack, public std::enable_shared_from_this<MeshWidget>
+	public QGLViewerWidget, 
+	public GarmentSimulationCallBack, 
+	public MeshSegmentListener,
+	public std::enable_shared_from_this<MeshWidget>
 {
 public:
 	MeshWidget(void);
@@ -48,6 +50,10 @@ public:
 
 	/* ½áÊøÄ£Äâ */
 	void onSimulateEnd(MeshFramePool_ mMeshFramePool);
+
+public:
+	void onEndCoarseSegment(Segment_ seg);
+
 private:
 	std::weak_ptr<Human> mHuman;
 	Garment_ mGarment;
@@ -56,8 +62,6 @@ private:
 	MeshFramePool_ mMeshFramePool;
 	int mTimerID;
 	int mCurFrameIndex;
-
-	ShaderProgram_ mShaderProgram;
 	
 };
 S_PTR(MeshWidget);
