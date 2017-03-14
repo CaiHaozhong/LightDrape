@@ -1,5 +1,6 @@
 #include "TrousersSegment.h"
-
+#include "FullSkeletonFitter.h"
+#include "BodyFitter.h"
 
 
 TrousersSegment::~TrousersSegment(void)
@@ -32,4 +33,15 @@ void TrousersSegment::addRegion( int part, Region_ region )
 	if(part < TROUSERS_PART_COUNT && part >= 0)
 		mRegions[part] = region;
 	addRegionRaw(part, region);
+}
+
+RegionFitter_ TrousersSegment::getRegionFitter( int bodyPart )
+{
+	if(bodyPart == Segment::BODY_LEFT_LEG || bodyPart == Segment::BODY_RIGHT_LEG){
+		return std::make_shared<FullSkeletonFitter>(getMatch(bodyPart));
+	}
+	else if(bodyPart == Segment::BODY_TORSE){
+		return std::make_shared<BodyFitter>(getMatch(bodyPart));
+	}
+	return nullptr;
 }

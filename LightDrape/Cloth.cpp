@@ -1,4 +1,5 @@
 #include "Cloth.h"
+#include "Human.h"
 #include "ClothSegment.h"
 
 Cloth::~Cloth(void)
@@ -48,7 +49,7 @@ Vec3d Cloth::getAlignPoint()
 // 	return ret/2.0;
 	Segment_ seg = this->getSegment();
 	if(seg == nullptr){
-		PRINTLN("In getAlignPoint of human. Segment human first.");
+		PRINTLN("In getAlignPoint of Cloth. Segment Cloth first.");
 		return WatertightMesh::getAlignPoint();
 	}
 	Region_ torse = seg->getMatch(Segment::BODY_TORSE);
@@ -63,4 +64,9 @@ Vec3d Cloth::getAlignPoint()
 	z /= regionSke->count();
 	y = this->getMax().values_[1] - 2; //衣服比肩膀高两厘米
 	return Vec3d(x,y,z);
+}
+
+double Cloth::dressHeight( Human_ human )
+{
+	return human->getShoulderHeight();
 }

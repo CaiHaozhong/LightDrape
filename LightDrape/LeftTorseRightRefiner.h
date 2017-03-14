@@ -30,6 +30,8 @@ public:
 
 	virtual void refine();
 
+	/* 从Region a中减去处于Region b中的顶点 */
+	static void regionSub(Region_ a, Region_ b);
 private:
 
 	/* 获取LevelSet中的点 */
@@ -53,8 +55,5 @@ private:
 	/* 将一个Circle从头插入到一个Region中 */
 	void insertCircleToRegion(Region_ region, LevelCircle_ circle);
 
-protected:
-	/* 从Region a中减去处于Region b中的顶点 */
-	void regionSub(Region_ a, Region_ b);
 };
 S_PTR(LeftTorseRightRefiner);

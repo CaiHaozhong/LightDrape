@@ -1,3 +1,4 @@
+#include <OpenMesh/Core/IO/MeshIO.hh>
 #include "MeshWidget.h"
 #include "Mesh.h"
 #include <string>
@@ -10,6 +11,7 @@
 #include "MeshMaterial.h"
 #include "shaderprogram.h"
 #include "VisibleMesh.h"
+#include "Config.h"
 using namespace std;
 #define BUFFER_OFFSET(bytes) ((GLubyte*)NULL + bytes)
 
@@ -56,6 +58,15 @@ void MeshWidget::onEndInitializeGL()
 	set_scene_pos(center, radius);
  	humanSp->addGarmentSimulationCallBack(std::shared_ptr<MeshWidget>(this));
  	humanSp->dress(mGarment);
+	Config_ config = Config::getInstance();
+	/* Output */
+	bool suc = OpenMesh::IO::write_mesh(*(mGarment->getOriginalMesh()), config->clothOutPath+config->clothInFileNames[0]);
+	if(suc){
+		PRINTLN("write succsss!");
+	}
+	else{
+		PRINTLN("write fail!");
+	}
  	mTimerID = this->startTimer(4);
 }
 

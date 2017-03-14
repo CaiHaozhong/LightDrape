@@ -1,7 +1,9 @@
 #include "SkeletonizationPreCompile.h"
 #include "Human.h"
+#include "Garment.h"
 #include "HumanSegmenter.h"
 #include "ClothSegmenter.h"
+#include "TrousersSegmenter.h"
 #include "GarmentFitter.h"
 #include "LaplacianGlobalDeformer.h"
 #include "LaplacianLocalDeformer.h"
@@ -29,37 +31,38 @@ size_t Human::getGeodesicSource()
 
 void Human::dress( Garment_ garment )
 {
-// 	/* 先各自进行骨骼提取 */
-// 	MeshSkeletonization_ skeletonizer = smartNew(MeshSkeletonizationCached);
-// 	PRINTLN("Skeletonize human...");
-// 	skeletonizer->skeletonize(shared_from_this());
-// 	PRINTLN("Skeletonize human end.");
-// 	PRINTLN("Skeletonize garment...");
-// 	skeletonizer->skeletonize(garment);
-// 	PRINTLN("Skeletonize garment end.");
-// 	this->dumpSkeleton(getName());
-// 	garment->dumpSkeleton(garment->getName());
-// 
-// 	/* 各自进行分割 */
-// 	MeshSegmenter_ humanSegmenter = std::make_shared<HumanSegmenter>(shared_from_this());
-// 	PRINTLN("Segment human...");
-// 	humanSegmenter->segment();
-// 	PRINTLN("Segment human end.");
-// 	MeshSegmenter_ clothSegmenter = std::make_shared<ClothSegmenter>(garment);
-// 	PRINTLN("Segment garment...");
-// 	clothSegmenter->segment();
-// 	PRINTLN("Segment garment end.");
-// 	
-// 	GarmentFitter_ fitter = std::make_shared<GarmentFitter>(garment);
-// 	fitter->setMeshDeformer(smartNew(LaplacianGlobalDeformer));
-// 	PRINTLN("Fitting garment...");
-// 	fitter->fit(shared_from_this());
-// 	PRINTLN("Fitting garment end.");
-// 
-// 	/* 修改原始网格 */
-// 	garment->alterOriginalMesh();
+	mGarment = garment;
+	/* 先各自进行骨骼提取 */
+	MeshSkeletonization_ skeletonizer = smartNew(MeshSkeletonizationCached);
+	PRINTLN("Skeletonize human...");
+	skeletonizer->skeletonize(shared_from_this());
+	PRINTLN("Skeletonize human end.");
+	PRINTLN("Skeletonize garment...");
+	skeletonizer->skeletonize(garment);
+	PRINTLN("Skeletonize garment end.");
+	this->dumpSkeleton(getName());
+	garment->dumpSkeleton(garment->getName());
 
-// 	/* 穿透调整 */
+	/* 各自进行分割 */
+	MeshSegmenter_ humanSegmenter = std::make_shared<HumanSegmenter>(shared_from_this());
+	PRINTLN("Segment human...");
+	humanSegmenter->segment();
+	PRINTLN("Segment human end.");
+	MeshSegmenter_ clothSegmenter = std::make_shared<TrousersSegmenter>(garment);
+	PRINTLN("Segment garment...");
+	clothSegmenter->segment();
+	PRINTLN("Segment garment end.");
+	
+	GarmentFitter_ fitter = std::make_shared<GarmentFitter>(garment);
+	fitter->setMeshDeformer(smartNew(LaplacianGlobalDeformer));
+	PRINTLN("Fitting garment...");
+	fitter->fit(shared_from_this());
+	PRINTLN("Fitting garment end.");
+
+	/* 修改原始网格 */
+	garment->alterOriginalMesh();
+
+	/* 穿透调整 */
 // 	GarmentPenetrationResolver_ penetrationResolver = smartNew(GarmentPenetrationResolver);
 // 	penetrationResolver->setGarment(garment->getOriginalMesh());
 // 	penetrationResolver->setHuman(this->getOriginalMesh());
@@ -70,8 +73,8 @@ void Human::dress( Garment_ garment )
 // 	else{
 // 		PRINTLN("Resolve Penetration fail.");
 // 	}
-	std::thread t(&Human::doSimulate, this, garment);
-	t.detach();
+// 	std::thread t(&Human::doSimulate, this, garment);
+// 	t.detach();
 }
 
 Vec3d Human::getAlignPoint()
@@ -132,7 +135,7 @@ Vec3d Human::getAlignPoint()
 	}
 	x /= regionSke->count();
 	z /= regionSke->count();
-	y = this->getShoulderHeight();
+	y = mGarment->dressHeight(shared_from_this());
 	return Vec3d(x,y,z);
 }
 

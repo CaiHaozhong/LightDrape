@@ -16,6 +16,10 @@ public:
 
 	/* 根据裤子的不同部位添加区域 */
 	void addRegion(int part, Region_ region);
+
+
+	/* 根据人体不同的部位返回匹配的方法 */
+	RegionFitter_ getRegionFitter(int bodyPart);
 private:
 	size_t mBodyTrousersMap[BODY_PART_COUNT];
 	Region_ mRegions[TROUSERS_PART_COUNT];

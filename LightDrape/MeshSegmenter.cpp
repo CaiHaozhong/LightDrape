@@ -213,11 +213,11 @@ void MeshSegmenter::coarseSegment( std::vector<bool>& isNoise )
 
 void MeshSegmenter::onFinishCoarseSegment()
 {
-	std::vector< std::pair<int, Region_> >& regions = mSegment->getRegionsRaw();
-	for(std::vector< std::pair<int, Region_> >::iterator it = regions.begin();
-		it != regions.end(); it++){
-			it->second->expand();
-	}
+// 	std::vector< std::pair<int, Region_> >& regions = mSegment->getRegionsRaw();
+// 	for(std::vector< std::pair<int, Region_> >::iterator it = regions.begin();
+// 		it != regions.end(); it++){
+// 			it->second->expand();
+// 	}
 }
 
 double MeshSegmenter::getMinDisFromEdge( Mesh::EdgeHandle edge )

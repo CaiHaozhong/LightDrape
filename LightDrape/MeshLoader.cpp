@@ -4,6 +4,8 @@
 #include "Config.h"
 #include "Human.h"
 #include "Garment.h"
+#include "Cloth.h"
+#include "Trousers.h"
 #include "HumanFeature.h"
 #include "MeshMaterial.h"
 
@@ -105,7 +107,7 @@ void MeshLoader::loadGarments()
 
 		std::string garFile = conf->clothInFileNames[g];
 		Mesh_ raw = loadMesh(conf->clothInPath, garFile);
-		Garment_ garment = std::make_shared<Garment>(raw);
+		Garment_ garment = std::make_shared<Trousers>(raw);
 
 		msg = std::make_shared<Message>(END_LOAD_GARMENT);
 		msg->arg1 = g;

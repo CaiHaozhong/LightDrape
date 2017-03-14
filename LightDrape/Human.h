@@ -1,7 +1,8 @@
 #pragma once
 #include "Common.h"
 #include "Watertightmesh.h"
-#include "Garment.h"
+class Garment;
+S_PTR(Garment);
 class HumanFeature;
 S_PTR(HumanFeature);
 class GarmentSimulationCallBack;
@@ -36,6 +37,9 @@ public:
 	void addGarmentSimulationCallBack(GarmentSimulationCallBack_ callBack);
 private:
 	HumanFeature_ mFeature;
+
 	GarmentPhysicalSimulator_ mSimulator;
+
+	Garment_ mGarment;
 };
 S_PTR(Human);
