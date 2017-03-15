@@ -352,6 +352,34 @@ void LevelSet::dump( int i )
 #endif
 }
 
+
+
+void LevelSet::dumpExactlyPoints(int i)
+{
+#ifdef _DEBUG_
+	std::string path = "../data/levelset/exact/";
+	char back[18];
+	sprintf(back, "_exact_%d.cg", i);
+	std::ofstream out = std::ofstream(path + mMesh->getName() + back);
+	int pointCount = 0;
+	for(size_t i = 0; i < mCircles.size(); i++){
+		pointCount += mCircles[i]->levelNodes.size();
+	}
+	out << "# D:3 NV:" << pointCount << " NE:" << 0 << "\n";
+
+	for(size_t i = 0; i < mCircles.size(); i++){
+		LevelCircle_ lc = mCircles[i];
+		for(size_t j = 0; j < lc->levelNodes.size(); j++){
+			LevelNode_ ln = lc->levelNodes[j];
+			Vec3d p = ln->exactlyPoint(mMesh);
+			out << "v " << p.values_[0] << " " << p.values_[1] << " " << p.values_[2] << "\n";
+		}
+	}
+	out.close();
+#endif
+}
+
+
 void LevelSet::classify()
 {
 	if(mRawNodes.isEmpty())

@@ -157,6 +157,9 @@ void MeshSegmenter::computeLevelSet( bool useCache /*= false*/ )
 		sprintf(msg, "init levelset %d", i);
 		PRINTLN(msg);
 		mLevelSets[i]->init();
+		if(i % 2 == 0){
+			mLevelSets[i]->dumpExactlyPoints(i);
+		}
 		//			mLevelSets[i]->dumpRaw(mMesh, i);
 // 		if(mLevelSets[i]->getCount() == 5){
 // 			for(size_t c = 0; c < mLevelSets[i]->getCount(); c++){

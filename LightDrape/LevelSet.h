@@ -140,6 +140,9 @@ public:
 	void dumpRaw( int i);
 	void dump(int i);
 
+	/* 将Level Set确切的点集dump到.cg中以供显示 */
+	void dumpExactlyPoints( int i );
+
 	std::vector<LevelCircle_>& getCircles();
 private:
 	/* 对该LevelSet上的点进行分类
