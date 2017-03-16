@@ -22,6 +22,9 @@ public:
 	/* Ç°ÐØ¿í */
 	double frontChestDis;
 
+	double upperLegWidth;
+
+	double underbellyHeight;
 public:
 	HumanFeature(void);
 	~HumanFeature(void);

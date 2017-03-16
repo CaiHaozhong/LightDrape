@@ -31,13 +31,17 @@ Vec3d Trousers::getAlignPoint()
 	z /= regionSke->count();
 
 	/* 计算y值，位于大腿顶端 */
-	std::set<size_t> vers = torse->getVertices();
-	Mesh_ mesh = torse->getMesh();
-	y = 10000;
-	for(auto it = vers.begin(); it != vers.end(); it++){
-		Vec3d& p = mesh->point(Mesh::VertexHandle(*it));
-		if(p.values_[1] < y){
-			y = p.values_[1];
+	y = -10000;
+	Region_ legs[] = {seg->getMatch(Segment::BODY_LEFT_LEG),
+		seg->getMatch(Segment::BODY_RIGHT_LEG)};
+	int count = 2;
+	for(int i = 0; i < 2; i++){
+		std::set<size_t>& vers = legs[i]->getVertices();
+		for(auto it = vers.begin(); it != vers.end(); it++){
+			Vec3d& p = this->point(Mesh::VertexHandle(*it));
+			if(p.values_[1] > y){
+				y = p.values_[1];
+			}
 		}
 	}
 	return Vec3d(x,y,z);

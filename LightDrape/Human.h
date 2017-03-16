@@ -34,6 +34,13 @@ public:
 
 	double getLegLength();
 
+	double getUpperLegWidth();
+
+	double getUnderBellyHeight();
+
+	/* 胯部的高度 */
+	double getCrotchHeight();
+
 	void doSimulate(Garment_ garment);
 
 	void addGarmentSimulationCallBack(GarmentSimulationCallBack_ callBack);

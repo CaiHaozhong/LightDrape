@@ -3,6 +3,8 @@
 #include "TrousersSegment.h"
 #include "Config.h"
 #include "LeftTorseRightRefiner.h"
+#include <queue>
+#include <unordered_set>
 
 TrousersSegmenter::TrousersSegmenter( WatertightMesh_ mesh ) : MeshSegmenter(mesh)
 {
@@ -144,6 +146,99 @@ void TrousersSegmenter::onBeginSegmentHook()
 
 void TrousersSegmenter::refineSegment()
 {
+	double x = 0, y = 0, z = 0;
+	RegionSkeleton_ regionSke = mTorso->getRegionSkeleton();
+	for(size_t i = 0; i < regionSke->count(); i++){
+		Vec3d& center = regionSke->getNode(i)->center;
+		x += center.values_[0];
+		z += center.values_[2];
+	}
+	x /= regionSke->count();
+	z /= regionSke->count();
+	/* 计算y值，位于大腿顶端 */
+	y = -10000;
+	Region_ legs[] = {mLeftLeg, mRightLeg};
+	int count = 2;
+	for(int i = 0; i < 2; i++){
+		std::set<size_t>& vers = legs[i]->getVertices();
+		for(auto it = vers.begin(); it != vers.end(); it++){
+			Vec3d& p = mMesh->point(Mesh::VertexHandle(*it));
+			if(p.values_[1] > y){
+				y = p.values_[1];
+			}
+		}
+	}
+	Vec2d p0(x, y);	
+	double uplegWidth = 1.818;
+	double udbHeight = 1.88;
+	Vec2d p1(x - uplegWidth, y + udbHeight);
+	Vec2d p2(x + uplegWidth, y + udbHeight);
+	std::vector<size_t> addLeftLeg, addRightLeg;
+	pointsUnderLine(addLeftLeg, p0, p1, mLeftLeg, mRightLeg);
+	pointsUnderLine(addRightLeg, p0, p2, mRightLeg, mLeftLeg);
+	for(size_t i = 0; i < addLeftLeg.size(); i++){
+		size_t idx = addLeftLeg[i];
+		if(mMesh->point(Mesh::VertexHandle(idx)).values_[0] < x)
+			mLeftLeg->addVertex(idx);
+	}
+	for(size_t i = 0; i < addRightLeg.size(); i++){
+		size_t idx = addRightLeg[i];
+		if(mMesh->point(Mesh::VertexHandle(idx)).values_[0] > x)
+			mRightLeg->addVertex(idx);
+	}
 	LeftTorseRightRefiner::regionSub(mTorso, mLeftLeg);
 	LeftTorseRightRefiner::regionSub(mTorso, mRightLeg);
+}
+/* ay + bx = c */
+void TrousersSegmenter::pointsUnderLine( std::vector<size_t>& ret, 
+									 const Vec2d& p1, const Vec2d& p2, const Region_ region,
+									 const Region_ exclude)
+{
+	double a = 1.0 / (p2.values_[1] - p1.values_[1]);
+	double b = -1.0 / (p2.values_[0] - p1.values_[0]);
+	double c = p1.values_[1] / (p2.values_[1] - p1.values_[1])
+		- p1.values_[0] / (p2.values_[0] - p1.values_[0]);
+
+	std::unordered_set<size_t> testInExclude;
+	std::set<size_t>& excludeVers = exclude->getVertices();
+	testInExclude.reserve(excludeVers.size());
+	for(auto it = excludeVers.begin(); it != excludeVers.end(); it++){
+		testInExclude.insert(*it);
+	}
+	std::set<size_t>& vers = region->getVertices();
+	std::unordered_set<size_t> testInRegion;
+	testInRegion.reserve(vers.size());
+	for(auto it = vers.begin(); it != vers.end(); it++){
+		testInRegion.insert(*it);
+	}
+	std::unordered_set<size_t> isVisited;
+	isVisited.reserve(vers.size() * 1.2);
+	std::queue<size_t> Q;
+	size_t start = *(vers.begin());
+	Q.push(start);
+	isVisited.insert(start);
+	while(! (Q.empty())){
+		size_t cur = Q.front();
+		Q.pop();
+		Mesh::VertexHandle vh(cur);
+		for(auto vv_it = mMesh->vv_begin(vh); vv_it.is_valid(); vv_it++){
+			size_t idx = vv_it->idx();
+			if(isVisited.find(idx) == isVisited.end()){ //未被访问过
+				isVisited.insert(idx);
+				if(testInExclude.find(idx) != testInExclude.end()){ // 处于排除区域
+					continue;
+				}
+				if(testInRegion.find(idx) != testInRegion.end()) //在区域内
+					Q.push(idx);
+				else{
+					Vec3d& p = mMesh->point(*vv_it);
+					double left = a * p.values_[1] + b * p.values_[0];
+					if(left < c){
+						ret.push_back(idx);
+						Q.push(idx);
+					}
+				}
+			}
+		}
+	}
 }

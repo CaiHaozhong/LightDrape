@@ -8,8 +8,7 @@ class WatertightMesh :
 	public Mesh
 {
 private:
-	Skeleton_ mSkeleton;
-	Segment_ mSegment;
+	Skeleton_ mSkeleton;	
 	Mesh_ mOriginalMesh;		
 
 	
@@ -19,6 +18,8 @@ private:
 	/* 每个网格顶点有一个存储该顶点与测地源点测地距离的属性 */
 	DoubleProperty_ mVertexPropertyGeoDis;
 
+protected:
+	Segment_ mSegment;
 public:
 	WatertightMesh(Mesh_ mesh);
 	~WatertightMesh(void);

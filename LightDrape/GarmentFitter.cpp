@@ -75,6 +75,7 @@ void GarmentFitter::translateGarment()
 	Vec3d garAlign = mGarment->getAlignPoint();
 	Vec3d humAlign = mHuman->getAlignPoint();
 	Vec3d transVec = humAlign - garAlign;
+	transVec.values_[1] = 0;
 
 	/* Translate Mesh */
 	for(Mesh::VertexIter v_it = mGarment->vertices_begin();

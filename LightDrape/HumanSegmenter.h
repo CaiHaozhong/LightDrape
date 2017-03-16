@@ -65,5 +65,9 @@ private:
 
 	void refineLegs();
 
+	/* ay + bx = c */
+	void pointsUnderLine(std::vector<size_t>& ret, 
+		const Vec2d& p1, const Vec2d& p2, const Region_ region,
+		const Region_ exclude);
 };
 

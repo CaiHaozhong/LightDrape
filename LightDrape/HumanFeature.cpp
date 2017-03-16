@@ -16,10 +16,11 @@ void HumanFeature::fromMakeHumanMeasureFile( std::string fileName )
 	std::ifstream in(fileName);
 	std::string featureName[] = {"height", "neck_height", "nape_to_waist",
 	"waist_to_hip", "shoulder_dist", "front_chest_dist", "lowerleg_height",
-	"upperleg_height", "shoulder_height"};
+	"upperleg_height", "shoulder_height","upperleg_width", "underbelly_height"};
 	double nape_to_waist, waist_to_hip, lowerleg_height, upperleg_height;
 	double* value[] = {&height, &neckLength, &nape_to_waist, &waist_to_hip,
-	&shoulderDis, &frontChestDis, &lowerleg_height, &upperleg_height, &shouldHeight};
+	&shoulderDis, &frontChestDis, &lowerleg_height, &upperleg_height, &shouldHeight,
+	&upperLegWidth, &underbellyHeight};
 	std::string str;
 	size_t featureCount = sizeof(featureName)/sizeof(featureName[0]);
 	while(!in.eof()){
