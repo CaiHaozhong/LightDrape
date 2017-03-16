@@ -74,6 +74,9 @@ void Config::init( char* file )
 		else if(type == "simulateLen"){
 			configIn >> simulateLen;
 		}
+		else if(type == "cloth_type"){
+			configIn >> clothType;
+		}
 	}
 }
 

@@ -19,6 +19,7 @@ public:
 	std::string humanMeshDiretion;
 	std::string humanSegOutPath;
 	std::string clothSegOutPath;
+	std::string clothType;
 	static Config_ getInstance();
 
 	/* for physical simulation */

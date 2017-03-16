@@ -35,14 +35,19 @@ public:
 	/* 人体模型加载结束 */
 	void onEndLoadHuman(Human_ human){
 		mHuman = human;	
-		GeodesicResolver_ resolver = smartNew(GeodesicResolverCached);
-		resolver->resolveGeo(human);
+// 		GeodesicResolver_ resolver = smartNew(GeodesicResolverCached);
+// 		resolver->resolveGeo(human);
 		std::cout << "onEndLoadHuman" << std::endl;
 	};
 
 	/* 第i个衣服模型加载结束 */
 	void onEndLoadGarment(int i, Garment_ gar){
-		mGarment = gar;
+		mGarment = gar;		
+// 		Config_ config = Config::getInstance();
+// 		for(auto it = gar->getOriginalMesh()->vertices_begin(); it != gar->getOriginalMesh()->vertices_end(); it++){
+// 			gar->getOriginalMesh()->point(*it) /= 10.0;
+// 		}
+// 		OpenMesh::IO::write_mesh(*(gar->getOriginalMesh()), config->clothInPath+gar->getName()+"_decimetre.obj");
 		std::cout << "onEndLoadGarment" << i <<  std::endl;
 	};
 

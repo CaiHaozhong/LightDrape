@@ -46,9 +46,9 @@ void MeshLoader::loadHuman()
 	}
 	Human_ human = std::make_shared<Human>(raw);
 
-// 	HumanFeature_ feature = smartNew(HumanFeature);
-// 	feature->fromMakeHumanMeasureFile(conf->humanInPath + human->getName() + ".par");
-// 	human->setFeature(feature);
+	HumanFeature_ feature = smartNew(HumanFeature);
+	feature->fromMakeHumanMeasureFile(conf->humanInPath + human->getName() + ".par");
+	human->setFeature(feature);
 
 	Message_ msg = std::make_shared<Message>(END_LOAD_HUMAN);
 	msg->human = human;
@@ -115,8 +115,19 @@ void MeshLoader::loadGarments()
 
 		std::string garFile = conf->clothInFileNames[g];
 		Mesh_ raw = loadMesh(conf->clothInPath, garFile);
-		Garment_ garment = std::make_shared<Cloth>(raw);
-
+		Config_ config = Config::getInstance();
+		std::string clothType = config->clothType;
+		Garment_ garment = nullptr;
+		if(clothType == "cloth"){
+			garment = std::make_shared<Cloth>(raw);
+		}
+		else if(clothType == "trousers"){
+			garment = std::make_shared<Trousers>(raw);
+		}	
+		if(garment == nullptr){
+			PRINTLN("MeshLoader::loadGarments(), Error cloth type!");
+			return;
+		}
 		msg = std::make_shared<Message>(END_LOAD_GARMENT);
 		msg->arg1 = g;
 		msg->garment = garment;

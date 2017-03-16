@@ -19,8 +19,8 @@ DoubleProperty_ GeodesicResolverCached::resolveGeo( WatertightMesh_ mesh )
 		return ret;
 	}
 	else{
-		//DoubleProperty_ ret = GeodesicResolver::resolveGeo(mesh);
-		DoubleProperty_ ret = agd(mesh);
+		DoubleProperty_ ret = GeodesicResolver::resolveGeo(mesh);
+		//DoubleProperty_ ret = agd(mesh);
 		//DoubleProperty_ ret = hei(mesh);
 		cachedGeo(ret, mesh->n_vertices(), getGeoFileName(mesh));
 		PRINTLN("Cached geo success.");

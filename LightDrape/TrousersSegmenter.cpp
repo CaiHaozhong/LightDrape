@@ -134,7 +134,7 @@ void TrousersSegmenter::onFinishSegmentHook()
 			std::cout << "write successfully of Trousers seg " << i << std::endl;
 		}
 	}
-
+	return ;
 }
 
 void TrousersSegmenter::onBeginSegmentHook()

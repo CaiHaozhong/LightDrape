@@ -45,7 +45,8 @@ Vec3d Trousers::getAlignPoint()
 
 double Trousers::dressHeight( Human_ human )
 {
-	return human->getLegLength() - 1;
+	return 8.5;
+	//return human->getLegLength() - 1;
 }
 
 Trousers::Trousers( Mesh_ mesh ) :Garment(mesh)

@@ -13,6 +13,7 @@
 #include "GarmentPhysicalSimulator.h"
 #include "FrameToOBJFileWriter.h"
 #include "MeshSegmentListener.h"
+#include "Config.h"
 #include <thread>
 Human::~Human(void)
 {
@@ -51,20 +52,32 @@ void Human::dress( Garment_ garment )
 	PRINTLN("Segment human...");
 	humanSegmenter->segment();
 	PRINTLN("Segment human end.");
-	MeshSegmenter_ clothSegmenter = std::make_shared<ClothSegmenter>(garment);
+	MeshSegmenter_ clothSegmenter = nullptr;
+	Config_ config = Config::getInstance();
+	std::string clothType = config->clothType;
+	if(clothType == "cloth"){
+		clothSegmenter = std::make_shared<ClothSegmenter>(garment);
+	}
+	else if(clothType == "trousers"){
+		clothSegmenter = std::make_shared<TrousersSegmenter>(garment);
+	}
+	if(clothSegmenter == nullptr){
+		PRINTLN("Human::dress( Garment_ garment ), Error cloth type!");
+		return;
+	}
 	clothSegmenter->addSegmentListener(mMeshSegmentListeners);
 	PRINTLN("Segment garment...");
 	clothSegmenter->segment();
 	PRINTLN("Segment garment end.");
  	
-// 	GarmentFitter_ fitter = std::make_shared<GarmentFitter>(garment);
-// 	fitter->setMeshDeformer(smartNew(LaplacianGlobalDeformer));
-// 	PRINTLN("Fitting garment...");
-// 	fitter->fit(shared_from_this());
-// 	PRINTLN("Fitting garment end.");
-// 
-// 	/* 修改原始网格 */
-// 	garment->alterOriginalMesh();
+	GarmentFitter_ fitter = std::make_shared<GarmentFitter>(garment);
+	fitter->setMeshDeformer(smartNew(LaplacianGlobalDeformer));
+	PRINTLN("Fitting garment...");
+	fitter->fit(shared_from_this());
+	PRINTLN("Fitting garment end.");
+
+	/* 修改原始网格 */
+	garment->alterOriginalMesh();
 
 
 	/* 穿透调整 */

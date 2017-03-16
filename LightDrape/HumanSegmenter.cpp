@@ -270,7 +270,7 @@ void HumanSegmenter::onFinishSegmentHook()
 			std::cout << "write successfully of human seg " << i << std::endl;
 		}
 	}
-
+	return;
 }
 
 void HumanSegmenter::onBeginSegmentHook()
@@ -286,7 +286,7 @@ void HumanSegmenter::refineSegment()
 
 void HumanSegmenter::refineHands()
 {
-	LeftTorseRightRefiner_ refiner = std::make_shared<LeftTorseRightRefiner>(
+	LeftTorseRightRefiner_ refiner = std::make_shared<LeftTorseRightSimpleRefiner>(
 		shared_from_this(),
 		mLeftHand,
 		mTorso,

@@ -12,6 +12,7 @@
 #include "shaderprogram.h"
 #include "VisibleMesh.h"
 #include "Mesher.h"
+#include "Config.h"
 using namespace std;
 #define BUFFER_OFFSET(bytes) ((GLubyte*)NULL + bytes)
 
@@ -58,15 +59,15 @@ void MeshWidget::onEndInitializeGL()
  	humanSp->addGarmentSimulationCallBack(std::shared_ptr<MeshWidget>(this));
 	humanSp->addMeshSegmentListener(std::shared_ptr<MeshWidget>(this));
  	humanSp->dress(mGarment);
-// 	Config_ config = Config::getInstance();
+ 	Config_ config = Config::getInstance();
 // 	/* Output */
-// 	bool suc = OpenMesh::IO::write_mesh(*(mGarment->getOriginalMesh()), config->clothOutPath+config->clothInFileNames[0]);
-// 	if(suc){
-// 		PRINTLN("write succsss!");
-// 	}
-// 	else{
-// 		PRINTLN("write fail!");
-// 	}
+ 	bool suc = OpenMesh::IO::write_mesh(*(mGarment->getOriginalMesh()), config->clothOutPath+config->clothInFileNames[0]);
+	if(suc){
+		PRINTLN("write succsss!");
+	}
+	else{
+		PRINTLN("write fail!");
+	}
 // 	mTimerID = this->startTimer(4);
 }
 
