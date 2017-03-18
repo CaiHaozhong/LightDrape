@@ -295,6 +295,13 @@ void HumanSegmenter::refineHands()
 		mRightHand
 		);
 	refiner->refine();
+	refiner = std::make_shared<LeftTorseRightSimpleRefiner>(
+		shared_from_this(),
+		mLeftHand,
+		mTorso,
+		mRightHand
+		);
+	refiner->refine();
 	mLeftHand->dumpRegionSkeleton(mMesh->getName() + "_lefthand");
 	mRightHand->dumpRegionSkeleton(mMesh->getName() + "_righthand");
 	mTorso->dumpRegionSkeleton(mMesh->getName() + "_torse");
@@ -335,12 +342,12 @@ void HumanSegmenter::refineLegs()
 	pointsUnderLine(addRightLeg, p0, p2, mRightLeg, mLeftLeg);
 	for(size_t i = 0; i < addLeftLeg.size(); i++){
 		size_t idx = addLeftLeg[i];
-		if(mMesh->point(Mesh::VertexHandle(idx)).values_[0] < x + 0.1)
+		if(mMesh->point(Mesh::VertexHandle(idx)).values_[0] < x)
 			mLeftLeg->addVertex(idx);
 	}
 	for(size_t i = 0; i < addRightLeg.size(); i++){
 		size_t idx = addRightLeg[i];
-		if(mMesh->point(Mesh::VertexHandle(idx)).values_[0] > x + 0.1)
+		if(mMesh->point(Mesh::VertexHandle(idx)).values_[0] > x)
 			mRightLeg->addVertex(idx);
 	}
 	LeftTorseRightRefiner::regionSub(mTorso, mLeftLeg);

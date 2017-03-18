@@ -33,9 +33,7 @@ void ClothSegmenter::onDifferentLevelSet( size_t seq, LevelSet_ levelSet )
 			PRINTLN("Cloth Segment Error: incorrect categories of torso");
 			return ;
 		}
-		/* 防止补洞后的顶点影响，其实也没关系，映射到原网格时直接忽略就好 */
-		if(mCurLevelSet < getLevelSetCount()-3)
-			addToRegion(mTorso, levelSet->getCircle(0));
+		addToRegion(mTorso, levelSet->getCircle(0));
 	}
 	else if(seq == 2){
 		if(levelSet->getCount() != 3){
@@ -60,8 +58,7 @@ void ClothSegmenter::onDifferentLevelSet( size_t seq, LevelSet_ levelSet )
 			addToRegion(mLeftSleeve, ccp[0].first);
 
 			/* 防止补洞后的顶点影响，其实也没关系，映射到原网格时直接忽略就好 */
-			if(mCurLevelSet < getLevelSetCount()-3)
-				addToRegion(mTorso, ccp[1].first);
+			addToRegion(mTorso, ccp[1].first);
 
 			addToRegion(mRightSleeve, ccp[2].first);
 		}
@@ -77,11 +74,8 @@ void ClothSegmenter::onDifferentLevelSet( size_t seq, LevelSet_ levelSet )
 					mLeftSleeveSkeNode = skeNode;					
 				}
 				else if(disTS <= disLH && disTS <= disRH){
-					/* 防止补洞后的顶点影响，其实也没关系，映射到原网格时直接忽略就好 */
-					if(mCurLevelSet < getLevelSetCount()-3){
 						addToRegion(mTorso, lc);
 						mTorsoSkeNode = skeNode;
-					}
 				}
 				else if(disRH <= disTS && disRH <= disLH){
 					addToRegion(mRightSleeve, lc);
@@ -165,7 +159,14 @@ void ClothSegmenter::onBeginSegmentHook()
 
 void ClothSegmenter::refineSegment()
 {
-	LeftTorseRightRefiner_ refiner = std::make_shared<LeftTorseRightSimpleRefiner>(
+	LeftTorseRightRefiner_ refiner = std::make_shared<LeftTorseRightRefiner>(
+		shared_from_this(),
+		mLeftSleeve,
+		mTorso,
+		mRightSleeve
+		);
+	refiner->refine();
+	refiner = std::make_shared<LeftTorseRightSimpleRefiner>(
 		shared_from_this(),
 		mLeftSleeve,
 		mTorso,

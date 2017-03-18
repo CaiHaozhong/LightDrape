@@ -22,9 +22,17 @@ public:
 	/* 前胸宽 */
 	double frontChestDis;
 
+	/* 大腿的直径 */
 	double upperLegWidth;
 
+	/* 下腹高度 */
 	double underbellyHeight;
+
+	/* 上衣在人体的高度 */
+	double clothHeight;
+
+	/* 裤头在人体的高度 */
+	double trousersHeight;
 public:
 	HumanFeature(void);
 	~HumanFeature(void);

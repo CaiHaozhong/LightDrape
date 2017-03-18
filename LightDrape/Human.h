@@ -38,8 +38,11 @@ public:
 
 	double getUnderBellyHeight();
 
-	/* 胯部的高度 */
-	double getCrotchHeight();
+	/* 上衣在人体的高度 */
+	double getClothHeight();
+
+	/* 裤头在人体的高度 */
+	double getTrouserHeight();
 
 	void doSimulate(Garment_ garment);
 

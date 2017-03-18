@@ -62,11 +62,11 @@ Vec3d Cloth::getAlignPoint()
 	}
 	x /= regionSke->count();
 	z /= regionSke->count();
-	y = this->getMax().values_[1] - 2; //衣服比肩膀高两厘米
-	return Vec3d(x,y,z);
+	y = this->getMax().values_[1]; 
+	return Vec3d(x,y,z);// 衣服的最高中心点
 }
 
 double Cloth::dressHeight( Human_ human )
 {
-	return human->getShoulderHeight();
+	return human->getClothHeight();
 }

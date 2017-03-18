@@ -218,29 +218,14 @@ double Human::getUnderBellyHeight()
 	return mFeature->underbellyHeight;
 }
 
-double Human::getCrotchHeight()
+double Human::getClothHeight()
 {
-	double y;
-	/* 计算y值，位于大腿顶端 */
-	y = -10000;
-	auto regions = mSegment->getRegionsRaw();
-	Region_ legs[2];
-	int cur = 0;
-	for(size_t i = 0; i < regions.size(); i++){
-		if(regions[i].first == Segment::BODY_LEFT_LEG
-			|| regions[i].first == Segment::BODY_RIGHT_LEG){
-			legs[cur++] = regions[i].second;
-		}
-	}
-	int count = 2;
-	for(int i = 0; i < 2; i++){
-		std::set<size_t>& vers = legs[i]->getVertices();
-		for(auto it = vers.begin(); it != vers.end(); it++){
-			Vec3d& p = this->point(Mesh::VertexHandle(*it));
-			if(p.values_[1] > y){
-				y = p.values_[1];
-			}
-		}
-	}
-	return y;
+	return mFeature->clothHeight;
 }
+
+double Human::getTrouserHeight()
+{
+	return mFeature->trousersHeight;
+}
+
+

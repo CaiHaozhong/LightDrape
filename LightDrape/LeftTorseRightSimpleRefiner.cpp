@@ -39,7 +39,14 @@ void LeftTorseRightSimpleRefiner::computeBoundedXZ( Region_ region,
 	minZ = big;
 	maxZ = small;
 	minY = big;
-	std::vector<size_t>& vers = region->getRegionSkeleton()->getNode(0)->vers;
+	std::vector<size_t> vers;
+	for(size_t i = 0; i < 10; i ++){
+		std::vector<size_t>& tmp = region->getRegionSkeleton()->getNode(i)->vers;
+		for(auto it = tmp.begin(); it != tmp.end(); it++){
+			vers.push_back(*it);
+		}
+	}
+	
 	Mesh_ mesh = region->getMesh();
 
 // 	std::string path = "../data/testSeg/ClothSeg/";
