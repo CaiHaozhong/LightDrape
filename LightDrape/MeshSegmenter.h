@@ -100,5 +100,8 @@ protected:
 	/* 进一步分割 */
 	virtual void refineSegment() = 0;
 
+
+	void handleNoise(LevelSet_ ls, std::vector<Region_>& curRegions);
+
 };
 S_PTR(MeshSegmenter);

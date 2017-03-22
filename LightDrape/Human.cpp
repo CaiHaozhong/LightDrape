@@ -70,14 +70,14 @@ void Human::dress( Garment_ garment )
 	clothSegmenter->segment();
 	PRINTLN("Segment garment end.");
  	
-	GarmentFitter_ fitter = std::make_shared<GarmentFitter>(garment);
-	fitter->setMeshDeformer(smartNew(LaplacianGlobalDeformer));
-	PRINTLN("Fitting garment...");
-	fitter->fit(shared_from_this());
-	PRINTLN("Fitting garment end.");
-
-	/* 修改原始网格 */
-	garment->alterOriginalMesh();
+// 	GarmentFitter_ fitter = std::make_shared<GarmentFitter>(garment);
+// 	fitter->setMeshDeformer(smartNew(LaplacianGlobalDeformer));
+// 	PRINTLN("Fitting garment...");
+// 	fitter->fit(shared_from_this());
+// 	PRINTLN("Fitting garment end.");
+// 
+// 	/* 修改原始网格 */
+// 	garment->alterOriginalMesh();
 
 
 	/* 穿透调整 */

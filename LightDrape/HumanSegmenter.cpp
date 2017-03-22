@@ -96,25 +96,36 @@ void HumanSegmenter::initHumanSegmenter( WatertightMesh_ mesh )
 void HumanSegmenter::handleHead( LevelSet_ levelSet )
 {
 	if(levelSet->getCount() != 1){
+		std::vector<Region_> curRegions;
+		curRegions.push_back(mTorso);
+		handleNoise(levelSet, curRegions);
 		PRINTLN("Human Segment Error: incorrect categories of head");
 		return ;
 	}
 	LevelCircle_ lc = levelSet->getCircle(0);
-	if(isHead(lc)){
-		addToRegion(mHead, lc);
-	}
-	else{
-		addToRegion(mTorso, lc);
-	}
+	addToRegion(mTorso, lc);
+// 
+// 	if(isHead(lc)){
+// 		addToRegion(mHead, lc);
+// 	}
+// 	else{
+// 		addToRegion(mTorso, lc);
+// 	}
 }
 
 void HumanSegmenter::handleTorso( LevelSet_ levelSet )
 {
-	if(levelSet->getCount() == 1){
-		mTorso->addCircle(levelSet->getCircle(0));
-		return;
-	}
+// 	if(levelSet->getCount() == 1){
+// 		//mTorso->addCircle(levelSet->getCircle(0));
+// 		addToRegion(mTorso, levelSet->getCircle(0));
+// 		return;
+// 	}
 	if(levelSet->getCount() != 3){
+		std::vector<Region_> curRegions;
+		curRegions.push_back(mTorso);
+		curRegions.push_back(mLeftHand);
+		curRegions.push_back(mRightHand);
+		handleNoise(levelSet, curRegions);
 		PRINTLN("Human Segment Error: incorrect categories of torso");
 		return ;
 	}
@@ -164,6 +175,10 @@ void HumanSegmenter::handleTorso( LevelSet_ levelSet )
 void HumanSegmenter::handleLegs( LevelSet_ levelSet )
 {
 	if(levelSet->getCount() != 2){
+		std::vector<Region_> curRegions;
+		curRegions.push_back(mLeftLeg);
+		curRegions.push_back(mRightLeg);
+		handleNoise(levelSet, curRegions);
 		PRINTLN("Human Segment Error: incorrect categories of legs");
 		return ;
 	}

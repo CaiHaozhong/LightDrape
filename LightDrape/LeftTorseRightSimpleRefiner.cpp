@@ -23,6 +23,12 @@ LeftTorseRightSimpleRefiner::~LeftTorseRightSimpleRefiner(void)
 
 void LeftTorseRightSimpleRefiner::refine()
 {
+	if(mLeft == nullptr || mRight == nullptr || mTorse == nullptr)
+		return;
+	if(mLeft->getCircles().size() <= 0 || mRight->getCircles().size() <= 0){
+		PRINTLN("In void LeftTorseRightSimpleRefiner::refine(), Region empty!");
+		return;
+	}
 	refineRegion(mLeft);
 	refineRegion(mRight);
 	regionSub(mTorse, mLeft);

@@ -40,12 +40,20 @@ void MeshSegmenter::segment()
 	std::vector<bool> isNoise;		
 	PRINTLN("Begin filterNoise...");
 	for(size_t i = 0; i < mLevelSets.size(); i++){
+		std::cout << i << ":" << mLevelSets[i]->getCount() << " ";
+	}
+	std::cout << "\n";
+	for(size_t i = 0; i < mLevelSets.size(); i++){
 		std::cout << mLevelSets[i]->getCount() << " ";
 	}
 	std::cout << "\n";
 	filterNoise(isNoise);
 	for(size_t i = 0; i < isNoise.size(); i++){
 		std::cout << isNoise[i] << " ";
+	}
+	std::cout << "\n";
+	for(size_t i = 0; i < isNoise.size(); i++){
+		std::cout << i << ":" << isNoise[i] << " ";
 	}
 	std::cout << "\n";
 	PRINTLN("End filterNoise...");
@@ -193,24 +201,27 @@ void MeshSegmenter::coarseSegment( std::vector<bool>& isNoise )
 {
 	size_t len = mLevelSets.size();
 	size_t seq = 1;
-	size_t i = 0;		
-	while(i < len && isNoise[i]){
-		++i;
-	}
+	size_t i = 0;
+// 	while(i < len && isNoise[i]){
+// 		++i;
+// 	}
 	size_t last = 0;
 	if(i < len)
 		last = mLevelSets[i]->getCount();
 	for( ; i < len; ){
-		size_t cur = mLevelSets[i]->getCount();
-		if(cur != last){
-			++seq;
-			last = cur;
+		if(! isNoise[i]){
+			size_t cur = mLevelSets[i]->getCount();
+			if(cur != last){
+				++seq;
+				last = cur;
+			}
 		}
+
 		onDifferentLevelSet(seq, mLevelSets[i]);
 		++i;
-		while(i < len && isNoise[i]){
-			++i;
-		}
+// 		while(i < len && isNoise[i]){
+// 			++i;
+// 		}
 	}
 	onFinishCoarseSegment();
 }
@@ -241,7 +252,7 @@ void MeshSegmenter::filterNoise( std::vector<bool>& isNoise )
 {
 	isNoise.resize(mLevelSets.size(), false);
 	size_t len = mLevelSets.size();
-	int threshold = 12; // 连续个数小于等于threshold的都算噪音
+	int threshold = 13; // 连续个数小于等于threshold的都算噪音
 	int val = mLevelSets[0]->getCount();
 	int accu = 1;
 	int start = 0;
@@ -271,7 +282,7 @@ void MeshSegmenter::filterNoise( std::vector<bool>& isNoise )
 void MeshSegmenter::addToRegion( Region_ region, LevelCircle_ levelCircle )
 {
 	region->addCircle(levelCircle);
-	std::vector<LevelNode_> levelNodes = levelCircle->levelNodes;
+	std::vector<LevelNode_>& levelNodes = levelCircle->levelNodes;
 	for(size_t i = 0; i < levelNodes.size(); i++){
 		LevelNode_ n = levelNodes[i];
 		size_t v = n->getNearestVertex(mMesh);
@@ -332,5 +343,58 @@ void MeshSegmenter::addSegmentListener(const std::vector<MeshSegmentListener_>& 
 {	
 	for(auto it = listeners.begin(); it != listeners.end(); it++){
 		mListeners.push_back(*it);
+	}
+}
+
+void MeshSegmenter::handleNoise( LevelSet_ ls, std::vector<Region_>& curRegions )
+{
+	std::vector<LevelCircle_> circles = ls->getCircles();
+	for(size_t i = 0; i < circles.size(); i++){
+		LevelCircle_ cir = circles[i];
+		if(curRegions.size() == 1){
+			addToRegion(curRegions[0], cir);
+			continue;
+		}
+		std::vector<LevelNode_>& nodes = cir->levelNodes;
+		bool isAdd = false;
+		for(size_t i = 0; i < nodes.size(); i++){
+			Mesh::EdgeHandle eh = Mesh::EdgeHandle(cir->levelNodes[i]->edge);
+			std::pair<size_t, size_t> evs = mMesh->getEndVertices(eh);	
+			for(Mesh::VertexVertexIter vv_it = mMesh->vv_begin(
+				Mesh::VertexHandle(evs.first)); vv_it.is_valid(); vv_it++){
+					for(auto r_it = curRegions.begin(); r_it != curRegions.end(); r_it++){
+						std::set<size_t>& vers = (*r_it)->getVertices();
+						if(vers.find(vv_it->idx()) != vers.end()){
+							addToRegion(*r_it, cir);
+							isAdd = true;
+							break;
+						}
+					}
+					if(isAdd)
+						break;
+			}
+			if(isAdd){
+				break;
+			}
+			for(Mesh::VertexVertexIter vv_it = mMesh->vv_begin(
+				Mesh::VertexHandle(evs.second)); vv_it.is_valid(); vv_it++){
+					for(auto r_it = curRegions.begin(); r_it != curRegions.end(); r_it++){
+						std::set<size_t>& vers = (*r_it)->getVertices();
+						if(vers.find(vv_it->idx()) != vers.end()){
+							addToRegion(*r_it, cir);
+							isAdd = true;
+							break;
+						}
+					}
+					if(isAdd)
+						break;
+			}
+			if(isAdd){
+				break;
+			}
+		}
+		if(!isAdd){
+			addToRegion(curRegions[0], cir);
+		}
 	}
 }
