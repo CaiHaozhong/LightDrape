@@ -4,6 +4,7 @@
 #include "Segment.h"
 #include <vector>
 #include <unordered_set>
+#include <time.h>
 class GeodesicResolver;
 S_PTR(GeodesicResolver);
 class MeshSegmentListener;
@@ -16,6 +17,8 @@ private:
 	GeodesicResolver_ mGeodesicResolver;	
 	/* Level Set之间的间隔 */
 	double mGranularity;
+	
+	clock_t mStart, mEnd;
 	
 protected:
 	Segment_ mSegment;

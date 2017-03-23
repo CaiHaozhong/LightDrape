@@ -46,7 +46,7 @@ void LeftTorseRightSimpleRefiner::computeBoundedXZ( Region_ region,
 	maxZ = small;
 	minY = big;
 	std::vector<size_t> vers;
-	for(size_t i = 0; i < 10; i ++){
+	for(size_t i = 0; i < 13; i ++){
 		std::vector<size_t>& tmp = region->getRegionSkeleton()->getNode(i)->vers;
 		for(auto it = tmp.begin(); it != tmp.end(); it++){
 			vers.push_back(*it);

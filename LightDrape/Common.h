@@ -13,4 +13,5 @@
 #else
 #define PRINT(str)
 #define PRINTLN(str)
+#define PRINT_ERROR(str)
 #endif // _DEBUG_

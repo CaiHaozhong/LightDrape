@@ -3,6 +3,7 @@
 #include "GeodesicResolverCached.h"
 #include "LevelSetCacher.h"
 #include "MeshSegmentListener.h"
+#include <time.h>
 
 MeshSegmenter::MeshSegmenter(void)
 {
@@ -25,9 +26,11 @@ void MeshSegmenter::init( WatertightMesh_ mesh )
 	mGeodesicResolver = smartNew(GeodesicResolverCached);
 	mGeodesicResolver->resolveGeo(mMesh);
 	mGeodesicResolver->normalize(mMesh->getVertexPropertyGeoDis(), mMesh->n_vertices()); // 将测地值归一化
+	mStart = clock();
 	decideGranularity();
 	PRINTLN("End compute Geodesic...");
 	PRINTLN("Begin computeLevelSet...");
+
 	computeLevelSet();
 	PRINTLN("End computeLevelSet...");
 }
@@ -39,26 +42,34 @@ void MeshSegmenter::segment()
 	onBeginSegmentHook();
 	std::vector<bool> isNoise;		
 	PRINTLN("Begin filterNoise...");
-	for(size_t i = 0; i < mLevelSets.size(); i++){
-		std::cout << i << ":" << mLevelSets[i]->getCount() << " ";
-	}
-	std::cout << "\n";
-	for(size_t i = 0; i < mLevelSets.size(); i++){
-		std::cout << mLevelSets[i]->getCount() << " ";
-	}
-	std::cout << "\n";
+// 	for(size_t i = 0; i < mLevelSets.size(); i++){
+// 		std::cout << i << ":" << mLevelSets[i]->getCount() << " ";
+// 	}
+// 	std::cout << "\n";
+// 	for(size_t i = 0; i < mLevelSets.size(); i++){
+// 		std::cout << mLevelSets[i]->getCount() << " ";
+// 	}
+// 	std::cout << "\n";
 	filterNoise(isNoise);
-	for(size_t i = 0; i < isNoise.size(); i++){
-		std::cout << isNoise[i] << " ";
-	}
-	std::cout << "\n";
-	for(size_t i = 0; i < isNoise.size(); i++){
-		std::cout << i << ":" << isNoise[i] << " ";
-	}
-	std::cout << "\n";
+// 	for(size_t i = 0; i < isNoise.size(); i++){
+// 		std::cout << isNoise[i] << " ";
+// 	}
+// 	std::cout << "\n";
+// 	for(size_t i = 0; i < isNoise.size(); i++){
+// 		std::cout << i << ":" << isNoise[i] << " ";
+// 	}
+// 	std::cout << "\n";
 	PRINTLN("End filterNoise...");
+	clock_t start,end;
+	start = clock();
 	coarseSegment(isNoise);	
+	end = clock();
+	std::cout << "Time OF coarseSegment: " << end - start << "\n";
+	start = clock();
 	refineSegment();
+	end = clock();
+	std::cout << "Time OF refineSegment: " << end - start << "\n";
+	std::cout << "Time OF Segment: " << end - mStart << "\n";
 	onFinishSegmentHook();
 }
 
@@ -95,6 +106,8 @@ void MeshSegmenter::decideGranularity()
 
 void MeshSegmenter::computeLevelSet( bool useCache /*= false*/ )
 {
+	clock_t start, end;
+	start = clock();
 	LevelSetCacher lsc(mMesh);
 	if(useCache && lsc.hasLevelSetCached()){
 		PRINTLN("use cached levelset.");
@@ -157,17 +170,20 @@ void MeshSegmenter::computeLevelSet( bool useCache /*= false*/ )
 			++cursor;
 		}			
 	}
+	end = clock();
+	std::cout << "Time OF compute levelset: " << end - start << "\n";
+// 	for(size_t i = 0; i < mLevelSets.size(); i++){
+// 		mLevelSets[i]->dumpRaw(i);
+// 	}
+	start = clock();
 	for(size_t i = 0; i < mLevelSets.size(); i++){
-		mLevelSets[i]->dumpRaw(i);
-	}
-	for(size_t i = 0; i < mLevelSets.size(); i++){
-		char msg[50];
-		sprintf(msg, "init levelset %d", i);
-		PRINTLN(msg);
+//		char msg[50];
+/*		sprintf(msg, "init levelset %d", i);*/
+//		PRINTLN(msg);
 		mLevelSets[i]->init();
-		if(i % 2 == 0){
-			mLevelSets[i]->dumpExactlyPoints(i);
-		}
+// 		if(i % 2 == 0){
+// 			mLevelSets[i]->dumpExactlyPoints(i);
+// 		}
 		//			mLevelSets[i]->dumpRaw(mMesh, i);
 // 		if(mLevelSets[i]->getCount() == 5){
 // 			for(size_t c = 0; c < mLevelSets[i]->getCount(); c++){
@@ -180,7 +196,8 @@ void MeshSegmenter::computeLevelSet( bool useCache /*= false*/ )
 // 		 			}
 // 		 			mLevelSets[i]->dump(i);
 	}
-
+	end = clock();
+	std::cout << "Time OF fenlei levelset: " << end - start << "\n";
 	char c[20];
 	sprintf(c, "%d", mLevelSets.size());
 	PRINTLN(std::string("LevelSet Count ") + c);

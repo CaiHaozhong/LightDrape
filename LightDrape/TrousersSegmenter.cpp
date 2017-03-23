@@ -5,6 +5,7 @@
 #include "LeftTorseRightRefiner.h"
 #include <queue>
 #include <unordered_set>
+#include "MeshSegmentListener.h"
 
 TrousersSegmenter::TrousersSegmenter( WatertightMesh_ mesh ) : MeshSegmenter(mesh)
 {
@@ -100,7 +101,11 @@ Segment_ TrousersSegmenter::createSegment()
 	mRightLeg = std::make_shared<Region>(mMesh);
 	mClothSegment->addRegion(TrousersSegment::TROUSERS_WAIST, mTorso);
 	mClothSegment->addRegion(TrousersSegment::TROUSERS_LEFT, mLeftLeg);
-	mClothSegment->addRegion(TrousersSegment::TROUSERS_RIGHT, mRightLeg);				
+	mClothSegment->addRegion(TrousersSegment::TROUSERS_RIGHT, mRightLeg);			
+
+	mLeftLeg->setColor(Vec3uc(200, 0, 0));
+	mRightLeg->setColor(Vec3uc(200, 200, 0));
+	mTorso->setColor(Vec3uc(200, 0, 200));
 	return mClothSegment;
 }
 
@@ -114,7 +119,9 @@ void TrousersSegmenter::initTrousersSegmenter( WatertightMesh_ mesh )
 void TrousersSegmenter::onFinishSegmentHook()
 {
 	PRINTLN("End HumanSegment");
-
+	for(auto it = mListeners.begin(); it != mListeners.end(); it++){
+		(*it)->onEndCoarseSegment(mSegment);
+	}
 	/* Output Segments */	
 	Config_ config = Config::getInstance();	
 	char* outSegNameCloth[] = {"waist", "leftLeg", "rightLeg"};
@@ -146,6 +153,7 @@ void TrousersSegmenter::onBeginSegmentHook()
 
 void TrousersSegmenter::refineSegment()
 {
+
 	double x = 0, y = 0, z = 0;
 	RegionSkeleton_ regionSke = mTorso->getRegionSkeleton();
 	for(size_t i = 0; i < regionSke->count(); i++){

@@ -166,13 +166,13 @@ void ClothSegmenter::refineSegment()
 		mRightSleeve
 		);
 	refiner->refine();
-	refiner = std::make_shared<LeftTorseRightSimpleRefiner>(
-		shared_from_this(),
-		mLeftSleeve,
-		mTorso,
-		mRightSleeve
-		);
-	refiner->refine();
+// 	refiner = std::make_shared<LeftTorseRightSimpleRefiner>(
+// 		shared_from_this(),
+// 		mLeftSleeve,
+// 		mTorso,
+// 		mRightSleeve
+// 		);
+// 	refiner->refine();
 	mLeftSleeve->dumpRegionSkeleton(mMesh->getName() + "_leftsleeve");
 	mRightSleeve->dumpRegionSkeleton(mMesh->getName() + "_rightsleeve");
 	mTorso->dumpRegionSkeleton(mMesh->getName() + "_torse");
