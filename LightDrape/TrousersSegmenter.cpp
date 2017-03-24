@@ -96,9 +96,9 @@ void TrousersSegmenter::onFinishCoarseSegment()
 Segment_ TrousersSegmenter::createSegment()
 {
 	TrousersSegment_ mClothSegment = smartNew(TrousersSegment);
-	mTorso = std::make_shared<Region>(mMesh);
-	mLeftLeg = std::make_shared<Region>(mMesh);
-	mRightLeg = std::make_shared<Region>(mMesh);
+	mTorso = std::make_shared<Region>(mMesh, "torse");
+	mLeftLeg = std::make_shared<Region>(mMesh, "leftleg");
+	mRightLeg = std::make_shared<Region>(mMesh, "rightleg");
 	mClothSegment->addRegion(TrousersSegment::TROUSERS_WAIST, mTorso);
 	mClothSegment->addRegion(TrousersSegment::TROUSERS_LEFT, mLeftLeg);
 	mClothSegment->addRegion(TrousersSegment::TROUSERS_RIGHT, mRightLeg);			

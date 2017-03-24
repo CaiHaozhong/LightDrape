@@ -103,14 +103,23 @@ void SkeletonFitter::fitSkeleton(std::vector< std::pair<size_t, Vec3d> >& garSke
 	}
 	Skeleton_ garSkeleton = this->getSkeleton(mGarmentRegion);
 	Skeleton_ humSkeleton = this->getSkeleton(humanRegion);
+
 	std::vector<size_t> garOrderedSkes;
 	std::vector<size_t> humOrderSkes;
 	getSortedSkeleton(mGarmentRegion, garOrderedSkes, std::make_shared<ChooseLongBranch>(garSkeleton));
 	getSortedSkeleton(humanRegion, humOrderSkes, std::make_shared<ChooseLongBranch>(humSkeleton));
 	size_t garStartSke = garOrderedSkes[0];
 	size_t humStartSke = humOrderSkes[0];
-	garSkeTrans.push_back(std::make_pair(garStartSke,
-		humSkeleton->nodeAt(humStartSke)->point - garSkeleton->nodeAt(garStartSke)->point));
+
+	Vec3d humanSkeletonTrans = garSkeleton->nodeAt(garStartSke)->point - humSkeleton->nodeAt(humStartSke)->point;
+	/* Translate Human skeleton */
+	Skeleton::NodeList nodes = humSkeleton->getNodeList();
+	for(size_t i = 0; i < nodes.size(); i++){
+		nodes[i]->point += humanSkeletonTrans;
+	}
+
+	garSkeTrans.push_back(std::make_pair(garStartSke, Vec3d(0,0,0)));
+
 	double garLen = 0;
 	double humLen = 0;
 	size_t humCurIndex = 0;
@@ -154,6 +163,11 @@ void SkeletonFitter::fitSkeleton(std::vector< std::pair<size_t, Vec3d> >& garSke
 	 * TODO
 	 */
 
+
+	/* Translate Human skeleton back */	
+	for(size_t i = 0; i < nodes.size(); i++){
+		nodes[i]->point -= humanSkeletonTrans;
+	}
 }
 
 void SkeletonFitter::computeTranslation( VertexAlter_ ret, Region_ region, std::vector< std::pair<size_t, Vec3d> >& garSkeTrans )

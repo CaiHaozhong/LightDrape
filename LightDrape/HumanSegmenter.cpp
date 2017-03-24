@@ -59,12 +59,12 @@ void HumanSegmenter::onFinishCoarseSegment()
 Segment_ HumanSegmenter::createSegment()
 {
 	Segment_ seg = smartNew(Segment);
-	mHead = std::make_shared<Region>(mMesh);
-	mTorso = std::make_shared<Region>(mMesh);
-	mLeftHand = std::make_shared<Region>(mMesh);
-	mRightHand = std::make_shared<Region>(mMesh);
-	mLeftLeg = std::make_shared<Region>(mMesh);
-	mRightLeg = std::make_shared<Region>(mMesh);
+	mHead = std::make_shared<Region>(mMesh, "head");
+	mTorso = std::make_shared<Region>(mMesh,"torse");
+	mLeftHand = std::make_shared<Region>(mMesh, "lefthand");
+	mRightHand = std::make_shared<Region>(mMesh, "righthand");
+	mLeftLeg = std::make_shared<Region>(mMesh, "leftleg");
+	mRightLeg = std::make_shared<Region>(mMesh, "rightleg");
 	seg->addRegionRaw(Segment::BODY_HEAD, mHead);
 	seg->addRegionRaw(Segment::BODY_TORSE, mTorso);
 	seg->addRegionRaw(Segment::BODY_LEFT_HAND, mLeftHand);
@@ -303,23 +303,29 @@ void HumanSegmenter::refineSegment()
 
 void HumanSegmenter::refineHands()
 {
-	LeftTorseRightRefiner_ refiner = std::make_shared<LeftTorseRightRefiner>(
-		shared_from_this(),
-		mLeftHand,
-		mTorso,
-		mRightHand
-		);
-	refiner->refine();
-	refiner = std::make_shared<LeftTorseRightSimpleRefiner>(
-		shared_from_this(),
-		mLeftHand,
-		mTorso,
-		mRightHand
-		);
-	refiner->refine();
-	mLeftHand->dumpRegionSkeleton(mMesh->getName() + "_lefthand");
-	mRightHand->dumpRegionSkeleton(mMesh->getName() + "_righthand");
-	mTorso->dumpRegionSkeleton(mMesh->getName() + "_torse");
+	Config_ config = Config::getInstance();
+	if(config->humanRefiner){
+		LeftTorseRightRefiner_ refiner = std::make_shared<LeftTorseRightRefiner>(
+			shared_from_this(),
+			mLeftHand,
+			mTorso,
+			mRightHand
+			);
+		refiner->refine();
+	}
+	if(config->humanSimpleRefiner){
+		LeftTorseRightRefiner_ simpleRefiner = std::make_shared<LeftTorseRightSimpleRefiner>(
+			shared_from_this(),
+			mLeftHand,
+			mTorso,
+			mRightHand
+			);
+		simpleRefiner->refine();
+	}
+// 
+// 	mLeftHand->dumpRegionSkeleton(mMesh->getName() + "_lefthand");
+// 	mRightHand->dumpRegionSkeleton(mMesh->getName() + "_righthand");
+// 	mTorso->dumpRegionSkeleton(mMesh->getName() + "_torse");
 }
 
 void HumanSegmenter::refineLegs()
@@ -355,14 +361,33 @@ void HumanSegmenter::refineLegs()
 	std::vector<size_t> addLeftLeg, addRightLeg;
 	pointsUnderLine(addLeftLeg, p0, p1, mLeftLeg, mRightLeg);
 	pointsUnderLine(addRightLeg, p0, p2, mRightLeg, mLeftLeg);
+
+// 	/* 计算两腿之间的中心点的横坐标 */
+// 	double leftLegMaxX = -10000, rightLegMinX = 10000;	
+// 	std::set<size_t>& leftLegVers = mLeftLeg->getVertices();
+// 	for(auto it = leftLegVers.begin(); it != leftLegVers.end(); it++){
+// 		Vec3d& p = mMesh->point(Mesh::VertexHandle(*it));
+// 		if(p.values_[0] > leftLegMaxX){
+// 			leftLegMaxX = p.values_[0];
+// 		}
+// 	}
+// 	std::set<size_t>& rightLegVers = mRightLeg->getVertices();
+// 	for(auto it = rightLegVers.begin(); it != rightLegVers.end(); it++){
+// 		Vec3d& p = mMesh->point(Mesh::VertexHandle(*it));
+// 		if(p.values_[0] < rightLegMinX){
+// 			rightLegMinX = p.values_[0];
+// 		}
+// 	}
+// 	double legCenterX = (leftLegMaxX + rightLegMinX) / 2;
+	Config_ config = Config::getInstance();
 	for(size_t i = 0; i < addLeftLeg.size(); i++){
 		size_t idx = addLeftLeg[i];
-		if(mMesh->point(Mesh::VertexHandle(idx)).values_[0] < x)
+		if(mMesh->point(Mesh::VertexHandle(idx)).values_[0] < x + config->humanLegCenterXep)
 			mLeftLeg->addVertex(idx);
 	}
 	for(size_t i = 0; i < addRightLeg.size(); i++){
 		size_t idx = addRightLeg[i];
-		if(mMesh->point(Mesh::VertexHandle(idx)).values_[0] > x)
+		if(mMesh->point(Mesh::VertexHandle(idx)).values_[0] > x + config->humanLegCenterXep)
 			mRightLeg->addVertex(idx);
 	}
 	LeftTorseRightRefiner::regionSub(mTorso, mLeftLeg);

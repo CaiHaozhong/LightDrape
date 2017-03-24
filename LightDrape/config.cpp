@@ -4,7 +4,11 @@ Config_ Config::mInstance = nullptr;
 
 Config::Config()
 {
-
+	humanRefiner = true;
+	humanSimpleRefiner = true;
+	clothRefiner = true;
+	clothSimpleRefiner = true;
+	humanLegCenterXep = 0;
 }
 
 void Config::init( char* file )
@@ -77,6 +81,21 @@ void Config::init( char* file )
 		else if(type == "cloth_type"){
 			configIn >> clothType;
 		}
+		else if(type == "human_refiner"){
+			configIn >> humanRefiner;
+		}
+		else if(type == "human_simple_refiner"){
+			configIn >> humanSimpleRefiner;
+		}
+		else if(type == "cloth_refiner"){
+			configIn >> clothRefiner;
+		}
+		else if(type == "cloth_simple_refiner"){
+			configIn >> clothSimpleRefiner;
+		}
+		else if(type == "human_leg_center_x_ep"){
+			configIn >> humanLegCenterXep;
+		}
 	}
 }
 
@@ -84,8 +103,8 @@ Config_ Config::getInstance()
 {
 	if(mInstance == nullptr){
 		mInstance = std::shared_ptr<Config>(new Config());
-		//mInstance->init("E:\\Project\\LightDrape\\data\\config");
-		mInstance->init("D:\\Develop\\project\\LightDrape\\C++\\data\\config");
+		mInstance->init("E:\\Project\\LightDrape\\data\\config");
+		//mInstance->init("D:\\Develop\\project\\LightDrape\\C++\\data\\config");
 	}
 	return mInstance;
 }

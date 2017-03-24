@@ -20,6 +20,13 @@ public:
 	std::string humanSegOutPath;
 	std::string clothSegOutPath;
 	std::string clothType;
+	bool humanRefiner;
+	bool humanSimpleRefiner;
+	bool clothRefiner;
+	bool clothSimpleRefiner;
+
+	double humanLegCenterXep;
+
 	static Config_ getInstance();
 
 	/* for physical simulation */

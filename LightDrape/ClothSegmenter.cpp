@@ -101,9 +101,9 @@ void ClothSegmenter::onFinishCoarseSegment()
 Segment_ ClothSegmenter::createSegment()
 {
 	ClothSegment_ mClothSegment = smartNew(ClothSegment);
-	mTorso = std::make_shared<Region>(mMesh);
-	mLeftSleeve = std::make_shared<Region>(mMesh);
-	mRightSleeve = std::make_shared<Region>(mMesh);
+	mTorso = std::make_shared<Region>(mMesh, "torse");
+	mLeftSleeve = std::make_shared<Region>(mMesh, "leftsleeve");
+	mRightSleeve = std::make_shared<Region>(mMesh, "rightsleeve");
 	mClothSegment->addRegion(ClothSegment::CLOTH_TORSO, mTorso);
 	mClothSegment->addRegion(ClothSegment::CLOTH_LEFT_SLEEVE, mLeftSleeve);
 	mClothSegment->addRegion(ClothSegment::CLOTH_RIGHT_SLEEVE, mRightSleeve);				
@@ -159,23 +159,28 @@ void ClothSegmenter::onBeginSegmentHook()
 
 void ClothSegmenter::refineSegment()
 {
-	LeftTorseRightRefiner_ refiner = std::make_shared<LeftTorseRightRefiner>(
-		shared_from_this(),
-		mLeftSleeve,
-		mTorso,
-		mRightSleeve
-		);
-	refiner->refine();
-// 	refiner = std::make_shared<LeftTorseRightSimpleRefiner>(
-// 		shared_from_this(),
-// 		mLeftSleeve,
-// 		mTorso,
-// 		mRightSleeve
-// 		);
-// 	refiner->refine();
-	mLeftSleeve->dumpRegionSkeleton(mMesh->getName() + "_leftsleeve");
-	mRightSleeve->dumpRegionSkeleton(mMesh->getName() + "_rightsleeve");
-	mTorso->dumpRegionSkeleton(mMesh->getName() + "_torse");
+	Config_ config = Config::getInstance();
+	if(config->clothRefiner){
+		LeftTorseRightRefiner_ refiner = std::make_shared<LeftTorseRightRefiner>(
+			shared_from_this(),
+			mLeftSleeve,
+			mTorso,
+			mRightSleeve
+			);
+		refiner->refine();
+	}
+	if(config->clothSimpleRefiner){
+		LeftTorseRightRefiner_ simpleRefiner = std::make_shared<LeftTorseRightSimpleRefiner>(
+			shared_from_this(),
+			mLeftSleeve,
+			mTorso,
+			mRightSleeve
+			);
+		simpleRefiner->refine();
+	}
+// 	mLeftSleeve->dumpRegionSkeleton(mMesh->getName() + "_leftsleeve");
+// 	mRightSleeve->dumpRegionSkeleton(mMesh->getName() + "_rightsleeve");
+// 	mTorso->dumpRegionSkeleton(mMesh->getName() + "_torse");
 // 	if(mLeftSleeve->getCircleCount() <= 0
 // 		|| mRightSleeve->getCircleCount() <= 0)
 // 		return ;

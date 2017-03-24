@@ -33,7 +33,7 @@ void GarmentFitter::fit( Human_ human )
 	mHuman = human;
 
 	/* 先将衣服平移到人体身上 */
-	translateGarment();
+	//translateGarment();
 
 	Segment_ humSeg = human->getSegment();
 	if(humSeg == nullptr){
@@ -65,6 +65,9 @@ void GarmentFitter::fit( Human_ human )
 			mMeshDeformer->deformMesh(mGarment, vertexAlter);
 		}
 	}
+
+	/* 最后将衣服平移到人体身上 */
+	//translateGarment();
 }
 
 void GarmentFitter::translateGarment()

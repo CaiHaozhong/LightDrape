@@ -5,20 +5,6 @@ class Mesh;
 S_PTR(Mesh);
 class Skeleton;
 S_PTR(Skeleton);
-class RegionSkeletonizer{
-public:
-	Skeleton_ skeletonize(Region_ region, std::string name = "");
-private:
-	std::string getSkeletonFileName( std::string name );
-
-	bool hasSkeletonCached( std::string name);
-
-	Skeleton_ readSkeleton( std::string file );
-
-	bool cachSkeleton( Skeleton_ skeleton, std::string file );
-	
-};
-S_PTR(RegionSkeletonizer);
 /* 对两个Region各自进行补洞，骨骼提取，再fit */
 class FullSkeletonFitter :
 	public SkeletonFitter

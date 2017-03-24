@@ -14,10 +14,11 @@ Region::Region(void)
 	mSkeleton = smartNew(RegionSkeleton);
 }
 
-Region::Region( WatertightMesh_ mesh )
+Region::Region( WatertightMesh_ mesh, std::string name)
 {	
 	mHasStartSetted = false;
 	setMesh(mesh);
+	setName(name);
 	mSkeleton = smartNew(RegionSkeleton);
 }
 

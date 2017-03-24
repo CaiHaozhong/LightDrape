@@ -54,14 +54,21 @@ private:
 
 	/* 该Region的颜色 */
 	Vec3uc mColor;
+
+	/* 该Region的名字 */
+	std::string mName;
+
 public:
 	Region(void);
 	~Region(void);
 
-	Region(WatertightMesh_ mesh);
+	Region(WatertightMesh_ mesh, std::string name);
 
 	void setColor(const Vec3uc& color);
 	Vec3uc getColor() const;
+
+	std::string getName() const { return mName; }
+	void setName(std::string val) { mName = val; }
 
 	void setMesh(WatertightMesh_ mesh);
 	WatertightMesh_ getMesh();
