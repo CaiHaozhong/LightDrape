@@ -142,3 +142,16 @@ void Skeleton::dump( std::string filename )
 	out.close();
 #endif
 }
+
+void Skeleton::dumpPoint( size_t nodeIndex, std::string filename )
+{
+#ifdef _DEBUG_	
+	std::ofstream out = std::ofstream(filename);
+	out << "# D:3 NV:" << 1
+		<< " NE:" << 0 << "\n";									
+	SkeletonNode_ skn = this->nodeAt(nodeIndex);
+	out << "v " << skn->point.values_[0] << " " << skn->point.values_[1] << " "
+		<< skn->point.values_[2] << "\n";		
+	out.close();
+#endif
+}

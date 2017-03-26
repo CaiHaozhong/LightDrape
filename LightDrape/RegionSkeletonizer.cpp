@@ -26,6 +26,7 @@ Skeleton_ RegionSkeletonizer::skeletonize( Region_ region, std::string name )
 	skeletonizer->skeletonize(watertightRegionMesh);
 	//	watertightRegionMesh->dumpSkeleton(name+"_region");
 	Skeleton_ skeleton = watertightRegionMesh->getSkeleton();
+	skeleton->dump(Config::getInstance()->clothSegOutPath + region->getMesh()->getName() + "_" + region->getName() + ".cg");
 	size_t nodeCount = skeleton->nodeCount();
 	for(size_t i = 0; i < nodeCount; i++)	{
 		SkeletonNode_ node = skeleton->nodeAt(i);

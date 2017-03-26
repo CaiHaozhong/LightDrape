@@ -111,7 +111,8 @@ void SkeletonFitter::fitSkeleton(std::vector< std::pair<size_t, Vec3d> >& garSke
 	getSortedSkeleton(humanRegion, humOrderSkes, std::make_shared<ChooseLongBranch>(humSkeleton));
 	size_t garStartSke = garOrderedSkes[0];
 	size_t humStartSke = humOrderSkes[0];
-
+	garSkeleton->dumpPoint(garStartSke, Config::getInstance()->clothSegOutPath+"garTop.cg");
+	humSkeleton->dumpPoint(humStartSke, Config::getInstance()->clothSegOutPath+"humTop.cg");
 	Vec3d humanSkeletonTrans = garSkeleton->nodeAt(garStartSke)->point - humSkeleton->nodeAt(humStartSke)->point;
 	/* Translate Human skeleton */
 	for(size_t s = 0; s < humSkeleton->nodeCount(); s++){

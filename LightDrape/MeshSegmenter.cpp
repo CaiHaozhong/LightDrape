@@ -34,7 +34,7 @@ void MeshSegmenter::init( WatertightMesh_ mesh )
 	PRINTLN("End compute Geodesic...");
 	PRINTLN("Begin computeLevelSet...");
 
-	computeLevelSet();
+	computeLevelSet(true);
 	PRINTLN("End computeLevelSet...");
 }
 
@@ -433,9 +433,9 @@ void MeshSegmenter::dumpRegion(Region_ re, std::string path)
 	WatertightMesh_ watertightMesh = std::make_shared<WatertightMesh>(mesh);
 	watertightMesh->setName(mMesh->getName()+"_"+re->getName()+"_watertight");
 	RegionSkeletonizer regionSkeletonizer;
-	Skeleton_ skeleton = regionSkeletonizer.skeletonize(re);		
+//	Skeleton_ skeleton = regionSkeletonizer.skeletonize(re);		
 	bool wsuc = OpenMesh::IO::write_mesh(*mesh, path+mesh->getName()+".obj");
 	wsuc = OpenMesh::IO::write_mesh(*watertightMesh, path+watertightMesh->getName()+".obj");
-	skeleton->dump(path + mesh->getName() + ".cg");	
+//	skeleton->dump(path + mesh->getName() + ".cg");	
 #endif
 }

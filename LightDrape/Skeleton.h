@@ -86,6 +86,8 @@ public:
 	}
 
 	void dump(std::string filename);
+
+	void dumpPoint(size_t nodeIndex, std::string filename);
 };
 
 S_PTR(Skeleton);
