@@ -80,5 +80,7 @@ protected:
 
 	/* 获取处于该region中的骨骼节点的集合 */
 	virtual std::set<size_t>& getSkeletonNodesInRegion(Region_ region) = 0;
+
+	void dumpDeformSkeleton(std::vector< std::pair<size_t, Vec3d> >& garSkeTrans);
 };
 

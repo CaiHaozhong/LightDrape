@@ -2,6 +2,7 @@
 #include "Region.h"
 #include "WatertightMesh.h"
 #include "VertexAlter.h"
+#include "Config.h"
 
 size_t ChooseLongBranch::decide( size_t prev, std::vector<size_t>& nextNodes )
 {
@@ -113,10 +114,14 @@ void SkeletonFitter::fitSkeleton(std::vector< std::pair<size_t, Vec3d> >& garSke
 
 	Vec3d humanSkeletonTrans = garSkeleton->nodeAt(garStartSke)->point - humSkeleton->nodeAt(humStartSke)->point;
 	/* Translate Human skeleton */
-	Skeleton::NodeList nodes = humSkeleton->getNodeList();
-	for(size_t i = 0; i < nodes.size(); i++){
-		nodes[i]->point += humanSkeletonTrans;
+	for(size_t s = 0; s < humSkeleton->nodeCount(); s++){
+		humSkeleton->nodeAt(s)->point += humanSkeletonTrans;
 	}
+// 	const Skeleton::NodeList& nodes = humSkeleton->getNodeList();
+// 	for(size_t i = 0; i < nodes.size(); i++){
+// 		nodes[i]->point += humanSkeletonTrans;
+// 	}
+	humSkeleton->dump(Config::getInstance()->clothSegOutPath+"haha.cg");
 
 	garSkeTrans.push_back(std::make_pair(garStartSke, Vec3d(0,0,0)));
 
@@ -165,9 +170,9 @@ void SkeletonFitter::fitSkeleton(std::vector< std::pair<size_t, Vec3d> >& garSke
 
 
 	/* Translate Human skeleton back */	
-	for(size_t i = 0; i < nodes.size(); i++){
-		nodes[i]->point -= humanSkeletonTrans;
-	}
+// 	for(size_t i = 0; i < nodes.size(); i++){
+// 		nodes[i]->point -= humanSkeletonTrans;
+// 	}
 }
 
 void SkeletonFitter::computeTranslation( VertexAlter_ ret, Region_ region, std::vector< std::pair<size_t, Vec3d> >& garSkeTrans )
@@ -233,7 +238,23 @@ VertexAlter_ SkeletonFitter::fit( Region_ humanRegion )
 	/* size_t：骨骼节点，Vec3d：骨骼节点旋转轴，double：旋转角 */
 	std::vector< std::pair<size_t, std::pair<Vec3d, double> > > garSkeRotate;
 	fitSkeleton(garSkeTrans, garSkeRotate, humanRegion);
+	dumpDeformSkeleton(garSkeTrans);
 	computeTranslation(ret, mGarmentRegion, garSkeTrans);
 	computeRotation(ret, mGarmentRegion, garSkeRotate);
 	return ret;
+}
+
+void SkeletonFitter::dumpDeformSkeleton(std::vector< std::pair<size_t, Vec3d> >& garSkeTrans)
+{
+#ifdef _DEBUG_
+	Skeleton_ skeleton = this->getSkeleton(mGarmentRegion);
+	for(size_t i = 0; i < garSkeTrans.size(); i++){
+		skeleton->nodeAt(garSkeTrans[i].first)->point += garSkeTrans[i].second;
+	}
+	std::string name = mGarmentRegion->getMesh()->getName() + "_" + mGarmentRegion->getName() + "_deformed";
+	skeleton->dump(Config::getInstance()->clothSegOutPath+name+".cg");
+	for(size_t i = 0; i < garSkeTrans.size(); i++){
+		skeleton->nodeAt(garSkeTrans[i].first)->point -= garSkeTrans[i].second;
+	}
+#endif
 }

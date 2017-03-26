@@ -51,9 +51,7 @@ public:
 	/* 获取网格顶点对应的骨骼节点 */
 	size_t getCorrSkeletonNode(size_t vertex);
 
-	void dumpSkeLinkMesh(size_t skeNode, std::string sunPath);
-
-	void dumpSkeleton(std::string name);
+	void dumpSkeLinkMesh(size_t skeNode, std::string sunPath);	
 
 	Mesh_ getOriginalMesh() const { return mOriginalMesh; }
 

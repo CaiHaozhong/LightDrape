@@ -1,9 +1,12 @@
+#include <OpenMesh/Core/IO/MeshIO.hh>
 #include "MeshSegmenter.h"
 #include "GeodesicResolver.h"
 #include "GeodesicResolverCached.h"
 #include "LevelSetCacher.h"
 #include "MeshSegmentListener.h"
 #include <time.h>
+#include "Mesher.h"
+#include "RegionSkeletonizer.h"
 
 MeshSegmenter::MeshSegmenter(void)
 {
@@ -414,4 +417,25 @@ void MeshSegmenter::handleNoise( LevelSet_ ls, std::vector<Region_>& curRegions 
 			addToRegion(curRegions[0], cir);
 		}
 	}
+}
+
+void MeshSegmenter::dumpRegion(Region_ re, std::string path)
+{
+#ifdef _DEBUG_	
+	if(re == nullptr)
+		return;		
+	Mesher mesher(re);
+	Mesh_ mesh = mesher.getMesh();
+	mesh->request_vertex_normals();
+	mesh->request_face_normals();	
+	mesh->requestAABB();
+	mesh->setName(mMesh->getName()+"_"+re->getName());
+	WatertightMesh_ watertightMesh = std::make_shared<WatertightMesh>(mesh);
+	watertightMesh->setName(mMesh->getName()+"_"+re->getName()+"_watertight");
+	RegionSkeletonizer regionSkeletonizer;
+	Skeleton_ skeleton = regionSkeletonizer.skeletonize(re);		
+	bool wsuc = OpenMesh::IO::write_mesh(*mesh, path+mesh->getName()+".obj");
+	wsuc = OpenMesh::IO::write_mesh(*watertightMesh, path+watertightMesh->getName()+".obj");
+	skeleton->dump(path + mesh->getName() + ".cg");	
+#endif
 }

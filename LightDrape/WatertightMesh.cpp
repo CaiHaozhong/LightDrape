@@ -145,27 +145,6 @@ Vec3d WatertightMesh::getAlignPoint()
 	return Vec3d(0,0,0);
 }
 
-void WatertightMesh::dumpSkeleton(std::string name)
-{
-#ifdef _DEBUG_
-	std::string path = "../data/skeleton/";
-	std::ofstream out = std::ofstream(path + name + ".cg");
-	size_t nodeCount = mSkeleton->nodeCount();
-	size_t edgeCount = mSkeleton->edgeCount();
-	out << "# D:3 NV:" << nodeCount
-		<< " NE:" << edgeCount << "\n";
-	for(size_t i = 0; i < nodeCount; i++){										
-		SkeletonNode_ skn = mSkeleton->nodeAt(i);
-		out << "v " << skn->point.values_[0] << " " << skn->point.values_[1] << " "
-			<< skn->point.values_[2] << "\n";		
-	}
-	for(size_t i = 0; i < edgeCount; i++){
-		SkeletonEdge_ edge = mSkeleton->edgeAt(i);
-		out << "e " << edge->sourceVertex+1 << " " << edge->targetVertex+1 << "\n";
-	}
-	out.close();
-#endif
-}
 
 double WatertightMesh::getGeodesicDis( size_t ver )
 {

@@ -106,5 +106,6 @@ protected:
 
 	void handleNoise(LevelSet_ ls, std::vector<Region_>& curRegions);
 
+	void dumpRegion(Region_ region, std::string path);
 };
 S_PTR(MeshSegmenter);

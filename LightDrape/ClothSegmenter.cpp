@@ -1,4 +1,3 @@
-#include <OpenMesh/Core/IO/MeshIO.hh>
 #include "ClothSegmenter.h"
 #include "Config.h"
 #include "LeftTorseRightRefiner.h"
@@ -127,28 +126,29 @@ void ClothSegmenter::onFinishSegmentHook()
 	for(auto it = mListeners.begin(); it != mListeners.end(); it++){
 		(*it)->onEndCoarseSegment(mSegment);
 	}
-
-	/* Output Segments */	
-	Config_ config = Config::getInstance();	
-	char* outSegNameCloth[] = {"torso", "leftSleeves", "rightSleeves"};
-	std::vector<std::pair<int, Region_> > regions = mSegment->getRegionsRaw();
-	for(size_t i = 0; i < regions.size(); i++){
-		std::pair<int, Region_> typeRegionPair = regions[i];
-		Region_ re = typeRegionPair.second;
-		Mesh out;
-		std::set<size_t>& vs = re->getVertices();
-		for(std::set<size_t>::iterator it = vs.begin();
-			it != vs.end(); it++){
-				Vec3d ver = mMesh->point(Mesh::VertexHandle(*it));
-				out.add_vertex(ver);
-		}
-		char of[200];
-		sprintf(of,"%s_%s.obj", mMesh->getName().c_str(), outSegNameCloth[typeRegionPair.first]);
-		bool wsuc = OpenMesh::IO::write_mesh(out, config->clothSegOutPath+of);
-		if(wsuc){
-			std::cout << "write successfully of cloth seg " << i << std::endl;
-		}
-	}
+	dumpRegion(mLeftSleeve, Config::getInstance()->clothSegOutPath);
+	dumpRegion(mRightSleeve, Config::getInstance()->clothSegOutPath);
+// 	/* Output Segments */	
+// 	Config_ config = Config::getInstance();	
+// 	char* outSegNameCloth[] = {"torso", "leftSleeves", "rightSleeves"};
+// 	std::vector<std::pair<int, Region_> > regions = mSegment->getRegionsRaw();
+// 	for(size_t i = 0; i < regions.size(); i++){
+// 		std::pair<int, Region_> typeRegionPair = regions[i];
+// 		Region_ re = typeRegionPair.second;
+// 		Mesh out;
+// 		std::set<size_t>& vs = re->getVertices();
+// 		for(std::set<size_t>::iterator it = vs.begin();
+// 			it != vs.end(); it++){
+// 				Vec3d ver = mMesh->point(Mesh::VertexHandle(*it));
+// 				out.add_vertex(ver);
+// 		}
+// 		char of[200];
+// 		sprintf(of,"%s_%s.obj", mMesh->getName().c_str(), outSegNameCloth[typeRegionPair.first]);
+// 		bool wsuc = OpenMesh::IO::write_mesh(out, config->clothSegOutPath+of);
+// 		if(wsuc){
+// 			std::cout << "write successfully of cloth seg " << i << std::endl;
+// 		}
+// 	}
 
 }
 

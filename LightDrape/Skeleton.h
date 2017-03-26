@@ -84,6 +84,8 @@ public:
 	IndexList& getNeighbors(size_t node){
 		return mAdjacencyList[node];
 	}
+
+	void dump(std::string filename);
 };
 
 S_PTR(Skeleton);

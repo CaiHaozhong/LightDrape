@@ -1,4 +1,5 @@
 #include "Skeleton.h"
+#include <fstream>
 
 SkeletonNode::SkeletonNode()
 {
@@ -119,4 +120,25 @@ double Skeleton::nodeEuclideanDis( size_t node1, size_t node2 )
 	Vec3d p1 = this->nodeAt(node1)->point;
 	Vec3d p2 = this->nodeAt(node2)->point;
 	return (p1-p2).length();
+}
+
+void Skeleton::dump( std::string filename )
+{
+#ifdef _DEBUG_	
+	std::ofstream out = std::ofstream(filename);
+	size_t nodeCount = this->nodeCount();
+	size_t edgeCount = this->edgeCount();
+	out << "# D:3 NV:" << nodeCount
+		<< " NE:" << edgeCount << "\n";
+	for(size_t i = 0; i < nodeCount; i++){										
+		SkeletonNode_ skn = this->nodeAt(i);
+		out << "v " << skn->point.values_[0] << " " << skn->point.values_[1] << " "
+			<< skn->point.values_[2] << "\n";		
+	}
+	for(size_t i = 0; i < edgeCount; i++){
+		SkeletonEdge_ edge = this->edgeAt(i);
+		out << "e " << edge->sourceVertex+1 << " " << edge->targetVertex+1 << "\n";
+	}
+	out.close();
+#endif
 }

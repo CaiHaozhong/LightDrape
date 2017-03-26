@@ -43,8 +43,6 @@ void Human::dress( Garment_ garment )
 	PRINTLN("Skeletonize garment...");
 	skeletonizer->skeletonize(garment);
 	PRINTLN("Skeletonize garment end.");
-	this->dumpSkeleton(getName());
-	garment->dumpSkeleton(garment->getName());
 
 	/* 各自进行分割 */
 	MeshSegmenter_ humanSegmenter = std::make_shared<HumanSegmenter>(shared_from_this());
