@@ -124,8 +124,22 @@ void VisibleMesh::updateVertices( std::vector<Vec3d>& newVers )
 	glBufferSubData(GL_ARRAY_BUFFER, 0, size, tmp.vertex_normals());
 }
 
+
+void VisibleMesh::update()
+{
+	mMesh->request_face_normals();
+	mMesh->update_normals();
+	mMesh->release_face_normals();
+	GLsizeiptr size = 3 * sizeof(double) * mVerCount;
+	glBindBuffer(GL_ARRAY_BUFFER, mVBOs[VERTEX]);
+	glBufferSubData(GL_ARRAY_BUFFER, 0, size, mMesh->points());
+	glBindBuffer(GL_ARRAY_BUFFER, mVBOs[NORMAL]);
+	glBufferSubData(GL_ARRAY_BUFFER, 0, size, mMesh->vertex_normals());
+}
+
 bool VisibleMesh::loadTexture()
 {		
+	return false;
 	QImage buf;
 	MeshMaterial_ material = mMesh->getMeshMaterial();
 	std::string file = material->map_Ka;

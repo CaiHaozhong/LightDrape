@@ -37,4 +37,6 @@ public:
 	double bend_spring_ks, bend_spring_kd;
 	double step;
 	double simulateLen;
+
+	std::vector<int> resultFrames;
 };

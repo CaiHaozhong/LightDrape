@@ -29,6 +29,7 @@ public:
 	void initWithMesh(Mesh_ mesh);
 	void draw();
 	void updateVertices(std::vector<Vec3d>& newVers);
+	void update();
 
 private:
 	bool loadTexture();

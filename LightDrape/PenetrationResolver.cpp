@@ -8,7 +8,7 @@ PenetrationResolver::PenetrationResolver(void)
 {
 	mRigidMesh = nullptr;
 	mKNNSHelper = nullptr;
-	mEPS = -0.5;
+	mEPS = -0.05;
 }
 
 PenetrationResolver::~PenetrationResolver(void)

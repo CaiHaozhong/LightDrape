@@ -101,7 +101,7 @@ void GarmentPhysicalSimulator::initForce()
 {
 	mForces.push_back(smartNew(GravityForce));
 	mForces.push_back(std::make_shared<StretchForce>(mGarment));
-	mForces.push_back(std::make_shared<DampForce>());
+//	mForces.push_back(std::make_shared<DampForce>());
 	mForces.push_back(std::make_shared<BendForce>(mGarment));
 }
 
@@ -189,7 +189,19 @@ void GarmentPhysicalSimulator::simulate()
 // 				mCurPositions[i] += d.normalize_cond() * (1 - dis);
 // 				mCurVelocities[i] = Vec3d(0,0,0);
 // 			}
-// 		}		
+// 		}	
+// 		/* 得到了一帧 */
+// 		if(mAccumulateTimeInterFrame >= 1.0/mMeshFramePool->getFPS()){
+// 			mMeshFramePool->storeFrame(mCurPositions);
+// 			mAccumulateTimeInterFrame = 0;
+// 			onFrame(std::make_shared<MeshFrame>(mCurPositions));
+// 		}
+// 
+// 		/* 结束模拟 */
+// 		if(mCurTime >= mSimulateLen){
+// 			break;
+// 		}
+// 		continue;
 // 		for(size_t i = 0; i < mPointCount; i++){
 // 			Vec3d& p = mCurPositions[i];
 // 			Vec3d& v = mCurVelocities[i];

@@ -13,6 +13,7 @@
 #include "VisibleMesh.h"
 #include "Mesher.h"
 #include "Config.h"
+#include "GarmentPenetrationResolver.h"
 using namespace std;
 #define BUFFER_OFFSET(bytes) ((GLubyte*)NULL + bytes)
 
@@ -20,6 +21,7 @@ MeshWidget::MeshWidget(void)
 {
 	mMeshFramePool = nullptr;
 	mCurFrameIndex = 0;	
+	mFrameCount = 0;
 }
 
 
@@ -29,7 +31,7 @@ MeshWidget::~MeshWidget(void)
 
 void MeshWidget::draw_scene( const std::string& _draw_mode )
 {
-	//glEnable(GL_LIGHTING);
+	glEnable(GL_LIGHTING);
 	glShadeModel(GL_SMOOTH);
 	for(size_t i = 0; i < mVisbleMeshes.size(); i++){
 		mVisbleMeshes[i]->draw();
@@ -57,17 +59,19 @@ void MeshWidget::onEndInitializeGL()
 	double radius = (mGarment->getMax() - mGarment->getMin()).length() * 0.5;
 	set_scene_pos(center, radius);
  	humanSp->addGarmentSimulationCallBack(std::shared_ptr<MeshWidget>(this));
-	humanSp->addMeshSegmentListener(std::shared_ptr<MeshWidget>(this));
+//	humanSp->addMeshSegmentListener(std::shared_ptr<MeshWidget>(this));
  	humanSp->dress(mGarment);
  	Config_ config = Config::getInstance();
+	mVisibleGarment->update();
+	update();
 // 	/* Output */
- 	bool suc = OpenMesh::IO::write_mesh(*(mGarment->getOriginalMesh()), config->clothOutPath+config->clothInFileNames[0]);
-	if(suc){
-		PRINTLN("write succsss!");
-	}
-	else{
-		PRINTLN("write fail!");
-	}
+//  	bool suc = OpenMesh::IO::write_mesh(*(mGarment->getOriginalMesh()), config->clothOutPath+config->clothInFileNames[0]);
+// 	if(suc){
+// 		PRINTLN("write succsss!");
+// 	}
+// 	else{
+// 		PRINTLN("write fail!");
+// 	}
 // 	mTimerID = this->startTimer(4);
 }
 
@@ -88,6 +92,38 @@ void MeshWidget::onSimulateBegin()
 void MeshWidget::onFrame( MeshFrame_ frame )
 {
 	PRINT("h ");
+	mFrameCount += 1;
+	Config_ config = Config::getInstance();
+	std::vector<int>& resultFrames = config->resultFrames;
+	for(size_t f = 0; f < resultFrames.size(); f++){
+		if(mFrameCount == resultFrames[f]){
+			Mesh_ ret = std::make_shared<Mesh>(*(mGarment->getOriginalMesh()));
+			std::vector<Vec3d>& newVers = frame->getVertices();
+			for(size_t i = 0; i < newVers.size(); i++){
+				ret->set_point(Mesh::VertexHandle(i), newVers[i]);
+			}
+			ret->request_face_normals();
+			ret->update_normals();
+			ret->release_face_normals();
+			char buf[30];
+			_itoa(mFrameCount, buf, 10);
+			GarmentPenetrationResolver_ penetrationResolver = smartNew(GarmentPenetrationResolver);
+			penetrationResolver->setGarment(ret);
+			penetrationResolver->setHuman(mHuman.lock()->getOriginalMesh());
+			bool isSuc = penetrationResolver->resolve();
+			if(isSuc){
+				PRINTLN("Resolve Penetration successfully.");
+			}
+			else{
+				PRINTLN("Resolve Penetration fail.");
+			}
+			OpenMesh::IO::Options opt;
+			opt += OpenMesh::IO::Options::VertexTexCoord;
+			OpenMesh::IO::write_mesh(*ret, config->clothOutPath + "physic_" +
+				std::string(buf) + 
+				"_" + mGarment->getName() + ".obj");
+		}
+	}
 }
 
 void MeshWidget::onSimulateEnd( MeshFramePool_ meshFramePool )
@@ -99,8 +135,7 @@ void MeshWidget::timerEvent( QTimerEvent *event )
 {
 	if(mMeshFramePool != nullptr){
 		size_t frameSize = mMeshFramePool->getFrameCount();
-		MeshFrame_ curFrame = mMeshFramePool->getFrame((mCurFrameIndex++)%frameSize);
-		Mesh_ garMesh = mGarment->getOriginalMesh();
+		MeshFrame_ curFrame = mMeshFramePool->getFrame((mCurFrameIndex++)%frameSize);		
 		std::vector<Vec3d>& vers = curFrame->getVertices();
 		mVisibleGarment->updateVertices(vers);
 		update();
@@ -114,10 +149,10 @@ void MeshWidget::paintGL()
 
 void MeshWidget::sendDataToGPU()
 {
-// 	mVisibleGarment = std::make_shared<VisibleMesh>(mGarment->getOriginalMesh());
-// 	mVisibleHuman = std::make_shared<VisibleMesh>(mHuman.lock());
-// 	mVisbleMeshes.push_back(mVisibleGarment);
-// 	mVisbleMeshes.push_back(mVisibleHuman);
+	mVisibleGarment = std::make_shared<VisibleMesh>(mGarment->getOriginalMesh());
+	mVisibleHuman = std::make_shared<VisibleMesh>(mHuman.lock());
+	mVisbleMeshes.push_back(mVisibleGarment);
+	mVisbleMeshes.push_back(mVisibleHuman);
 }
 
 void MeshWidget::onEndCoarseSegment( Segment_ seg )

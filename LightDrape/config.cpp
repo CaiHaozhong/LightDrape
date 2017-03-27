@@ -8,7 +8,7 @@ Config::Config()
 	humanSimpleRefiner = true;
 	clothRefiner = true;
 	clothSimpleRefiner = true;
-	humanLegCenterXep = 0;
+	humanLegCenterXep = 0;	
 }
 
 void Config::init( char* file )
@@ -96,6 +96,14 @@ void Config::init( char* file )
 		else if(type == "human_leg_center_x_ep"){
 			configIn >> humanLegCenterXep;
 		}
+		else if(type == "result_frames"){
+			int count;
+			configIn >> count;
+			resultFrames.resize(count);
+			for(int i = 0; i < count; i++){
+				configIn >> resultFrames[i];
+			}			
+		}
 	}
 }
 
@@ -103,8 +111,8 @@ Config_ Config::getInstance()
 {
 	if(mInstance == nullptr){
 		mInstance = std::shared_ptr<Config>(new Config());
-		//mInstance->init("E:\\Project\\LightDrape\\data\\config");
-		mInstance->init("D:\\Develop\\project\\LightDrape\\C++\\data\\config");
+		mInstance->init("E:\\Project\\LightDrape\\data\\config");
+		//mInstance->init("D:\\Develop\\project\\LightDrape\\C++\\data\\config");
 	}
 	return mInstance;
 }

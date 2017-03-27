@@ -62,6 +62,7 @@ private:
 	MeshFramePool_ mMeshFramePool;
 	int mTimerID;
 	int mCurFrameIndex;
+	int mFrameCount;
 	
 };
 S_PTR(MeshWidget);

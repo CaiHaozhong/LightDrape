@@ -33,7 +33,7 @@ VertexAlter_ FullSkeletonFitter::fit( Region_ humanRegion )
 		Mesh_ clothMesh = mGarmentRegion->getMesh();
 		for(size_t i = 0; i < mGarmentSkeleton->nodeCount(); i++){
 			char buf[100];
-			itoa(i, buf, 10);
+			_itoa(i, buf, 10);
 			std::ofstream out = std::ofstream(config->clothSegOutPath + "corr/leftsleeve" + std::string(buf) + ".cg");
 			SkeletonNode_ skn = mGarmentSkeleton->nodeAt(i);
 			std::vector<size_t> cors = skn->correspondanceIndices;
@@ -52,7 +52,7 @@ VertexAlter_ FullSkeletonFitter::fit( Region_ humanRegion )
 		Mesh_ humanMesh = humanRegion->getMesh();
 		for(size_t i = 0; i < mHumanSkeleton->nodeCount(); i++){
 			char buf[100];
-			itoa(i, buf, 10);
+			_itoa(i, buf, 10);
 			std::ofstream out = std::ofstream(config->clothSegOutPath + "corr/lefthand" + std::string(buf) + ".cg");
 			SkeletonNode_ skn = mHumanSkeleton->nodeAt(i);
 			std::vector<size_t> cors = skn->correspondanceIndices;
