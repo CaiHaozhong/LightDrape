@@ -26,8 +26,47 @@ VertexAlter_ FullSkeletonFitter::fit( Region_ humanRegion )
 	RegionSkeletonizer_ regionSkeletonizer = smartNew(RegionSkeletonizer);
 	char name[20];
 	sprintf(name, "%d", fitI++);
-	mGarmentSkeleton = regionSkeletonizer->skeletonize(mGarmentRegion, mGarmentRegion->getMesh()->getName() + std::string("sleeve")+name);
-	mHumanSkeleton = regionSkeletonizer->skeletonize(humanRegion, mHumanRegion->getMesh()->getName() + std::string("hand")+name);
+	mGarmentSkeleton = regionSkeletonizer->skeletonize(mGarmentRegion);
+	mHumanSkeleton = regionSkeletonizer->skeletonize(humanRegion);
+	Config_ config = Config::getInstance();
+	if(mGarmentRegion->getName() == "leftsleeve"){
+		Mesh_ clothMesh = mGarmentRegion->getMesh();
+		for(size_t i = 0; i < mGarmentSkeleton->nodeCount(); i++){
+			char buf[100];
+			itoa(i, buf, 10);
+			std::ofstream out = std::ofstream(config->clothSegOutPath + "corr/leftsleeve" + std::string(buf) + ".cg");
+			SkeletonNode_ skn = mGarmentSkeleton->nodeAt(i);
+			std::vector<size_t> cors = skn->correspondanceIndices;
+			int corrCount = cors.size();
+			out << "# D:3 NV:" << corrCount+1
+				<< " NE:" << 0 << "\n";
+			for(size_t k = 0; k < corrCount; k++){
+				const Vec3d& p = clothMesh->point(Mesh::VertexHandle(cors[k]));
+				out << "v " << p.values_[0] << " " << p.values_[1] << " " << p.values_[2] << "\n";
+			}
+			out << "v " << skn->point.values_[0] << " " << skn->point.values_[1] << " " << skn->point.values_[2] << "\n";
+			out.close();
+		}
+	}
+	if(humanRegion->getName() == "lefthand"){
+		Mesh_ humanMesh = humanRegion->getMesh();
+		for(size_t i = 0; i < mHumanSkeleton->nodeCount(); i++){
+			char buf[100];
+			itoa(i, buf, 10);
+			std::ofstream out = std::ofstream(config->clothSegOutPath + "corr/lefthand" + std::string(buf) + ".cg");
+			SkeletonNode_ skn = mHumanSkeleton->nodeAt(i);
+			std::vector<size_t> cors = skn->correspondanceIndices;
+			int corrCount = cors.size();
+			out << "# D:3 NV:" << corrCount+1
+				<< " NE:" << 0 << "\n";
+			for(size_t k = 0; k < corrCount; k++){
+				const Vec3d& p = humanMesh->point(Mesh::VertexHandle(cors[k]));
+				out << "v " << p.values_[0] << " " << p.values_[1] << " " << p.values_[2] << "\n";
+			}
+			out << "v " << skn->point.values_[0] << " " << skn->point.values_[1] << " " << skn->point.values_[2] << "\n";
+			out.close();
+		}
+	}
 	addSkeletonNodesToSet(mGarmentSkeleton, mGarSkeNodes);
 	addSkeletonNodesToSet(mHumanSkeleton, mHumanSkeNodes);
 // 	dumpRegionSkeletonLink(mGarmentSkeleton, mGarmentRegion, "leftSleeve");

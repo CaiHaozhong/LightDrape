@@ -131,6 +131,23 @@ void WatertightMesh::dumpSkeLinkMesh(size_t skeNode, std::string subPath)
 #endif
 }
 
+void WatertightMesh::dumpSkeCorrspondentPoints( size_t skeNode, std::string filename )
+{
+#ifdef _DEBUG_
+	std::ofstream out = std::ofstream(filename);
+	SkeletonNode_ skn = mSkeleton->nodeAt(skeNode);
+	std::vector<size_t> cors = skn->correspondanceIndices;
+	int corrCount = cors.size();
+	out << "# D:3 NV:" << corrCount
+		<< " NE:" << 0 << "\n";
+	for(size_t k = 0; k < corrCount; k++){
+		const Vec3d& p = this->point(Mesh::VertexHandle(cors[k]));
+		out << "v " << p.values_[0] << " " << p.values_[1] << " " << p.values_[2] << "\n";
+	}
+	out.close();
+#endif
+}
+
 size_t WatertightMesh::getCorrSkeletonNode( size_t vertex )
 {
 	if(mVertexPropertySKN == nullptr){

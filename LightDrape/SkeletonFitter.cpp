@@ -109,6 +109,22 @@ void SkeletonFitter::fitSkeleton(std::vector< std::pair<size_t, Vec3d> >& garSke
 	std::vector<size_t> humOrderSkes;
 	getSortedSkeleton(mGarmentRegion, garOrderedSkes, std::make_shared<ChooseLongBranch>(garSkeleton));
 	getSortedSkeleton(humanRegion, humOrderSkes, std::make_shared<ChooseLongBranch>(humSkeleton));
+	if(mGarmentRegion->getName() == "leftsleeve"){
+		std::cout << "garOrderedSkes: ";
+		for(size_t k = 0; k < garOrderedSkes.size(); k++)
+		{
+			std::cout << garOrderedSkes[k] << " ";
+		}
+		std::cout << "\n";
+	}
+	if(humanRegion->getName() == "lefthand"){
+		std::cout << "humOrderSkes: ";
+		for(size_t k = 0; k < humOrderSkes.size(); k++)
+		{
+			std::cout << humOrderSkes[k] << " ";
+		}
+		std::cout << "\n";
+	}
 	size_t garStartSke = garOrderedSkes[0];
 	size_t humStartSke = humOrderSkes[0];
 	garSkeleton->dumpPoint(garStartSke, Config::getInstance()->clothSegOutPath+"garTop.cg");

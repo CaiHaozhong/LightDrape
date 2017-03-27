@@ -53,6 +53,8 @@ public:
 
 	void dumpSkeLinkMesh(size_t skeNode, std::string sunPath);	
 
+	void dumpSkeCorrspondentPoints(size_t skeNode, std::string filename);	
+
 	Mesh_ getOriginalMesh() const { return mOriginalMesh; }
 
 	int getOriginVertex(size_t watertightVertex);
