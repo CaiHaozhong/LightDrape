@@ -85,6 +85,7 @@ void GarmentPhysicalSimulator::initPointProperty()
 {
 	mPointCount = mGarment->n_vertices();
 	mCurPositions.resize(mPointCount);
+	mLastPositions.resize(mPointCount);
 
 	/* 初始速度为0 */
 	mCurVelocities.resize(mPointCount, Vec3d(0, 0, 0));	
@@ -94,6 +95,7 @@ void GarmentPhysicalSimulator::initPointProperty()
 	/* 设置初始位置 */
 	for(Mesh::VertexIter it = mGarment->vertices_begin(); it != mGarment->vertices_end(); it++){
 		mCurPositions[it->idx()] = mGarment->point(*it);
+		mLastPositions[it->idx()] = mGarment->point(*it);
 	}
 }
 
@@ -224,14 +226,13 @@ void GarmentPhysicalSimulator::simulate()
 			Vec3d& p = mCurPositions[i];
 			Vec3d& v = mCurVelocities[i];
 			Vec3d temp = v;
-			Vec3d q = p + (-temp).normalize_cond() * 0.05;
+//			Vec3d q = p + (-temp).normalize_cond() * 0.05;
+			Vec3d q = mLastPositions[i];
 			LineSegment seg(Point(p.values_[0],p.values_[1],p.values_[2]),
 				Point(q.values_[0],q.values_[1],q.values_[2]));
 			Vec3d intersectionPoint;
 			size_t intersectTriangleIndex;
-			if(mAABBTree->fastIntersectionTest(seg)){
-				mAABBTree->intersection(seg, intersectionPoint,intersectTriangleIndex);				
-				
+			if(mAABBTree->intersection(seg, intersectionPoint,intersectTriangleIndex)){
 				Vec3d faceVers[3];
 				int _v = 0;
 				for(Mesh::FaceVertexIter fv = mHuman->fv_begin(Mesh::FaceHandle(intersectTriangleIndex));
@@ -247,20 +248,27 @@ void GarmentPhysicalSimulator::simulate()
 // 				}
 // 				faceNormal /= 3.0;
 
-				if( (faceNormal | v) > 0)
-					continue;
+// 				if( (faceNormal | v) > 0)
+// 					continue;
 
 // 				if(((intersectionPoint - p) | faceNormal) < 0 )
 // 					continue;
 
-				Vec3d newV = -v;
-				Vec3d axis = newV % faceNormal;
-				double angle = -2* acos( (newV|faceNormal) / (newV.length()*faceNormal.length()));				
-				Quaternion q(axis, angle);
-				q.rotate(newV);
-				p = intersectionPoint;
-				v = newV;
+// 				Vec3d newV = -v;
+// 				Vec3d axis = newV % faceNormal;
+// 				double angle = -2* acos( (newV|faceNormal) / (newV.length()*faceNormal.length()));				
+// 				Quaternion quaternion(axis, angle);
+// 				quaternion.rotate(newV);
+ 				faceNormal.normalize_cond();
+				double e = 0.5;
+				double j = -(1+e) * (v | faceNormal);
+				p = intersectionPoint + faceNormal * 0.002;
+				v += faceNormal * j;
 			}
+		}
+
+		for(size_t i = 0; i < mPointCount; i++){
+			mLastPositions[i] = mCurPositions[i];
 		}
 		/* 存储m_dt时间步长后的状态 */
 // 		mCurPositions = nextPositions;

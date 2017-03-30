@@ -90,6 +90,9 @@ private:
 	/* 质点当前的位置 */
 	std::vector<Vec3d> mCurPositions;
 
+	/* 质点当前的位置 */
+	std::vector<Vec3d> mLastPositions;
+
 	/* 质点当前的速度 */
 	std::vector<Vec3d> mCurVelocities;
 

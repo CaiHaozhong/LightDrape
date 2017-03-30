@@ -139,7 +139,6 @@ void VisibleMesh::update()
 
 bool VisibleMesh::loadTexture()
 {		
-	return false;
 	QImage buf;
 	MeshMaterial_ material = mMesh->getMeshMaterial();
 	std::string file = material->map_Ka;

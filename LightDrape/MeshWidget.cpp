@@ -72,7 +72,7 @@ void MeshWidget::onEndInitializeGL()
 // 	else{
 // 		PRINTLN("write fail!");
 // 	}
-// 	mTimerID = this->startTimer(4);
+ 	mTimerID = this->startTimer(4);
 }
 
 void MeshWidget::setHuman( Human_ human )
@@ -91,7 +91,7 @@ void MeshWidget::onSimulateBegin()
 
 void MeshWidget::onFrame( MeshFrame_ frame )
 {
-	PRINT("h ");
+	PRINT("h ");return;
 	mFrameCount += 1;
 	Config_ config = Config::getInstance();
 	std::vector<int>& resultFrames = config->resultFrames;
@@ -119,7 +119,7 @@ void MeshWidget::onFrame( MeshFrame_ frame )
 			}
 			OpenMesh::IO::Options opt;
 			opt += OpenMesh::IO::Options::VertexTexCoord;
-			OpenMesh::IO::write_mesh(*ret, config->clothOutPath + "physic_" +
+			OpenMesh::IO::write_mesh(*ret, config->clothOutPath + "physic_nopenetration_" +
 				std::string(buf) + 
 				"_" + mGarment->getName() + ".obj");
 		}
