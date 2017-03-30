@@ -35,47 +35,47 @@ size_t Human::getGeodesicSource()
 void Human::dress( Garment_ garment )
 {
 	mGarment = garment;
-// 	/* 先各自进行骨骼提取 */
-// 	MeshSkeletonization_ skeletonizer = smartNew(MeshSkeletonizationCached);
-// 	PRINTLN("Skeletonize human...");
-// 	skeletonizer->skeletonize(shared_from_this());
-// 	PRINTLN("Skeletonize human end.");
-// 	PRINTLN("Skeletonize garment...");
-// 	skeletonizer->skeletonize(garment);
-// 	PRINTLN("Skeletonize garment end.");
-// 
-// 	/* 各自进行分割 */
-// 	MeshSegmenter_ humanSegmenter = std::make_shared<HumanSegmenter>(shared_from_this());
-// 	humanSegmenter->addSegmentListener(mMeshSegmentListeners);
-// 	PRINTLN("Segment human...");
-// 	humanSegmenter->segment();
-// 	PRINTLN("Segment human end.");
-// 	MeshSegmenter_ clothSegmenter = nullptr;
-// 	Config_ config = Config::getInstance();
-// 	std::string clothType = config->clothType;
-// 	if(clothType == "cloth"){
-// 		clothSegmenter = std::make_shared<ClothSegmenter>(garment);
-// 	}
-// 	else if(clothType == "trousers"){
-// 		clothSegmenter = std::make_shared<TrousersSegmenter>(garment);
-// 	}
-// 	if(clothSegmenter == nullptr){
-// 		PRINTLN("Human::dress( Garment_ garment ), Error cloth type!");
-// 		return;
-// 	}
-// 	clothSegmenter->addSegmentListener(mMeshSegmentListeners);
-// 	PRINTLN("Segment garment...");
-// 	clothSegmenter->segment();
-// 	PRINTLN("Segment garment end.");
-//  	
-// 	GarmentFitter_ fitter = std::make_shared<GarmentFitter>(garment);
-// 	fitter->setMeshDeformer(smartNew(LaplacianGlobalDeformer));
-// 	PRINTLN("Fitting garment...");
-// 	fitter->fit(shared_from_this());
-// 	PRINTLN("Fitting garment end.");
-// 
-// 	/* 修改原始网格 */
-// 	garment->alterOriginalMesh();
+	/* 先各自进行骨骼提取 */
+	MeshSkeletonization_ skeletonizer = smartNew(MeshSkeletonizationCached);
+	PRINTLN("Skeletonize human...");
+	skeletonizer->skeletonize(shared_from_this());
+	PRINTLN("Skeletonize human end.");
+	PRINTLN("Skeletonize garment...");
+	skeletonizer->skeletonize(garment);
+	PRINTLN("Skeletonize garment end.");
+
+ 	/* 各自进行分割 */
+	MeshSegmenter_ humanSegmenter = std::make_shared<HumanSegmenter>(shared_from_this());
+	humanSegmenter->addSegmentListener(mMeshSegmentListeners);
+	PRINTLN("Segment human...");
+	humanSegmenter->segment();
+	PRINTLN("Segment human end.");
+	MeshSegmenter_ clothSegmenter = nullptr;
+	Config_ config = Config::getInstance();
+	std::string clothType = config->clothType;
+	if(clothType == "cloth"){
+		clothSegmenter = std::make_shared<ClothSegmenter>(garment);
+	}
+	else if(clothType == "trousers"){
+		clothSegmenter = std::make_shared<TrousersSegmenter>(garment);
+	}
+	if(clothSegmenter == nullptr){
+		PRINTLN("Human::dress( Garment_ garment ), Error cloth type!");
+		return;
+	}
+	clothSegmenter->addSegmentListener(mMeshSegmentListeners);
+	PRINTLN("Segment garment...");
+	clothSegmenter->segment();
+	PRINTLN("Segment garment end.");
+ 	
+	GarmentFitter_ fitter = std::make_shared<GarmentFitter>(garment);
+	fitter->setMeshDeformer(smartNew(LaplacianGlobalDeformer));
+	PRINTLN("Fitting garment...");
+	fitter->fit(shared_from_this());
+	PRINTLN("Fitting garment end.");
+
+	/* 修改原始网格 */
+	garment->alterOriginalMesh();
 
 
 	/* 穿透调整 */
@@ -89,8 +89,8 @@ void Human::dress( Garment_ garment )
 // 	else{
 // 		PRINTLN("Resolve Penetration fail.");
 // 	}
-	std::thread t(&Human::doSimulate, this, garment);
-	t.detach();
+// 	std::thread t(&Human::doSimulate, this, garment);
+// 	t.detach();
 }
 
 Vec3d Human::getAlignPoint()

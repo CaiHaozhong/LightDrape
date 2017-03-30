@@ -53,19 +53,21 @@ void MeshWidget::initGlew()
 void MeshWidget::onEndInitializeGL()
 {
 	initGlew();
-	sendDataToGPU();
+//	sendDataToGPU();
 	Human_ humanSp = mHuman.lock();
 	Vec3d center = (mGarment->getMax() + mGarment->getMin()) * 0.5;
 	double radius = (mGarment->getMax() - mGarment->getMin()).length() * 0.5;
 	set_scene_pos(center, radius);
  	humanSp->addGarmentSimulationCallBack(std::shared_ptr<MeshWidget>(this));
-//	humanSp->addMeshSegmentListener(std::shared_ptr<MeshWidget>(this));
+	humanSp->addMeshSegmentListener(std::shared_ptr<MeshWidget>(this));
  	humanSp->dress(mGarment);
  	Config_ config = Config::getInstance();
-	mVisibleGarment->update();
-	update();
-// 	/* Output */
-//  	bool suc = OpenMesh::IO::write_mesh(*(mGarment->getOriginalMesh()), config->clothOutPath+config->clothInFileNames[0]);
+// 	mVisibleGarment->update();
+// 	update();
+ 	/* Output */
+  	bool suc = OpenMesh::IO::write_mesh(*(mGarment->getOriginalMesh()), config->clothOutPath
+		+ humanSp->getName() + "_"
+		+ config->clothInFileNames[0]);
 // 	if(suc){
 // 		PRINTLN("write succsss!");
 // 	}

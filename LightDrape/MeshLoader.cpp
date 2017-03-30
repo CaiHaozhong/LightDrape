@@ -47,7 +47,7 @@ void MeshLoader::loadHuman()
 	Human_ human = std::make_shared<Human>(raw);
 
 	HumanFeature_ feature = smartNew(HumanFeature);
-	feature->fromMakeHumanMeasureFile(conf->humanInPath + human->getName() + ".par");
+	feature->fromMakeHumanMeasureFile(conf->humanInPath + /*human->getName() + */"female01.par");
 	human->setFeature(feature);
 
 	Message_ msg = std::make_shared<Message>(END_LOAD_HUMAN);
