@@ -22,7 +22,7 @@ Skeleton_ RegionSkeletonizer::skeletonize( Region_ region, std::string name )
 	WatertightMesh_ watertightRegionMesh = std::make_shared<WatertightMesh>(mesh);
 	//	OpenMesh::IO::write_mesh(*watertightRegionMesh, config->clothSegOutPath + name + "_watertightRegion.obj");
 	MeshSkeletonization_ skeletonizer = smartNew(MeshSkeletonization);
-	skeletonizer->set_quality_speed_tradeoff(0.5);
+	skeletonizer->set_quality_speed_tradeoff(config->qualitySpeedTradeoff);
 	skeletonizer->skeletonize(watertightRegionMesh);
 	//	watertightRegionMesh->dumpSkeleton(name+"_region");
 	Skeleton_ skeleton = watertightRegionMesh->getSkeleton();

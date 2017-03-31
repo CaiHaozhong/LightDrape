@@ -38,5 +38,7 @@ public:
 	double step;
 	double simulateLen;
 
+	double qualitySpeedTradeoff;
+
 	std::vector<int> resultFrames;
 };
