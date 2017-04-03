@@ -32,26 +32,32 @@ void Mesh::requestAABB(){
 }
 
 Vec3d Mesh::getMin(){
+	requestAABB();
 	return mMinPoint;
 }
 
 Vec3d Mesh::getMax(){
+	requestAABB();
 	return mMaxPoint;
 }
 
 double Mesh::getDigonalLen(){
+	requestAABB();
 	return (mMaxPoint-mMinPoint).length();
 }
 
 double Mesh::getWidth(){
+	requestAABB();
 	return mMaxPoint.values_[0] - mMinPoint.values_[0];
 }
 
 double Mesh::getHeight(){
+	requestAABB();
 	return mMaxPoint.values_[1] - mMinPoint.values_[1];
 }
 
 double Mesh::getLength(){
+	requestAABB();
 	return mMaxPoint.values_[2] - mMinPoint.values_[2];
 }
 

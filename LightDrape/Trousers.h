@@ -12,5 +12,7 @@ public:
 
 	/* 在人体上穿着的高度，Garment的getAlignPoint()的y位置移动到该高度  */
 	double dressHeight(Human_ human);
+
+	void getSimulateFixPoints(std::vector<size_t>& fixPoints);
 };
 

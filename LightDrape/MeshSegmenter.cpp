@@ -26,7 +26,7 @@ void MeshSegmenter::init( WatertightMesh_ mesh )
 {
 	mMesh = mesh;	
 	PRINTLN("Begin compute Geodesic...");
-	mGeodesicResolver = smartNew(GeodesicResolverCached);
+	mGeodesicResolver = smartNew(GeodesicResolver);
 	mGeodesicResolver->resolveGeo(mMesh);
 	mGeodesicResolver->normalize(mMesh->getVertexPropertyGeoDis(), mMesh->n_vertices()); // 将测地值归一化
 	mStart = clock();
@@ -34,7 +34,7 @@ void MeshSegmenter::init( WatertightMesh_ mesh )
 	PRINTLN("End compute Geodesic...");
 	PRINTLN("Begin computeLevelSet...");
 
-	computeLevelSet(true);
+	computeLevelSet();
 	PRINTLN("End computeLevelSet...");
 }
 

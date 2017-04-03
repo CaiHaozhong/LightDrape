@@ -25,19 +25,21 @@ void MeshLoader::load()
 {
 	mMsgQueue->push(std::make_shared<Message>(BEGIN_LOAD));
 
-	loadHuman();
+	loadHumans();
 
 	loadGarments();
 
 	mMsgQueue->push(std::make_shared<Message>(END_LOAD));
 }
 
-void MeshLoader::loadHuman()
+void MeshLoader::loadHuman(int i)
 {
-	mMsgQueue->push(std::make_shared<Message>(BEGIN_LOAD_HUMAN));
+	Message_ msg = std::make_shared<Message>(BEGIN_LOAD_HUMAN);
+	msg->arg1 = i;
+	mMsgQueue->push(msg);
 
 	Config_ conf = Config::getInstance();
-	Mesh_ raw = loadMesh(conf->humanInPath, conf->humanInFileName);
+	Mesh_ raw = loadMesh(conf->humanInPath, conf->humanInFileNames[i]);
 	MeshTransformerFactory_ meshTransformerFactory = smartNew(AxisYTransFactory);
 	MeshTransformer_ transformer = meshTransformerFactory->createTransfomer(Config::getInstance()->humanMeshDiretion);
 	if(transformer){
@@ -50,7 +52,7 @@ void MeshLoader::loadHuman()
 	feature->fromMakeHumanMeasureFile(conf->humanInPath + /*human->getName() + */"female01.par");
 	human->setFeature(feature);
 
-	Message_ msg = std::make_shared<Message>(END_LOAD_HUMAN);
+	msg = std::make_shared<Message>(END_LOAD_HUMAN);
 	msg->human = human;
 	mMsgQueue->push(msg);
 }
@@ -155,12 +157,12 @@ void MeshLoader::timerEvent( QTimerEvent *event )
 			break;
 		case BEGIN_LOAD_HUMAN:
 			for(size_t i = 0; i < mListeners.size(); i++){
-				mListeners[i]->onBeginLoadHuman();
+				mListeners[i]->onBeginLoadHuman(msg->arg1);
 			}
 			break;
 		case END_LOAD_HUMAN:
 			for(size_t i = 0; i < mListeners.size(); i++){
-				mListeners[i]->onEndLoadHuman(msg->human);
+				mListeners[i]->onEndLoadHuman(msg->arg1, msg->human);
 			}
 			break;
 		case BEGIN_LOAD_GARMENT:
@@ -176,6 +178,15 @@ void MeshLoader::timerEvent( QTimerEvent *event )
 		default:
 			break;
 		}
+	}
+}
+
+void MeshLoader::loadHumans()
+{
+	Config_ conf = Config::getInstance();
+	size_t count = conf->humanInFileNames.size();
+	for(size_t g = 0; g < count; g++){
+		loadHuman(g);
 	}
 }
 

@@ -13,7 +13,7 @@ private:
 public:
 	std::string humanInPath;	
 	std::string clothInPath;
-	std::string humanInFileName;
+	std::vector<std::string> humanInFileNames;
 	std::vector<std::string> clothInFileNames;
 	std::string clothOutPath;
 	std::string humanMeshDiretion;

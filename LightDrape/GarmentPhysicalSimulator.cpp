@@ -266,7 +266,10 @@ void GarmentPhysicalSimulator::simulate()
 				v += faceNormal * j;
 			}
 		}
-
+		for(auto fixIt = mGarmentFixPoints.begin();
+			fixIt != mGarmentFixPoints.end(); fixIt++){
+				mCurPositions[*fixIt] = mLastPositions[*fixIt];
+		}
 		for(size_t i = 0; i < mPointCount; i++){
 			mLastPositions[i] = mCurPositions[i];
 		}
@@ -317,6 +320,13 @@ void GarmentPhysicalSimulator::onEnd( MeshFramePool_ meshFramePool )
 {
 	for(auto it = mGarmentSimulationCallBacks.begin(); it != mGarmentSimulationCallBacks.end(); it++){
 		(*it)->onSimulateEnd(meshFramePool);
+	}
+}
+
+void GarmentPhysicalSimulator::addGarmentFixPoints( std::vector<size_t>& fixPoints )
+{
+	for(auto it = fixPoints.begin(); it != fixPoints.end(); it++){
+		mGarmentFixPoints.push_back(*it);
 	}
 }
 

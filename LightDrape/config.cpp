@@ -30,7 +30,12 @@ void Config::init( char* file )
 			configIn >> clothInPath;
 		}
 		else if(type == "human_in_file"){
-			configIn >> humanInFileName;
+			size_t count;
+			configIn >> count;
+			humanInFileNames.resize(count);
+			for(size_t i = 0; i < count; i++){
+				configIn >> humanInFileNames[i];
+			}
 		}
 		else if(type == "cloth_in_file"){
 			size_t count;

@@ -23,7 +23,7 @@ public:
 	};
 
 	/* 开始加载人体模型 */
-	void onBeginLoadHuman(){
+	void onBeginLoadHuman(int i){
 		std::cout << "onBeginLoadHuman" << std::endl;
 	};
 
@@ -33,7 +33,7 @@ public:
 	};
 
 	/* 人体模型加载结束 */
-	void onEndLoadHuman(Human_ human){
+	void onEndLoadHuman(int i, Human_ human){
 		mHuman = human;	
 // 		GeodesicResolver_ resolver = smartNew(GeodesicResolverCached);
 // 		resolver->resolveGeo(human);
@@ -60,6 +60,52 @@ public:
 		mainWin->setCentralWidget(glWidget);
 		mainWin->resize(640,480);
 		mainWin->show();
+		std::cout << "onEndLoad" << std::endl;
+	};
+};
+class ExperimentCallBack : public MeshLoader::MeshLoaderListener{
+private:
+	std::vector<Human_> mHumans;
+	std::vector<Garment_> mGarments;
+public:
+	/* 开始加载所有模型 */
+	void onBeginLoad(){
+		std::cout << "onBeginLoad" << std::endl;
+	};
+
+	/* 开始加载人体模型 */
+	void onBeginLoadHuman(int i){
+		std::cout << "onBeginLoadHuman" << std::endl;
+	};
+
+	/* 开始加载第i个衣服模型 */
+	void onBeginLoadGarment(int i){
+		std::cout << "onBeginLoadGarment" << std::endl;
+	};
+
+	/* 人体模型加载结束 */
+	void onEndLoadHuman(int i, Human_ human){				
+		mHumans.push_back(human);
+		std::cout << "onEndLoadHuman" << i << std::endl;
+	};
+
+	/* 第i个衣服模型加载结束 */
+	void onEndLoadGarment(int i, Garment_ gar){
+		mGarments.push_back(gar);
+		Config_ config = Config::getInstance();
+		for(auto it = mHumans.begin(); it != mHumans.end(); it++){
+			Garment_ d_g = std::make_shared<Cloth>(gar->getOriginalMesh());
+			(*it)->dress(d_g);
+			bool suc = OpenMesh::IO::write_mesh(*(d_g->getOriginalMesh()), config->clothOutPath
+				+ (*it)->getName() + "_"
+				+ d_g->getName() + ".obj");
+		}
+		// 		OpenMesh::IO::write_mesh(*(gar->getOriginalMesh()), config->clothInPath+gar->getName()+"_decimetre.obj");
+		std::cout << "onEndLoadGarment" << i <<  std::endl;
+	};
+
+	/* 所有模型加载完毕 */
+	void onEndLoad(){
 		std::cout << "onEndLoad" << std::endl;
 	};
 };

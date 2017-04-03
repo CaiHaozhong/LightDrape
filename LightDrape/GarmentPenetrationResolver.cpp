@@ -36,7 +36,11 @@ bool GarmentPenetrationResolver::resolve()
 	for(auto it = mGarment->vertices_begin(); it != mGarment->vertices_end(); it++){
 		points.push_back(mGarment->point(*it));
 	}
-	mPenetrationResolver->resolve(points);
+	int itCount = 1;
+	while(mPenetrationResolver->resolve(points)){
+		itCount += 1;
+	}
+	std::cout << "Penetration Iter Count: " << itCount << "\n";
 	size_t cur = 0;
 	for(auto it = mGarment->vertices_begin(); it != mGarment->vertices_end(); it++){
 		Vec3d& p = mGarment->point(*it);

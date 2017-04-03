@@ -53,21 +53,24 @@ void MeshWidget::initGlew()
 void MeshWidget::onEndInitializeGL()
 {
 	initGlew();
-//	sendDataToGPU();
+	sendDataToGPU();
 	Human_ humanSp = mHuman.lock();
 	Vec3d center = (mGarment->getMax() + mGarment->getMin()) * 0.5;
 	double radius = (mGarment->getMax() - mGarment->getMin()).length() * 0.5;
 	set_scene_pos(center, radius);
  	humanSp->addGarmentSimulationCallBack(std::shared_ptr<MeshWidget>(this));
-	humanSp->addMeshSegmentListener(std::shared_ptr<MeshWidget>(this));
+	//humanSp->addMeshSegmentListener(std::shared_ptr<MeshWidget>(this));
  	humanSp->dress(mGarment);
  	Config_ config = Config::getInstance();
-// 	mVisibleGarment->update();
-// 	update();
+ 	mVisibleGarment->update();
+ 	update();
  	/* Output */
+	OpenMesh::IO::Options opt;
+	opt += OpenMesh::IO::Options::VertexTexCoord;
+	opt += OpenMesh::IO::Options::FaceTexCoord;
   	bool suc = OpenMesh::IO::write_mesh(*(mGarment->getOriginalMesh()), config->clothOutPath
 		+ humanSp->getName() + "_"
-		+ config->clothInFileNames[0]);
+		+ mGarment->getName() + ".obj", opt);
 // 	if(suc){
 // 		PRINTLN("write succsss!");
 // 	}
@@ -93,7 +96,7 @@ void MeshWidget::onSimulateBegin()
 
 void MeshWidget::onFrame( MeshFrame_ frame )
 {
-	PRINT("h ");return;
+	PRINT("h ");
 	mFrameCount += 1;
 	Config_ config = Config::getInstance();
 	std::vector<int>& resultFrames = config->resultFrames;
@@ -123,7 +126,7 @@ void MeshWidget::onFrame( MeshFrame_ frame )
 			opt += OpenMesh::IO::Options::VertexTexCoord;
 			OpenMesh::IO::write_mesh(*ret, config->clothOutPath + "physic_nopenetration_" +
 				std::string(buf) + 
-				"_" + mGarment->getName() + ".obj");
+				"_" + mGarment->getName() + ".obj", opt);
 		}
 	}
 }

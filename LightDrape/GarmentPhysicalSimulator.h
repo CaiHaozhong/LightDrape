@@ -55,6 +55,7 @@ public:
 
 	void addGarmentSimulationCallBack(GarmentSimulationCallBack_ callback);
 
+	void addGarmentFixPoints(std::vector<size_t>& fixPoints);
 private:
 	/* 初始化质点的质量和初始的位置、速度 */
 	void initPointProperty();
@@ -116,5 +117,6 @@ private:
 	/* 模拟的回调 */
 	std::vector<GarmentSimulationCallBack_> mGarmentSimulationCallBacks;
 
+	std::vector<size_t> mGarmentFixPoints;
 };
 S_PTR(GarmentPhysicalSimulator);

@@ -36,7 +36,7 @@ void Human::dress( Garment_ garment )
 {
 	mGarment = garment;
 // 	/* 先各自进行骨骼提取 */
-// 	MeshSkeletonization_ skeletonizer = smartNew(MeshSkeletonizationCached);
+// 	MeshSkeletonization_ skeletonizer = smartNew(MeshSkeletonization);
 // 	PRINTLN("Skeletonize human...");
 // 	skeletonizer->skeletonize(shared_from_this());
 // 	PRINTLN("Skeletonize human end.");
@@ -76,21 +76,21 @@ void Human::dress( Garment_ garment )
 // 
 // 	/* 修改原始网格 */
 // 	garment->alterOriginalMesh();
-
-
-	/* 穿透调整 */
-	GarmentPenetrationResolver_ penetrationResolver = smartNew(GarmentPenetrationResolver);
-	penetrationResolver->setGarment(garment->getOriginalMesh());
-	penetrationResolver->setHuman(this->getOriginalMesh());
-	bool isSuc = penetrationResolver->resolve();
-	if(isSuc){
-		PRINTLN("Resolve Penetration successfully.");
-	}
-	else{
-		PRINTLN("Resolve Penetration fail.");
-	}
-// 	std::thread t(&Human::doSimulate, this, garment);
-// 	t.detach();
+// 
+// 
+// 	/* 穿透调整 */
+// // 	GarmentPenetrationResolver_ penetrationResolver = smartNew(GarmentPenetrationResolver);
+// // 	penetrationResolver->setGarment(garment->getOriginalMesh());
+// // 	penetrationResolver->setHuman(this->getOriginalMesh());
+// // 	bool isSuc = penetrationResolver->resolve();
+// // 	if(isSuc){
+// // 		PRINTLN("Resolve Penetration successfully.");
+// // 	}
+// // 	else{
+// // 		PRINTLN("Resolve Penetration fail.");
+// // 	}
+ 	std::thread t(&Human::doSimulate, this, garment);
+ 	t.detach();
 }
 
 Vec3d Human::getAlignPoint()
@@ -193,6 +193,9 @@ void Human::doSimulate(Garment_ garment)
 {
 	/* 物理模拟 */
 	mSimulator->initWithGarmentAndHuman(garment->getOriginalMesh(), this->getOriginalMesh());
+	std::vector<size_t> fixPoints;
+	garment->getSimulateFixPoints(fixPoints);
+	mSimulator->addGarmentFixPoints(fixPoints);
 	mSimulator->simulate();	
 }
 

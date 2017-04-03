@@ -56,3 +56,16 @@ Trousers::Trousers( Mesh_ mesh ) :Garment(mesh)
 {
 
 }
+
+void Trousers::getSimulateFixPoints( std::vector<size_t>& fixPoints )
+{
+	double maxY = this->getMax().values_[1];
+	double thredhold = 0.3;
+	Mesh_ oM = this->getOriginalMesh();
+	for(auto vIt = oM->vertices_begin(); vIt != oM->vertices_end(); vIt++){
+		Vec3d& p = oM->point(*vIt);
+		if(std::abs(p.values_[1]-maxY) <= thredhold){
+			fixPoints.push_back(vIt->idx());
+		}
+	}
+}

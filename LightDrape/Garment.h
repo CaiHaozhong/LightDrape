@@ -11,5 +11,7 @@ public:
 
 	/* 返回穿在人体身上的高度，Garment的getAlignPoint()的y位置移动到该高度 */
 	virtual double dressHeight(Human_ human) = 0;
+
+	virtual void getSimulateFixPoints(std::vector<size_t>& fixPoints) = 0;
 };
 S_PTR(Garment);

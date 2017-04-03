@@ -22,13 +22,13 @@ public:
 		virtual void onBeginLoad(){};
 
 		/* 开始加载人体模型 */
-		virtual void onBeginLoadHuman(){};
+		virtual void onBeginLoadHuman(int i){};
 
 		/* 开始加载第i个衣服模型 */
 		virtual void onBeginLoadGarment(int i){};
 
 		/* 人体模型加载结束 */
-		virtual void onEndLoadHuman(Human_ human){};
+		virtual void onEndLoadHuman(int i, Human_ human){};
 
 		/* 第i个衣服模型加载结束 */
 		virtual void onEndLoadGarment(int i, Garment_ gar){};
@@ -90,7 +90,9 @@ private:
 
 	void load();
 
-	void loadHuman();
+	void loadHuman(int i );
+
+	void loadHumans();
 
 	void loadGarments();
 
