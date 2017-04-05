@@ -78,19 +78,19 @@ void Human::dress( Garment_ garment )
 // 	garment->alterOriginalMesh();
 // 
 // 
-// 	/* 穿透调整 */
-// // 	GarmentPenetrationResolver_ penetrationResolver = smartNew(GarmentPenetrationResolver);
-// // 	penetrationResolver->setGarment(garment->getOriginalMesh());
-// // 	penetrationResolver->setHuman(this->getOriginalMesh());
-// // 	bool isSuc = penetrationResolver->resolve();
-// // 	if(isSuc){
-// // 		PRINTLN("Resolve Penetration successfully.");
-// // 	}
-// // 	else{
-// // 		PRINTLN("Resolve Penetration fail.");
-// // 	}
- 	std::thread t(&Human::doSimulate, this, garment);
- 	t.detach();
+	/* 穿透调整 */
+	GarmentPenetrationResolver_ penetrationResolver = smartNew(GarmentPenetrationResolver);
+	penetrationResolver->setGarment(garment->getOriginalMesh());
+	penetrationResolver->setHuman(this->getOriginalMesh());
+	bool isSuc = penetrationResolver->resolve();
+	if(isSuc){
+		PRINTLN("Resolve Penetration successfully.");
+	}
+	else{
+		PRINTLN("Resolve Penetration fail.");
+	}
+  	std::thread t(&Human::doSimulate, this, garment);
+  	t.detach();
 }
 
 Vec3d Human::getAlignPoint()

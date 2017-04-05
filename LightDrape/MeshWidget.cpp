@@ -14,6 +14,7 @@
 #include "Mesher.h"
 #include "Config.h"
 #include "GarmentPenetrationResolver.h"
+#include "MeshWriter.h"
 using namespace std;
 #define BUFFER_OFFSET(bytes) ((GLubyte*)NULL + bytes)
 
@@ -65,12 +66,20 @@ void MeshWidget::onEndInitializeGL()
  	mVisibleGarment->update();
  	update();
  	/* Output */
-	OpenMesh::IO::Options opt;
-	opt += OpenMesh::IO::Options::VertexTexCoord;
-	opt += OpenMesh::IO::Options::FaceTexCoord;
-  	bool suc = OpenMesh::IO::write_mesh(*(mGarment->getOriginalMesh()), config->clothOutPath
-		+ humanSp->getName() + "_"
-		+ mGarment->getName() + ".obj", opt);
+// 	MeshWriter::writeMesh(mGarment->getOriginalMesh(), 
+// 		config->clothOutPath,
+// 		humanSp->getName() + "_"
+// 		+ mGarment->getName() + ".obj");
+	MeshWriter::writeMesh(mGarment->getOriginalMesh(), 
+		config->clothOutPath,		
+		mGarment->getName() + "_rp.obj");
+
+// 	OpenMesh::IO::Options opt;
+// 	opt += OpenMesh::IO::Options::VertexTexCoord;
+// 	opt += OpenMesh::IO::Options::FaceTexCoord;
+//   	bool suc = OpenMesh::IO::write_mesh(*(mGarment->getOriginalMesh()), config->clothOutPath
+// 		+ humanSp->getName() + "_"
+// 		+ mGarment->getName() + ".obj", opt);
 // 	if(suc){
 // 		PRINTLN("write succsss!");
 // 	}
@@ -122,11 +131,15 @@ void MeshWidget::onFrame( MeshFrame_ frame )
 			else{
 				PRINTLN("Resolve Penetration fail.");
 			}
-			OpenMesh::IO::Options opt;
-			opt += OpenMesh::IO::Options::VertexTexCoord;
-			OpenMesh::IO::write_mesh(*ret, config->clothOutPath + "physic_nopenetration_" +
+			MeshWriter::writeMesh(ret, config->clothOutPath,
+				"physic_nopenetration_" +
 				std::string(buf) + 
-				"_" + mGarment->getName() + ".obj", opt);
+				"_" + mGarment->getName() + ".obj");
+// 			OpenMesh::IO::Options opt;
+// 			opt += OpenMesh::IO::Options::VertexTexCoord;
+// 			OpenMesh::IO::write_mesh(*ret, config->clothOutPath + "physic_nopenetration_" +
+// 				std::string(buf) + 
+// 				"_" + mGarment->getName() + ".obj", opt);
 		}
 	}
 }
