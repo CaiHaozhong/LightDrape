@@ -5,6 +5,8 @@
 #include "MeshDeformer.h"
 #include "RegionFitter.h"
 #include "VertexAlter.h"
+#include "Config.h"
+#include <ctime>
 
 GarmentFitter::GarmentFitter(void)
 {
@@ -62,7 +64,9 @@ void GarmentFitter::fit( Human_ human )
 				PRINTLN("No avalible meshdeformer.");
 				return;
 			}
+			clock_t _s = clock();
 			mMeshDeformer->deformMesh(mGarment, vertexAlter);
+			Config::getInstance()->deformTime += clock() - _s;
 		}
 	}
 

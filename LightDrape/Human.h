@@ -45,6 +45,7 @@ public:
 	double getTrouserHeight();
 
 	void doSimulate(Garment_ garment);
+	
 
 	void addGarmentSimulationCallBack(GarmentSimulationCallBack_ callBack);
 

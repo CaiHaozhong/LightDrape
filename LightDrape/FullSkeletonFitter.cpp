@@ -8,6 +8,7 @@
 #include <fstream>
 #include "KNNSHelper.h"
 #include "RegionSkeletonizer.h"
+#include <ctime>
 int FullSkeletonFitter::fitI = 0;
 FullSkeletonFitter::FullSkeletonFitter(void)
 {
@@ -25,10 +26,10 @@ VertexAlter_ FullSkeletonFitter::fit( Region_ humanRegion )
 	mHumanRegion = humanRegion;
 	RegionSkeletonizer_ regionSkeletonizer = smartNew(RegionSkeletonizer);
 	char name[20];
-	sprintf(name, "%d", fitI++);
+	sprintf(name, "%d", fitI++);	
 	mGarmentSkeleton = regionSkeletonizer->skeletonize(mGarmentRegion);
 	mHumanSkeleton = regionSkeletonizer->skeletonize(humanRegion);
-	Config_ config = Config::getInstance();
+	Config_ config = Config::getInstance();	
 	if(mGarmentRegion->getName() == "leftsleeve"){
 		Mesh_ clothMesh = mGarmentRegion->getMesh();
 		for(size_t i = 0; i < mGarmentSkeleton->nodeCount(); i++){

@@ -15,6 +15,8 @@
 #include "MeshSegmentListener.h"
 #include "Config.h"
 #include <thread>
+#include <fstream>
+#include <ctime>
 Human::~Human(void)
 {
 }
@@ -35,7 +37,7 @@ size_t Human::getGeodesicSource()
 void Human::dress( Garment_ garment )
 {
 	mGarment = garment;
-// 	/* 先各自进行骨骼提取 */
+	/* 先各自进行骨骼提取 */
 // 	MeshSkeletonization_ skeletonizer = smartNew(MeshSkeletonization);
 // 	PRINTLN("Skeletonize human...");
 // 	skeletonizer->skeletonize(shared_from_this());
@@ -67,17 +69,42 @@ void Human::dress( Garment_ garment )
 // 	PRINTLN("Segment garment...");
 // 	clothSegmenter->segment();
 // 	PRINTLN("Segment garment end.");
-//  	
+//  	clock_t _s = clock();
 // 	GarmentFitter_ fitter = std::make_shared<GarmentFitter>(garment);
 // 	fitter->setMeshDeformer(smartNew(LaplacianGlobalDeformer));
 // 	PRINTLN("Fitting garment...");
 // 	fitter->fit(shared_from_this());
 // 	PRINTLN("Fitting garment end.");
+// 	double all = clock() - _s;
 // 
 // 	/* 修改原始网格 */
 // 	garment->alterOriginalMesh();
 // 
-// 
+// 	std::cout << "SkeTime: " << config->skeletonTime << "\n";
+// 	std::cout << "HoleFillTime: " << config->holefillTime << "\n";
+// 	std::cout << "DeformTime: " << config->deformTime << "\n";
+// 	std::cout << "AllTime: " << all << "\n";
+// 	std::ifstream in(Config::getInstance()->clothInPath + "move.vec");
+// 	std::map<std::string, Vec3d> garmentMoveVecMap;
+// 	std::string garName;
+// 	while(!in.eof()){		
+// 		in >> garName;
+// 		Vec3d v;
+// 		in >> v.values_[0] >> v.values_[1] >> v.values_[2];
+// 		garmentMoveVecMap.insert(std::make_pair(garName, v));
+// 	}
+// 	if(garmentMoveVecMap.find(garment->getName()) != garmentMoveVecMap.end()){
+// 		Vec3d moveVec = garmentMoveVecMap.at(garment->getName());
+// 		/* Translate Mesh */
+// 		Mesh_ originGar = garment->getOriginalMesh();
+// 		for(Mesh::VertexIter v_it = originGar->vertices_begin();
+// 			v_it != originGar->vertices_end(); v_it++){
+// 				Vec3d& p = originGar->point(*v_it);
+// 				p += moveVec;
+// 		}
+// 	}
+
+
 	/* 穿透调整 */
 	GarmentPenetrationResolver_ penetrationResolver = smartNew(GarmentPenetrationResolver);
 	penetrationResolver->setGarment(garment->getOriginalMesh());

@@ -15,6 +15,8 @@ public:
 	std::string clothInPath;
 	std::vector<std::string> humanInFileNames;
 	std::vector<std::string> clothInFileNames;
+	std::string mtlFileName;
+	std::string useMtlName;
 	std::string clothOutPath;
 	std::string humanMeshDiretion;
 	std::string humanSegOutPath;
@@ -41,4 +43,6 @@ public:
 	double qualitySpeedTradeoff;
 
 	std::vector<int> resultFrames;
+
+	double skeletonTime, holefillTime, deformTime;
 };

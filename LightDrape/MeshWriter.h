@@ -14,6 +14,6 @@ public:
 	static bool writeMesh(Mesh_ mesh, std::string path, std::string fileName);
 
 private:
-	static char* readToBuffer(std::string path, std::string fileName);
+	static char* readToBuffer(std::string path, std::string fileName, long& size );
 };
 S_PTR(MeshWriter);

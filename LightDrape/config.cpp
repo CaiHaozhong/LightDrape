@@ -10,6 +10,7 @@ Config::Config()
 	clothSimpleRefiner = true;
 	humanLegCenterXep = 0;	
 	qualitySpeedTradeoff = 0.5;
+	skeletonTime = holefillTime = deformTime = 0;
 }
 
 void Config::init( char* file )
@@ -113,6 +114,12 @@ void Config::init( char* file )
 		else if(type == "quality_speed_tradeoff"){
 			configIn >> qualitySpeedTradeoff;
 		}
+		else if(type == "mtl_file_name"){
+			configIn >> mtlFileName;
+		}
+		else if(type == "use_mtl_name"){
+			configIn >> useMtlName;
+		}
 	}
 }
 
@@ -120,8 +127,8 @@ Config_ Config::getInstance()
 {
 	if(mInstance == nullptr){
 		mInstance = std::shared_ptr<Config>(new Config());
-		mInstance->init("E:\\Project\\LightDrape\\data\\config");
-		//mInstance->init("D:\\Develop\\project\\LightDrape\\C++\\data\\config");
+		//mInstance->init("E:\\Project\\LightDrape\\data\\config");
+		mInstance->init("D:\\Develop\\project\\LightDrape\\C++\\data\\config");
 	}
 	return mInstance;
 }

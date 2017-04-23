@@ -5,6 +5,7 @@
 #include "Config.h"
 #include "WatertightMesh.h"
 #include "Mesher.h"
+#include <ctime>
 
 
 Skeleton_ RegionSkeletonizer::skeletonize( Region_ region, std::string name )
@@ -19,11 +20,15 @@ Skeleton_ RegionSkeletonizer::skeletonize( Region_ region, std::string name )
 	mesh->requestAABB();
 	Config_ config = Config::getInstance();
 	//	OpenMesh::IO::write_mesh(*mesh, config->clothSegOutPath + name + "_region.obj");
+	clock_t _s = clock();
 	WatertightMesh_ watertightRegionMesh = std::make_shared<WatertightMesh>(mesh);
+	config->holefillTime += clock()-_s;
 	//	OpenMesh::IO::write_mesh(*watertightRegionMesh, config->clothSegOutPath + name + "_watertightRegion.obj");
 	MeshSkeletonization_ skeletonizer = smartNew(MeshSkeletonization);
 	skeletonizer->set_quality_speed_tradeoff(config->qualitySpeedTradeoff);
+	_s = clock();
 	skeletonizer->skeletonize(watertightRegionMesh);
+	config->skeletonTime += clock() - _s;
 	//	watertightRegionMesh->dumpSkeleton(name+"_region");
 	Skeleton_ skeleton = watertightRegionMesh->getSkeleton();
 	skeleton->dump(Config::getInstance()->clothSegOutPath + region->getMesh()->getName() + "_" + region->getName() + ".cg");

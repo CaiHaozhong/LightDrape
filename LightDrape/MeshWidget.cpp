@@ -66,13 +66,12 @@ void MeshWidget::onEndInitializeGL()
  	mVisibleGarment->update();
  	update();
  	/* Output */
-// 	MeshWriter::writeMesh(mGarment->getOriginalMesh(), 
-// 		config->clothOutPath,
-// 		humanSp->getName() + "_"
-// 		+ mGarment->getName() + ".obj");
 	MeshWriter::writeMesh(mGarment->getOriginalMesh(), 
-		config->clothOutPath,		
-		mGarment->getName() + "_rp.obj");
+		config->clothOutPath,
+		mGarment->getName() + ".obj");
+// 	MeshWriter::writeMesh(mGarment->getOriginalMesh(), 
+// 		config->clothOutPath,		
+// 		mGarment->getName() + "_rp.obj");
 
 // 	OpenMesh::IO::Options opt;
 // 	opt += OpenMesh::IO::Options::VertexTexCoord;
